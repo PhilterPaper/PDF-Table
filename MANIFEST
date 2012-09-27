@@ -1,0 +1,9 @@
+Changes
+examples/sample1.pl
+examples/table_of_lorem.pdf
+lib/PDF/Table.pm
+Makefile.PL
+MANIFEST
+README
+t/PDF-Table.t
+META.yml                                 Module meta-data (added by MakeMaker)
