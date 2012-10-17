@@ -3,6 +3,8 @@ PDF-Table
 
 Official repo for PDF::Table module collaboration.
 
+https://github.com/kamenov/PDF-Table.git
+
 Any patches, pull requests and feedback are more than welcome.
 
 =======================
@@ -20,6 +22,7 @@ See the ChangeLog file or make a diff from the tools menu in CPAN
 CONTACTS 
 
 See http://search.cpan.org/~jbazik/
+
 See http://search.cpan.org/~omega/
 
 INSTALLATION
