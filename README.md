@@ -1,7 +1,8 @@
 PDF-Table
 =========
 
-Official repo for PDF::Table module collaboration
+Official repo for PDF::Table module collaboration.
+Any patches, pull requests and feedback are more than welcome.
 
 =======================
 SOME NOTES
