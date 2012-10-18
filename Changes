@@ -2,10 +2,11 @@ Revision history for Perl extension PDF::Table.
 
 Version 0.9.6
 ----------------------------
-Added horizontal_borders, vertical_borders params to table()
+Added patch for header justification. Closes #77566
+Thanks to James Lance
+
+Added horizontal_borders, vertical_borders params to table(). Closes #79883
 Thanks to Eric Johnson
-
-
 
 Version 0.9.5 - 18.Oct.2011
 ----------------------------

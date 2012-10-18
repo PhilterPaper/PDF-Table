@@ -553,8 +553,15 @@ sub table
                     {
                         $txt->font( $fnt_name, $col_fnt_size); 
                     }
-
-                    my $justify = $cell_props->[$row_cnt][$j]->{'justify'} || $col_props->[$j]->{'justify'} || 'left';
+                    
+                    #set justification for header
+                    my $justify;
+                    if( $first_row and ref $header_props )
+                    {
+                        $justify = $header_props->{'justify'};
+                    }
+                    $justify ||= $cell_props->[$row_cnt][$j]->{'justify'} || $col_props->[$j]->{'justify'} || $arg{'justify'} || 'left';
+                    
                     # If the content is wider than the specified width, we need to add the text as a text block
                     if($record->[$j] !~ m#(.\n.)# and  $record_widths->[$j] and ($record_widths->[$j] <= $calc_column_widths->[$j]))
                     {
