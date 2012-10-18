@@ -1068,7 +1068,7 @@ Desislav Kamenov
 
 =head1 VERSION
 
-0.9.5
+0.9.6
 
 =head1 COPYRIGHT AND LICENSE
 
@@ -1092,9 +1092,15 @@ http://pdfapi2.sourceforge.net/cgi-bin/view/Main/YourFirstDocument
 
 by Desislav Kamenov
 
-The development of this module is sponsored by SEEBURGER AG (www.seeburger.com)
+The development of this module was sponsored by SEEBURGER AG (www.seeburger.com) till 2007 year
 
 Thanks to my friends Krasimir Berov and Alex Kantchev for helpful tips and QA during development.
+
+=head1 CONTRIBUTION
+
+Hey PDF::Table is on GitHub. We'd be happy to join us there.
+
+https://github.com/kamenov/PDF-Table
 
 =head1 SEE ALSO
 
