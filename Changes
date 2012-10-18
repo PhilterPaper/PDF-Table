@@ -1,5 +1,12 @@
 Revision history for Perl extension PDF::Table.
 
+Version 0.9.6
+----------------------------
+Added horizontal_borders, vertical_borders params to table()
+Thanks to Eric Johnson
+
+
+
 Version 0.9.5 - 18.Oct.2011
 ----------------------------
 MANIFEST was missing sample pdf file.
