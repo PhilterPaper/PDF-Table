@@ -334,70 +334,84 @@ sub table
         my ( $row, $col_name, $col_fnt_size, $space_w );
 
         # Hash that will hold the width of every word from input text
-        my $word_w       = {};
+        my $word_widths  = {};
         my $rows_counter = 0;
         my $first_row    = 1;
 
         foreach $row ( @{$data} )
         {
             my $column_widths = []; #holds the width of each column
-            for( my $j = 0; $j < scalar(@$row) ; $j++ )
+            for( my $column_idx = 0; $column_idx < scalar(@$row) ; $column_idx++ )
             {
                 # look for font information for this column
-                $col_fnt_size   =  $col_props->[$j]->{'font_size'} || $fnt_size;
+                my $cell_font      = $cell_props->[$rows_counter][$column_idx]->{'font'} 
+                                  || $col_props->[$column_idx]->{'font'}
+                                  || $fnt_name;
+                                  
+                my $cell_font_size = $cell_props->[$rows_counter][$column_idx]->{'font_size'}
+                                  || $col_props->[$column_idx]->{'font_size'}
+                                  || $fnt_size;
+                                  
                 if( !$rows_counter and ref $header_props)
                 {   
-                    $txt->font(  $header_props->{'font'}, $header_props->{'font_size'} ); 
-                }
-                elsif( $col_props->[$j]->{'font'} ) 
-                {   
-                    $txt->font( $col_props->[$j]->{'font'}, $col_fnt_size ); 
-                }
-                else
-                {   
-                    $txt->font( $fnt_name, $col_fnt_size ); 
+                    $cell_font      = $header_props->{'font'};
+                    $cell_font_size = $header_props->{'font_size'};
                 }
 
-                # This should fix a bug with very long word like serial numbers etc.
-                $row->[$j] =~ s#(\S{$max_word_len}?)(?=\S)#$1 #g if ($max_word_len > 0);
+                $txt->font( $cell_font, $cell_font_size ); 
+                my $cell_font_name = ref($cell_font) ? $cell_font->name : $cell_font;
 
-                $space_w                = $txt->advancewidth( "\x20" );
-                $column_widths->[$j]    = 0;
-                $max_col_w              = 0;
-                $min_col_w              = 0;
 
-                my @words = split( /\s+/, $row->[$j] );
+                # This should fix a bug with very long words like serial numbers etc.
+                if( $max_word_len > 0 )
+                {
+                    $row->[$column_idx] =~ s#(\S{$max_word_len}?)(?=\S)#$1 #g;	
+                }
+                
+                # Init cell size limits  
+                $space_w                      = $txt->advancewidth( "\x20" );
+                $column_widths->[$column_idx] = 0;
+                $max_col_w                    = 0;
+                $min_col_w                    = 0;
+
+                my @words = split( /\s+/, $row->[$column_idx] );
 
                 foreach( @words ) 
                 {
-                    unless( exists $word_w->{$_} )
+                    unless( exists $word_widths->{$_} )
                     {   # Calculate the width of every word and add the space width to it
-                        $word_w->{$_} = $txt->advancewidth( $_ ) + $space_w;
+                        $word_widths->{$_} = $txt->advancewidth( $_ ) + $space_w;
                     }
-                    $column_widths->[$j]    += $word_w->{$_};
-                    $min_col_w               = $word_w->{$_} if $word_w->{$_} > $min_col_w;
-                    $max_col_w              += $word_w->{$_};
+                    
+                    $column_widths->[$column_idx] += $word_widths->{$_};
+                    $min_col_w                     = $word_widths->{$_} if( $word_widths->{$_} > $min_col_w );
+                    $max_col_w                    += $word_widths->{$_};
                 }
-                $min_col_w                  += $pad_w;
-                $max_col_w                  += $pad_w;
-                $column_widths->[$j]        += $pad_w;
+                
+                $min_col_w                    += $pad_w;
+                $max_col_w                    += $pad_w;
+                $column_widths->[$column_idx] += $pad_w;
 
                 # Keep a running total of the overall min and max widths
-                $col_props->[$j]->{min_w} = $col_props->[$j]->{min_w} || 0;
-                $col_props->[$j]->{max_w} = $col_props->[$j]->{max_w} || 0;
+                $col_props->[$column_idx]->{'min_w'} = $col_props->[$column_idx]->{'min_w'} || 0;
+                $col_props->[$column_idx]->{'max_w'} = $col_props->[$column_idx]->{'max_w'} || 0;
 
-                if( $min_col_w > $col_props->[$j]->{min_w} )
+                if( $min_col_w > $col_props->[$column_idx]->{'min_w'} )
                 {   # Calculated Minimum Column Width is more than user-defined
-                    $col_props->[$j]->{min_w}    = $min_col_w ;
+                    $col_props->[$column_idx]->{'min_w'} = $min_col_w ;
                 }
-                if( $max_col_w > $col_props->[$j]->{max_w} )
+                
+                if( $max_col_w > $col_props->[$column_idx]->{'max_w'} )
                 {   # Calculated Maximum Column Width is more than user-defined
-                    $col_props->[$j]->{max_w}    = $max_col_w ;
+                    $col_props->[$column_idx]->{'max_w'} = $max_col_w ;
                 }
-            }#End of for(my $j....
+            }#End of for(my $column_idx....
+            
             $row_props->[$rows_counter] = $column_widths;
+            
             # Copy the calculated row properties of header row. 
             @$header_row_props = @$column_widths if(!$rows_counter and ref $header_props);
+            
             $rows_counter++;
         }
         # Calc real column widths and expand table width if needed.

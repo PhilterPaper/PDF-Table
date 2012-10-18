@@ -2,6 +2,11 @@ Revision history for Perl extension PDF::Table.
 
 Version 0.9.6
 ----------------------------
+Small code refactoring
+
+Added patch for infinite loop fix. Closes #77376
+Thanks to John Bazik
+
 Added patch for header justification. Closes #77566
 Thanks to James Lance
 
