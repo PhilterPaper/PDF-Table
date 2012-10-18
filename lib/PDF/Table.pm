@@ -861,6 +861,8 @@ The third item is the y position of the table bottom.
      padding_bottom => 10,   # bottom padding, overides -padding
      border         => 1,    # border width, default 1, use 0 for no border
      border_color   => 'red',# default black
+     horizontal_borders => 1, # defaults to 1, use 0 for no horizontal borders
+     vertical_borders   => 1, # defaults to 1, use 0 for no vertical borders
      font           => $pdf->corefont("Helvetica", -encoding => "utf8"), # default font
      font_size      => 12,
      font_color_odd => 'purple',
