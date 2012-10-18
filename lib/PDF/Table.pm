@@ -279,14 +279,20 @@ sub table
 	# Other Parameters check
 	#=====================================
 	
-	my $lead 		= $arg{'lead'			} || $fnt_size;
-	my $pad_left 	= $arg{'padding_left'	} || $arg{'padding'} || 0;
-	my $pad_right	= $arg{'padding_right'	} || $arg{'padding'} || 0;
-	my $pad_top 	= $arg{'padding_top'	} || $arg{'padding'} || 0;
-	my $pad_bot 	= $arg{'padding_bottom'	} || $arg{'padding'} || 0;
-	my $pad_w 		= $pad_left + $pad_right;
-	my $pad_h 		= $pad_top  + $pad_bot	;
-	my $line_w 		= defined $arg{'border'} ? $arg{'border'} : 1 ;
+	my $lead 		  = $arg{'lead'			} || $fnt_size;
+	my $pad_left 	  = $arg{'padding_left'	} || $arg{'padding'} || 0;
+	my $pad_right	  = $arg{'padding_right'	} || $arg{'padding'} || 0;
+	my $pad_top 	  = $arg{'padding_top'	} || $arg{'padding'} || 0;
+	my $pad_bot 	  = $arg{'padding_bottom'	} || $arg{'padding'} || 0;
+	my $pad_w 		  = $pad_left + $pad_right;
+	my $pad_h 		  = $pad_top  + $pad_bot	;
+	my $line_w 		  = defined $arg{'border'} ? $arg{'border'} : 1 ;
+    my $horiz_borders = defined $arg{'horizontal_borders'}
+        ? $arg{'horizontal_borders'}
+        : $line_w;
+    my $vert_borders  = defined $arg{'vertical_borders'}
+        ? $arg{'vertical_borders'}
+        : $line_w;
 	
 	my $background_color_even 	= $arg{'background_color_even'	} || $arg{'background_color'} || undef;
 	my $background_color_odd 	= $arg{'background_color_odd'	} || $arg{'background_color'} || undef;
@@ -460,8 +466,11 @@ sub table
 				$gfx->linewidth($line_w);
 
 				# Draw the top line
-				$gfx->move( $xbase , $cur_y );
-				$gfx->hline($xbase + $width );
+                if ($horiz_borders) 
+                {
+                    $gfx->move( $xbase , $cur_y );
+                    $gfx->hline($xbase + $width );
+                }
 			}
 			else
 			{
@@ -624,7 +633,7 @@ sub table
 
 				$cur_y -= $row_h;
 				$row_h  = $min_row_h;
-				if ($gfx)
+				if ($gfx && $horiz_borders)
 				{
 					$gfx->move(  $xbase , $cur_y );
 					$gfx->hline( $xbase + $width );
@@ -637,15 +646,19 @@ sub table
 			if ($gfx)
 			{
 				# Draw vertical lines
-				$gfx->move(  $xbase, $table_top_y);
-				$gfx->vline( $cur_y );
-				my $cur_x = $xbase;
-				for( my $j = 0; $j < scalar(@$record); $j++ )
-				{
-					$cur_x += $calc_column_widths->[$j];
-					$gfx->move(  $cur_x, $table_top_y );
-					$gfx->vline( $cur_y );
-				}
+                if ($vert_borders) 
+                {
+                    $gfx->move(  $xbase, $table_top_y);
+                    $gfx->vline( $cur_y );
+                    my $cur_x = $xbase;
+                    for( my $j = 0; $j < scalar(@$record); $j++ )
+                    {
+                        $cur_x += $calc_column_widths->[$j];
+                        $gfx->move(  $cur_x, $table_top_y );
+                        $gfx->vline( $cur_y );
+                    }
+                }
+
 				# ACTUALLY draw all the lines
 				$gfx->fillcolor( $border_color);
 				$gfx->stroke;
