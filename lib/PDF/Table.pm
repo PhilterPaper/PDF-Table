@@ -1003,7 +1003,7 @@ In case of a conflict between header row cell formating, header formating will w
 If used the parameter 'new_page_func' must be a function reference which when executed will create a new page and will return the object back to the module.
 For example you can use it to put Page Title, Page Frame, Page Numbers and other staff that you need.
 Also if you need some different type of paper size and orientation than the default A4-Portrait for example B2-Landscape you can use this function ref to set it up for you. For more info about creating pages refer to PDF::API2 PAGE METHODS Section.
-Dont forget that your function must return a page object created with PDF::API2 page() method.
+Don't forget that your function must return a page object created with PDF::API2 page() method.
 
 =back
 
