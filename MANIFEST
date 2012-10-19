@@ -6,4 +6,3 @@ Makefile.PL
 MANIFEST
 README
 t/PDF-Table.t
-META.yml                                 Module meta-data (added by MakeMaker)

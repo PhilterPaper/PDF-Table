@@ -9,4 +9,10 @@ WriteMakefile(
     ($] >= 5.005 ?     ## Add these new keywords supported since 5.005
       (ABSTRACT_FROM  => 'lib/PDF/Table.pm', # retrieve abstract from module
        AUTHOR         => 'Desislav Kamenov <desi@zendor.eu>') : ()),
+    META_MERGE        => {
+        resources => {
+            bugtracker => 'https://github.com/kamenov/PDF-Table/issues',
+            repository => 'https://github.com/kamenov/PDF-Table',
+        },
+    },
 );
