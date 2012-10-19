@@ -5,4 +5,5 @@ lib/PDF/Table.pm
 Makefile.PL
 MANIFEST
 README
+README.md
 t/PDF-Table.t
