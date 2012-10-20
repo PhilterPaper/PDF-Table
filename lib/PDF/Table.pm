@@ -344,19 +344,23 @@ sub table
             for( my $column_idx = 0; $column_idx < scalar(@$row) ; $column_idx++ )
             {
                 # look for font information for this column
-                my $cell_font      = $cell_props->[$rows_counter][$column_idx]->{'font'} 
-                                  || $col_props->[$column_idx]->{'font'}
-                                  || $fnt_name;
-                                  
-                my $cell_font_size = $cell_props->[$rows_counter][$column_idx]->{'font_size'}
-                                  || $col_props->[$column_idx]->{'font_size'}
-                                  || $fnt_size;
-                                  
-                if( !$rows_counter and ref $header_props)
+                my ($cell_font, $cell_font_size);
+                
+                if( !$rows_counter and ref $header_props )
                 {   
                     $cell_font      = $header_props->{'font'};
                     $cell_font_size = $header_props->{'font_size'};
                 }
+                
+                # Get the most specific value if none was already set from header_props
+                $cell_font      ||= $cell_props->[$rows_counter][$column_idx]->{'font'} 
+                                ||  $col_props->[$column_idx]->{'font'}
+                                ||  $fnt_name;
+                                  
+                $cell_font_size ||= $cell_props->[$rows_counter][$column_idx]->{'font_size'}
+                                ||  $col_props->[$column_idx]->{'font_size'}
+                                ||  $fnt_size;
+                                  
 
                 $txt->font( $cell_font, $cell_font_size ); 
                 my $cell_font_name = ref($cell_font) ? $cell_font->name : $cell_font;
@@ -393,8 +397,8 @@ sub table
                 $column_widths->[$column_idx] += $pad_w;
 
                 # Keep a running total of the overall min and max widths
-                $col_props->[$column_idx]->{'min_w'} = $col_props->[$column_idx]->{'min_w'} || 0;
-                $col_props->[$column_idx]->{'max_w'} = $col_props->[$column_idx]->{'max_w'} || 0;
+                $col_props->[$column_idx]->{'min_w'} ||= 0;
+                $col_props->[$column_idx]->{'max_w'} ||= 0;
 
                 if( $min_col_w > $col_props->[$column_idx]->{'min_w'} )
                 {   # Calculated Minimum Column Width is more than user-defined
