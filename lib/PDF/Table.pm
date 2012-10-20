@@ -369,7 +369,7 @@ sub table
                 # This should fix a bug with very long words like serial numbers etc.
                 if( $max_word_len > 0 )
                 {
-                    $row->[$column_idx] =~ s#(\S{$max_word_len}?)(?=\S)#$1 #g;	
+                    $row->[$column_idx] =~ s#(\S{$max_word_len}?)(?=\S)#$1 #g;  
                 }
                 
                 # Init cell size limits  
@@ -519,12 +519,12 @@ sub table
                 my $leftovers    = undef;   # Reference to text that is returned from textblock()
                 my $do_leftovers = 0;
 
-                # Process every column from current row
-                for( my $j = 0; $j < scalar( @$record); $j++ ) 
+                # Process every cell(column) from current row
+                for( my $column_idx = 0; $column_idx < scalar( @$record); $column_idx++ ) 
                 {
-                    next unless $col_props->[$j]->{max_w};
-                    next unless $col_props->[$j]->{min_w};  
-                    $leftovers->[$j] = undef;
+                    next unless $col_props->[$column_idx]->{'max_w'};
+                    next unless $col_props->[$column_idx]->{'min_w'};  
+                    $leftovers->[$column_idx] = undef;
 
                     # look for font information for this cell
                     my ($cell_font, $cell_font_size, $cell_font_color, $justify);
@@ -538,51 +538,53 @@ sub table
                     }
                     
                     # Get the most specific value if none was already set from header_props
-                    $cell_font       ||= $cell_props->[$rows_counter][$j]->{'font'} 
-                                     ||  $col_props->[$j]->{'font'}
+                    $cell_font       ||= $cell_props->[$rows_counter][$column_idx]->{'font'} 
+                                     ||  $col_props->[$column_idx]->{'font'}
                                      ||  $fnt_name;
                                       
-                    $cell_font_size  ||= $cell_props->[$rows_counter][$j]->{'font_size'}
-                                     ||  $col_props->[$j]->{'font_size'}
+                    $cell_font_size  ||= $cell_props->[$rows_counter][$column_idx]->{'font_size'}
+                                     ||  $col_props->[$column_idx]->{'font_size'}
                                      ||  $fnt_size;
                                       
-                    $cell_font_color ||= $cell_props->[$rows_counter][$j]->{'font_color'}
-                                     ||  $col_props->[$j]->{'font_color'}
+                    $cell_font_color ||= $cell_props->[$rows_counter][$column_idx]->{'font_color'}
+                                     ||  $col_props->[$column_idx]->{'font_color'}
                                      ||  $font_color;
                                     
-                    $justify         ||= $cell_props->[$row_cnt][$j]->{'justify'}
-                                     ||  $col_props->[$j]->{'justify'}
+                    $justify         ||= $cell_props->[$row_cnt][$column_idx]->{'justify'}
+                                     ||  $col_props->[$column_idx]->{'justify'}
                                      ||  $arg{'justify'}
                                      ||  'left';                                    
                     
                     # Init cell font object
                     $txt->font( $cell_font, $cell_font_size );
                     $txt->fillcolor($cell_font_color);
-
+ 
                     # If the content is wider than the specified width, we need to add the text as a text block
-                    if($record->[$j] !~ m#(.\n.)# and  $record_widths->[$j] and ($record_widths->[$j] <= $calc_column_widths->[$j]))
-                    {
+                    if( $record->[$column_idx] !~ m/(.\n.)/ and
+                        $record_widths->[$column_idx] and 
+                        $record_widths->[$column_idx] <= $calc_column_widths->[$column_idx]
+                    ){
                         my $space = $pad_left;
                         if ($justify eq 'right')
                         {
-                            $space = $calc_column_widths->[$j] -($txt->advancewidth($record->[$j]) + $pad_right);
+                            $space = $calc_column_widths->[$column_idx] -($txt->advancewidth($record->[$column_idx]) + $pad_right);
                         }
                         elsif ($justify eq 'center')
                         {
-                            $space = ($calc_column_widths->[$j] - $txt->advancewidth($record->[$j])) / 2;
+                            $space = ($calc_column_widths->[$column_idx] - $txt->advancewidth($record->[$column_idx])) / 2;
                         }
                         $txt->translate( $cur_x + $space, $text_start );
-                        $txt->text( $record->[$j] );
+                        $txt->text( $record->[$column_idx] );
                     }
                     # Otherwise just use the $page->text() method
                     else
                     {
-                        my($width_of_last_line, $ypos_of_last_line, $left_over_text) = $self->text_block(
+                        my ($width_of_last_line, $ypos_of_last_line, $left_over_text) = $self->text_block(
                             $txt,
-                            $record->[$j],
+                            $record->[$column_idx],
                             x        => $cur_x + $pad_left,
                             y        => $text_start,
-                            w        => $calc_column_widths->[$j] - $pad_w,
+                            w        => $calc_column_widths->[$column_idx] - $pad_w,
                             h        => $cur_y - $bot_marg - $pad_top - $pad_bot,
                             align    => $justify,
                             lead     => $lead
@@ -592,11 +594,11 @@ sub table
                         $row_h = $this_row_h if $this_row_h > $row_h;
                         if( $left_over_text )
                         {
-                            $leftovers->[$j] = $left_over_text;
-                            $do_leftovers    = 1;
+                            $leftovers->[$column_idx] = $left_over_text;
+                            $do_leftovers = 1;
                         }
                     }
-                    $cur_x += $calc_column_widths->[$j];
+                    $cur_x += $calc_column_widths->[$column_idx];
                 }
                 if( $do_leftovers )
                 {
