@@ -361,10 +361,8 @@ sub table
                                 ||  $col_props->[$column_idx]->{'font_size'}
                                 ||  $fnt_size;
                                   
-
+                # Set Font
                 $txt->font( $cell_font, $cell_font_size ); 
-                my $cell_font_name = ref($cell_font) ? $cell_font->name : $cell_font;
-
 
                 # This should fix a bug with very long words like serial numbers etc.
                 if( $max_word_len > 0 )
