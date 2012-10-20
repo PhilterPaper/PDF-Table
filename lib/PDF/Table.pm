@@ -526,60 +526,39 @@ sub table
                     next unless $col_props->[$j]->{min_w};  
                     $leftovers->[$j] = undef;
 
-                    # Choose font color
-                    if( $first_row and ref $header_props )
+                    # look for font information for this cell
+                    my ($cell_font, $cell_font_size, $cell_font_color, $justify);
+                                        
+                    if( $first_row and ref $header_props)
                     {   
-                        $txt->fillcolor( $header_props->{'font_color'} ); 
-                    }   
-                    elsif( $cell_props->[$row_cnt][$j]{font_color} )
-                    {
-                        $txt->fillcolor( $cell_props->[$row_cnt][$j]{font_color} );
-                    }
-                    elsif( $col_props->[$j]->{'font_color'} )
-                    { 
-                        $txt->fillcolor( $col_props->[$j]->{'font_color'} ); 
-                    }
-                    else
-                    { 
-                        $txt->fillcolor($font_color);   
-                    }
-
-                    # Choose font size
-                    if( $first_row and ref $header_props )
-                    {   
-                        $col_fnt_size = $header_props->{'font_size'}; 
-                    }
-                    elsif( $col_props->[$j]->{'font_size'} )
-                    {   
-                        $col_fnt_size = $col_props->[$j]->{'font_size'}; 
-                    }
-                    else
-                    {   
-                        $col_fnt_size = $fnt_size; 
-                    }
-
-                    # Choose font family
-                    if( $first_row and ref $header_props )
-                    {   
-                        $txt->font( $header_props->{'font'}, $header_props->{'font_size'}); 
-                    }
-                    elsif( $col_props->[$j]->{'font'} )
-                    {   
-                        $txt->font( $col_props->[$j]->{'font'}, $col_fnt_size); 
-                    }
-                    else
-                    {
-                        $txt->font( $fnt_name, $col_fnt_size); 
+                        $cell_font       = $header_props->{'font'};
+                        $cell_font_size  = $header_props->{'font_size'};
+                        $cell_font_color = $header_props->{'font_color'};
+                        $justify         = $header_props->{'justify'};
                     }
                     
-                    #set justification for header
-                    my $justify;
-                    if( $first_row and ref $header_props )
-                    {
-                        $justify = $header_props->{'justify'};
-                    }
-                    $justify ||= $cell_props->[$row_cnt][$j]->{'justify'} || $col_props->[$j]->{'justify'} || $arg{'justify'} || 'left';
+                    # Get the most specific value if none was already set from header_props
+                    $cell_font       ||= $cell_props->[$rows_counter][$j]->{'font'} 
+                                     ||  $col_props->[$j]->{'font'}
+                                     ||  $fnt_name;
+                                      
+                    $cell_font_size  ||= $cell_props->[$rows_counter][$j]->{'font_size'}
+                                     ||  $col_props->[$j]->{'font_size'}
+                                     ||  $fnt_size;
+                                      
+                    $cell_font_color ||= $cell_props->[$rows_counter][$j]->{'font_color'}
+                                     ||  $col_props->[$j]->{'font_color'}
+                                     ||  $font_color;
+                                    
+                    $justify         ||= $cell_props->[$row_cnt][$j]->{'justify'}
+                                     ||  $col_props->[$j]->{'justify'}
+                                     ||  $arg{'justify'}
+                                     ||  'left';                                    
                     
+                    # Init cell font object
+                    $txt->font( $cell_font, $cell_font_size );
+                    $txt->fillcolor($cell_font_color);
+
                     # If the content is wider than the specified width, we need to add the text as a text block
                     if($record->[$j] !~ m#(.\n.)# and  $record_widths->[$j] and ($record_widths->[$j] <= $calc_column_widths->[$j]))
                     {
