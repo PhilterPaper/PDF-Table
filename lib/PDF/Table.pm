@@ -4,7 +4,7 @@ use 5.006;
 use strict;
 use warnings;
 use Carp;
-our $VERSION = '0.9.6';
+our $VERSION = '0.9.7';
 
 
 ############################################################
@@ -312,364 +312,367 @@ sub table
     my $cell_props  = $arg{cell_props} || [];   # per cell properties
     my $row_cnt     = ( ref $header_props and $header_props->{'repeat'} ) ?  1 : 0; # current row in user data
 
-    #If there is valid data array reference use it!
-    if(ref $data eq 'ARRAY')
+    #If there is no valid data array reference warn and return!
+    if(ref $data ne 'ARRAY')
     {
-        # Copy the header row if header is enabled
-        @$header_row = $$data[0] if defined $header_props;
-        # Determine column widths based on content
+        carp "Passed table data is not an ARRAY reference. It's actually a ref to ".ref($data);
+        return ($page,0,$cur_y);
+    }
 
-        #  an arrayref whose values are a hashref holding 
-        #  the minimum and maximum width of that column
-        my $col_props =  $arg{'column_props'} || [];
+    # Copy the header row if header is enabled
+    @$header_row = $$data[0] if defined $header_props;
+    # Determine column widths based on content
 
-        # An array ref of arrayrefs whose values are 
-        #  the actual widths of the column/row intersection
-        my $row_props = [];
-        # An array ref with the widths of the header row 
-        my $header_row_props = [];
+    #  an arrayref whose values are a hashref holding 
+    #  the minimum and maximum width of that column
+    my $col_props =  $arg{'column_props'} || [];
+
+    # An array ref of arrayrefs whose values are 
+    #  the actual widths of the column/row intersection
+    my $row_props = [];
+    # An array ref with the widths of the header row 
+    my $header_row_props = [];
  
-        # Scalars that hold sum of the maximum and minimum widths of all columns 
-        my ( $max_col_w  , $min_col_w   ) = ( 0,0 );
-        my ( $row, $col_name, $col_fnt_size, $space_w );
+    # Scalars that hold sum of the maximum and minimum widths of all columns 
+    my ( $max_col_w  , $min_col_w   ) = ( 0,0 );
+    my ( $row, $col_name, $col_fnt_size, $space_w );
 
-        # Hash that will hold the width of every word from input text
-        my $word_widths  = {};
-        my $rows_counter = 0;
-        my $first_row    = 1;
+    # Hash that will hold the width of every word from input text
+    my $word_widths  = {};
+    my $rows_counter = 0;
+    my $first_row    = 1;
 
-        foreach $row ( @{$data} )
+    foreach $row ( @{$data} )
+    {
+        my $column_widths = []; #holds the width of each column
+        for( my $column_idx = 0; $column_idx < scalar(@$row) ; $column_idx++ )
         {
-            my $column_widths = []; #holds the width of each column
-            for( my $column_idx = 0; $column_idx < scalar(@$row) ; $column_idx++ )
+            # look for font information for this column
+            my ($cell_font, $cell_font_size);
+            
+            if( !$rows_counter and ref $header_props )
+            {   
+                $cell_font      = $header_props->{'font'};
+                $cell_font_size = $header_props->{'font_size'};
+            }
+            
+            # Get the most specific value if none was already set from header_props
+            $cell_font      ||= $cell_props->[$rows_counter][$column_idx]->{'font'} 
+                            ||  $col_props->[$column_idx]->{'font'}
+                            ||  $fnt_name;
+                              
+            $cell_font_size ||= $cell_props->[$rows_counter][$column_idx]->{'font_size'}
+                            ||  $col_props->[$column_idx]->{'font_size'}
+                            ||  $fnt_size;
+                              
+            # Set Font
+            $txt->font( $cell_font, $cell_font_size ); 
+
+            # This should fix a bug with very long words like serial numbers etc.
+            if( $max_word_len > 0 )
             {
-                # look for font information for this column
-                my ($cell_font, $cell_font_size);
+                $row->[$column_idx] =~ s#(\S{$max_word_len}?)(?=\S)#$1 #g;  
+            }
+            
+            # Init cell size limits  
+            $space_w                      = $txt->advancewidth( "\x20" );
+            $column_widths->[$column_idx] = 0;
+            $max_col_w                    = 0;
+            $min_col_w                    = 0;
+
+            my @words = split( /\s+/, $row->[$column_idx] );
+
+            foreach( @words ) 
+            {
+                unless( exists $word_widths->{$_} )
+                {   # Calculate the width of every word and add the space width to it
+                    $word_widths->{$_} = $txt->advancewidth( $_ ) + $space_w;
+                }
                 
-                if( !$rows_counter and ref $header_props )
+                $column_widths->[$column_idx] += $word_widths->{$_};
+                $min_col_w                     = $word_widths->{$_} if( $word_widths->{$_} > $min_col_w );
+                $max_col_w                    += $word_widths->{$_};
+            }
+            
+            $min_col_w                    += $pad_w;
+            $max_col_w                    += $pad_w;
+            $column_widths->[$column_idx] += $pad_w;
+
+            # Keep a running total of the overall min and max widths
+            $col_props->[$column_idx]->{'min_w'} ||= 0;
+            $col_props->[$column_idx]->{'max_w'} ||= 0;
+
+            if( $min_col_w > $col_props->[$column_idx]->{'min_w'} )
+            {   # Calculated Minimum Column Width is more than user-defined
+                $col_props->[$column_idx]->{'min_w'} = $min_col_w ;
+            }
+            
+            if( $max_col_w > $col_props->[$column_idx]->{'max_w'} )
+            {   # Calculated Maximum Column Width is more than user-defined
+                $col_props->[$column_idx]->{'max_w'} = $max_col_w ;
+            }
+        }#End of for(my $column_idx....
+        
+        $row_props->[$rows_counter] = $column_widths;
+        
+        # Copy the calculated row properties of header row. 
+        @$header_row_props = @$column_widths if(!$rows_counter and ref $header_props);
+        
+        $rows_counter++;
+    }
+    # Calc real column widths and expand table width if needed.
+    my $calc_column_widths; 
+    ($calc_column_widths, $width) = CalcColumnWidths( $col_props, $width );
+
+    my $comp_cnt     = 1;
+    $rows_counter    = 0;
+
+    my ( $gfx     , $gfx_bg     , $background_color , $font_color,              );
+    my ( $bot_marg, $table_top_y, $text_start       , $record,  $record_widths  );
+
+    # Each iteration adds a new page as neccessary
+    while(scalar(@{$data}))
+    {
+        my $page_header;
+        if($pg_cnt == 1)
+        {
+            $table_top_y = $ybase;
+            $bot_marg = $table_top_y - $height;
+        }
+        else
+        {
+            if(ref $arg{'new_page_func'})
+            {   
+                $page = &{$arg{'new_page_func'}};   
+            }
+            else
+            {   
+                $page = $pdf->page; 
+            }
+
+            $table_top_y = $next_y;
+            $bot_marg = $table_top_y - $next_h;
+
+            if( ref $header_props and $header_props->{'repeat'})
+            {
+                # Copy Header Data
+                @$page_header = @$header_row;
+                my $hrp ;
+                @$hrp = @$header_row_props ;
+                # Then prepend it to master data array
+                unshift @$data      ,@$page_header  ;
+                unshift @$row_props ,$hrp           ;
+                $first_row = 1; # Means YES
+            }
+        }
+
+        # Check for safety reasons
+        if( $bot_marg < 0 )
+        {   # This warning should remain i think
+            carp "!!! Warning: !!! Incorrect Table Geometry! Setting bottom margin to end of sheet!\n";
+            $bot_marg = 0;
+        }
+
+        $gfx_bg = $page->gfx;
+        $txt = $page->text;
+        $txt->font($fnt_name, $fnt_size); 
+
+        $cur_y = $table_top_y;
+
+        if ($line_w)
+        {
+            $gfx = $page->gfx;
+            $gfx->strokecolor($border_color);
+            $gfx->linewidth($line_w);
+
+            # Draw the top line
+            if ($horiz_borders) 
+            {
+                $gfx->move( $xbase , $cur_y );
+                $gfx->hline($xbase + $width );
+            }
+        }
+        else
+        {
+            $gfx = undef;
+        }
+
+        # Each iteration adds a row to the current page until the page is full 
+        #  or there are no more rows to add
+        while(scalar(@{$data}) and $cur_y-$row_h > $bot_marg)
+        {
+            # Remove the next item from $data
+            $record = shift @{$data};
+            # Added to resolve infite loop bug with returned undef values
+            for(my $d = 0; $d < scalar(@{$record}) ; $d++)
+            { 
+                $record->[$d] = '-' unless( defined $record->[$d]); 
+            }
+
+            $record_widths = shift @$row_props;
+            next unless $record;
+
+            # Choose colors for this row
+            $background_color = $rows_counter % 2 ? $background_color_even  : $background_color_odd;
+            $font_color       = $rows_counter % 2 ? $font_color_even        : $font_color_odd;
+
+            $text_start      = $cur_y - $fnt_size - $pad_top;
+            my $cur_x        = $xbase;
+            my $leftovers    = undef;   # Reference to text that is returned from textblock()
+            my $do_leftovers = 0;
+
+            # Process every cell(column) from current row
+            for( my $column_idx = 0; $column_idx < scalar( @$record); $column_idx++ ) 
+            {
+                next unless $col_props->[$column_idx]->{'max_w'};
+                next unless $col_props->[$column_idx]->{'min_w'};  
+                $leftovers->[$column_idx] = undef;
+
+                # look for font information for this cell
+                my ($cell_font, $cell_font_size, $cell_font_color, $justify);
+                                    
+                if( $first_row and ref $header_props)
                 {   
-                    $cell_font      = $header_props->{'font'};
-                    $cell_font_size = $header_props->{'font_size'};
+                    $cell_font       = $header_props->{'font'};
+                    $cell_font_size  = $header_props->{'font_size'};
+                    $cell_font_color = $header_props->{'font_color'};
+                    $justify         = $header_props->{'justify'};
                 }
                 
                 # Get the most specific value if none was already set from header_props
-                $cell_font      ||= $cell_props->[$rows_counter][$column_idx]->{'font'} 
-                                ||  $col_props->[$column_idx]->{'font'}
-                                ||  $fnt_name;
+                $cell_font       ||= $cell_props->[$rows_counter][$column_idx]->{'font'} 
+                                 ||  $col_props->[$column_idx]->{'font'}
+                                 ||  $fnt_name;
                                   
-                $cell_font_size ||= $cell_props->[$rows_counter][$column_idx]->{'font_size'}
-                                ||  $col_props->[$column_idx]->{'font_size'}
-                                ||  $fnt_size;
+                $cell_font_size  ||= $cell_props->[$rows_counter][$column_idx]->{'font_size'}
+                                 ||  $col_props->[$column_idx]->{'font_size'}
+                                 ||  $fnt_size;
                                   
-                # Set Font
-                $txt->font( $cell_font, $cell_font_size ); 
-
-                # This should fix a bug with very long words like serial numbers etc.
-                if( $max_word_len > 0 )
-                {
-                    $row->[$column_idx] =~ s#(\S{$max_word_len}?)(?=\S)#$1 #g;  
-                }
+                $cell_font_color ||= $cell_props->[$rows_counter][$column_idx]->{'font_color'}
+                                 ||  $col_props->[$column_idx]->{'font_color'}
+                                 ||  $font_color;
+                                
+                $justify         ||= $cell_props->[$row_cnt][$column_idx]->{'justify'}
+                                 ||  $col_props->[$column_idx]->{'justify'}
+                                 ||  $arg{'justify'}
+                                 ||  'left';                                    
                 
-                # Init cell size limits  
-                $space_w                      = $txt->advancewidth( "\x20" );
-                $column_widths->[$column_idx] = 0;
-                $max_col_w                    = 0;
-                $min_col_w                    = 0;
-
-                my @words = split( /\s+/, $row->[$column_idx] );
-
-                foreach( @words ) 
-                {
-                    unless( exists $word_widths->{$_} )
-                    {   # Calculate the width of every word and add the space width to it
-                        $word_widths->{$_} = $txt->advancewidth( $_ ) + $space_w;
+                # Init cell font object
+                $txt->font( $cell_font, $cell_font_size );
+                $txt->fillcolor($cell_font_color);
+ 
+                # If the content is wider than the specified width, we need to add the text as a text block
+                if( $record->[$column_idx] !~ m/(.\n.)/ and
+                    $record_widths->[$column_idx] and 
+                    $record_widths->[$column_idx] <= $calc_column_widths->[$column_idx]
+                ){
+                    my $space = $pad_left;
+                    if ($justify eq 'right')
+                    {
+                        $space = $calc_column_widths->[$column_idx] -($txt->advancewidth($record->[$column_idx]) + $pad_right);
                     }
-                    
-                    $column_widths->[$column_idx] += $word_widths->{$_};
-                    $min_col_w                     = $word_widths->{$_} if( $word_widths->{$_} > $min_col_w );
-                    $max_col_w                    += $word_widths->{$_};
+                    elsif ($justify eq 'center')
+                    {
+                        $space = ($calc_column_widths->[$column_idx] - $txt->advancewidth($record->[$column_idx])) / 2;
+                    }
+                    $txt->translate( $cur_x + $space, $text_start );
+                    $txt->text( $record->[$column_idx] );
                 }
-                
-                $min_col_w                    += $pad_w;
-                $max_col_w                    += $pad_w;
-                $column_widths->[$column_idx] += $pad_w;
-
-                # Keep a running total of the overall min and max widths
-                $col_props->[$column_idx]->{'min_w'} ||= 0;
-                $col_props->[$column_idx]->{'max_w'} ||= 0;
-
-                if( $min_col_w > $col_props->[$column_idx]->{'min_w'} )
-                {   # Calculated Minimum Column Width is more than user-defined
-                    $col_props->[$column_idx]->{'min_w'} = $min_col_w ;
+                # Otherwise just use the $page->text() method
+                else
+                {
+                    my ($width_of_last_line, $ypos_of_last_line, $left_over_text) = $self->text_block(
+                        $txt,
+                        $record->[$column_idx],
+                        x        => $cur_x + $pad_left,
+                        y        => $text_start,
+                        w        => $calc_column_widths->[$column_idx] - $pad_w,
+                        h        => $cur_y - $bot_marg - $pad_top - $pad_bot,
+                        align    => $justify,
+                        lead     => $lead
+                    );
+                    # Desi - Removed $lead because of fixed incorrect ypos bug in text_block
+                    my $this_row_h = $cur_y - ( $ypos_of_last_line - $pad_bot );
+                    $row_h = $this_row_h if $this_row_h > $row_h;
+                    if( $left_over_text )
+                    {
+                        $leftovers->[$column_idx] = $left_over_text;
+                        $do_leftovers = 1;
+                    }
                 }
-                
-                if( $max_col_w > $col_props->[$column_idx]->{'max_w'} )
-                {   # Calculated Maximum Column Width is more than user-defined
-                    $col_props->[$column_idx]->{'max_w'} = $max_col_w ;
-                }
-            }#End of for(my $column_idx....
-            
-            $row_props->[$rows_counter] = $column_widths;
-            
-            # Copy the calculated row properties of header row. 
-            @$header_row_props = @$column_widths if(!$rows_counter and ref $header_props);
-            
-            $rows_counter++;
-        }
-        # Calc real column widths and expand table width if needed.
-        my $calc_column_widths; 
-        ($calc_column_widths, $width) = CalcColumnWidths( $col_props, $width );
-
-        my $comp_cnt     = 1;
-        $rows_counter    = 0;
-
-        my ( $gfx     , $gfx_bg     , $background_color , $font_color,              );
-        my ( $bot_marg, $table_top_y, $text_start       , $record,  $record_widths  );
-
-        # Each iteration adds a new page as neccessary
-        while(scalar(@{$data}))
-        {
-            my $page_header;
-            if($pg_cnt == 1)
-            {
-                $table_top_y = $ybase;
-                $bot_marg = $table_top_y - $height;
+                $cur_x += $calc_column_widths->[$column_idx];
             }
-            else
+            if( $do_leftovers )
             {
-                if(ref $arg{'new_page_func'})
-                {   
-                    $page = &{$arg{'new_page_func'}};   
+                unshift @$data, $leftovers;
+                unshift @$row_props, $record_widths;
+                $rows_counter--;
+            }
+            # Draw cell bgcolor
+            # This has to be separately from the text loop 
+            #  because we do not know the final height of the cell until all text has been drawn
+            $cur_x = $xbase;
+            for(my $j =0;$j < scalar(@$record);$j++)
+            {
+                my $bg_color;
+                if ( $first_row && ref $header_props ){
+                    $bg_color = $header_props->{'bg_color'};
+                }
+                elsif ( $cell_props->[$row_cnt][$j]->{'background_color'})
+                {
+                    $bg_color = $cell_props->[$row_cnt][$j]->{'background_color'};
+                }
+                elsif( $col_props->[$j]->{'background_color'})
+                {
+                    $bg_color = $col_props->[$j]->{'background_color'};
                 }
                 else
-                {   
-                    $page = $pdf->page; 
-                }
-
-                $table_top_y = $next_y;
-                $bot_marg = $table_top_y - $next_h;
-
-                if( ref $header_props and $header_props->{'repeat'})
                 {
-                    # Copy Header Data
-                    @$page_header = @$header_row;
-                    my $hrp ;
-                    @$hrp = @$header_row_props ;
-                    # Then prepend it to master data array
-                    unshift @$data      ,@$page_header  ;
-                    unshift @$row_props ,$hrp           ;
-                    $first_row = 1; # Means YES
+                    $bg_color = $background_color;
                 }
-            }
+                if ($bg_color)
+                {
+                    $gfx_bg->rect( $cur_x, $cur_y-$row_h, $calc_column_widths->[$j], $row_h);
+                    $gfx_bg->fillcolor($bg_color);
+                    $gfx_bg->fill();
+                }
+                $cur_x += $calc_column_widths->[$j];
+            }#End of for(my $j....
 
-            # Check for safety reasons
-            if( $bot_marg < 0 )
-            {   # This warning should remain i think
-                carp "!!! Warning: !!! Incorrect Table Geometry! Setting bottom margin to end of sheet!\n";
-                $bot_marg = 0;
-            }
-
-            $gfx_bg = $page->gfx;
-            $txt = $page->text;
-            $txt->font($fnt_name, $fnt_size); 
-
-            $cur_y = $table_top_y;
-
-            if ($line_w)
+            $cur_y -= $row_h;
+            $row_h  = $min_row_h;
+            if ($gfx && $horiz_borders)
             {
-                $gfx = $page->gfx;
-                $gfx->strokecolor($border_color);
-                $gfx->linewidth($line_w);
-
-                # Draw the top line
-                if ($horiz_borders) 
-                {
-                    $gfx->move( $xbase , $cur_y );
-                    $gfx->hline($xbase + $width );
-                }
+                $gfx->move(  $xbase , $cur_y );
+                $gfx->hline( $xbase + $width );
             }
-            else
+            $rows_counter++;
+            $row_cnt++ unless ( $first_row || $do_leftovers );
+            $first_row = 0;
+        }# End of while(scalar(@{$data}) and $cur_y-$row_h > $bot_marg)
+
+        if ($gfx)
+        {
+            # Draw vertical lines
+            if ($vert_borders) 
             {
-                $gfx = undef;
-            }
-
-            # Each iteration adds a row to the current page until the page is full 
-            #  or there are no more rows to add
-            while(scalar(@{$data}) and $cur_y-$row_h > $bot_marg)
-            {
-                # Remove the next item from $data
-                $record = shift @{$data};
-                # Added to resolve infite loop bug with returned undef values
-                for(my $d = 0; $d < scalar(@{$record}) ; $d++)
-                { 
-                    $record->[$d] = '-' unless( defined $record->[$d]); 
-                }
-
-                $record_widths = shift @$row_props;
-                next unless $record;
-
-                # Choose colors for this row
-                $background_color = $rows_counter % 2 ? $background_color_even  : $background_color_odd;
-                $font_color       = $rows_counter % 2 ? $font_color_even        : $font_color_odd;
-
-                $text_start      = $cur_y - $fnt_size - $pad_top;
-                my $cur_x        = $xbase;
-                my $leftovers    = undef;   # Reference to text that is returned from textblock()
-                my $do_leftovers = 0;
-
-                # Process every cell(column) from current row
-                for( my $column_idx = 0; $column_idx < scalar( @$record); $column_idx++ ) 
+                $gfx->move(  $xbase, $table_top_y);
+                $gfx->vline( $cur_y );
+                my $cur_x = $xbase;
+                for( my $j = 0; $j < scalar(@$record); $j++ )
                 {
-                    next unless $col_props->[$column_idx]->{'max_w'};
-                    next unless $col_props->[$column_idx]->{'min_w'};  
-                    $leftovers->[$column_idx] = undef;
-
-                    # look for font information for this cell
-                    my ($cell_font, $cell_font_size, $cell_font_color, $justify);
-                                        
-                    if( $first_row and ref $header_props)
-                    {   
-                        $cell_font       = $header_props->{'font'};
-                        $cell_font_size  = $header_props->{'font_size'};
-                        $cell_font_color = $header_props->{'font_color'};
-                        $justify         = $header_props->{'justify'};
-                    }
-                    
-                    # Get the most specific value if none was already set from header_props
-                    $cell_font       ||= $cell_props->[$rows_counter][$column_idx]->{'font'} 
-                                     ||  $col_props->[$column_idx]->{'font'}
-                                     ||  $fnt_name;
-                                      
-                    $cell_font_size  ||= $cell_props->[$rows_counter][$column_idx]->{'font_size'}
-                                     ||  $col_props->[$column_idx]->{'font_size'}
-                                     ||  $fnt_size;
-                                      
-                    $cell_font_color ||= $cell_props->[$rows_counter][$column_idx]->{'font_color'}
-                                     ||  $col_props->[$column_idx]->{'font_color'}
-                                     ||  $font_color;
-                                    
-                    $justify         ||= $cell_props->[$row_cnt][$column_idx]->{'justify'}
-                                     ||  $col_props->[$column_idx]->{'justify'}
-                                     ||  $arg{'justify'}
-                                     ||  'left';                                    
-                    
-                    # Init cell font object
-                    $txt->font( $cell_font, $cell_font_size );
-                    $txt->fillcolor($cell_font_color);
- 
-                    # If the content is wider than the specified width, we need to add the text as a text block
-                    if( $record->[$column_idx] !~ m/(.\n.)/ and
-                        $record_widths->[$column_idx] and 
-                        $record_widths->[$column_idx] <= $calc_column_widths->[$column_idx]
-                    ){
-                        my $space = $pad_left;
-                        if ($justify eq 'right')
-                        {
-                            $space = $calc_column_widths->[$column_idx] -($txt->advancewidth($record->[$column_idx]) + $pad_right);
-                        }
-                        elsif ($justify eq 'center')
-                        {
-                            $space = ($calc_column_widths->[$column_idx] - $txt->advancewidth($record->[$column_idx])) / 2;
-                        }
-                        $txt->translate( $cur_x + $space, $text_start );
-                        $txt->text( $record->[$column_idx] );
-                    }
-                    # Otherwise just use the $page->text() method
-                    else
-                    {
-                        my ($width_of_last_line, $ypos_of_last_line, $left_over_text) = $self->text_block(
-                            $txt,
-                            $record->[$column_idx],
-                            x        => $cur_x + $pad_left,
-                            y        => $text_start,
-                            w        => $calc_column_widths->[$column_idx] - $pad_w,
-                            h        => $cur_y - $bot_marg - $pad_top - $pad_bot,
-                            align    => $justify,
-                            lead     => $lead
-                        );
-                        # Desi - Removed $lead because of fixed incorrect ypos bug in text_block
-                        my $this_row_h = $cur_y - ( $ypos_of_last_line - $pad_bot );
-                        $row_h = $this_row_h if $this_row_h > $row_h;
-                        if( $left_over_text )
-                        {
-                            $leftovers->[$column_idx] = $left_over_text;
-                            $do_leftovers = 1;
-                        }
-                    }
-                    $cur_x += $calc_column_widths->[$column_idx];
-                }
-                if( $do_leftovers )
-                {
-                    unshift @$data, $leftovers;
-                    unshift @$row_props, $record_widths;
-                    $rows_counter--;
-                }
-                # Draw cell bgcolor
-                # This has to be separately from the text loop 
-                #  because we do not know the final height of the cell until all text has been drawn
-                $cur_x = $xbase;
-                for(my $j =0;$j < scalar(@$record);$j++)
-                {
-                    my $bg_color;
-                    if ( $first_row && ref $header_props ){
-                        $bg_color = $header_props->{'bg_color'};
-                    }
-                    elsif ( $cell_props->[$row_cnt][$j]->{'background_color'})
-                    {
-                        $bg_color = $cell_props->[$row_cnt][$j]->{'background_color'};
-                    }
-                    elsif( $col_props->[$j]->{'background_color'})
-                    {
-                        $bg_color = $col_props->[$j]->{'background_color'};
-                    }
-                    else
-                    {
-                        $bg_color = $background_color;
-                    }
-                    if ($bg_color)
-                    {
-                        $gfx_bg->rect( $cur_x, $cur_y-$row_h, $calc_column_widths->[$j], $row_h);
-                        $gfx_bg->fillcolor($bg_color);
-                        $gfx_bg->fill();
-                    }
                     $cur_x += $calc_column_widths->[$j];
-                }#End of for(my $j....
-
-                $cur_y -= $row_h;
-                $row_h  = $min_row_h;
-                if ($gfx && $horiz_borders)
-                {
-                    $gfx->move(  $xbase , $cur_y );
-                    $gfx->hline( $xbase + $width );
-                }
-                $rows_counter++;
-                $row_cnt++ unless ( $first_row || $do_leftovers );
-                $first_row = 0;
-            }# End of while(scalar(@{$data}) and $cur_y-$row_h > $bot_marg)
-
-            if ($gfx)
-            {
-                # Draw vertical lines
-                if ($vert_borders) 
-                {
-                    $gfx->move(  $xbase, $table_top_y);
+                    $gfx->move(  $cur_x, $table_top_y );
                     $gfx->vline( $cur_y );
-                    my $cur_x = $xbase;
-                    for( my $j = 0; $j < scalar(@$record); $j++ )
-                    {
-                        $cur_x += $calc_column_widths->[$j];
-                        $gfx->move(  $cur_x, $table_top_y );
-                        $gfx->vline( $cur_y );
-                    }
                 }
-
-                # ACTUALLY draw all the lines
-                $gfx->fillcolor( $border_color);
-                $gfx->stroke;
             }
-            $pg_cnt++;
-        }# End of while(scalar(@{$data}))
-    }# End of if(ref $data eq 'ARRAY')
+
+            # ACTUALLY draw all the lines
+            $gfx->fillcolor( $border_color);
+            $gfx->stroke;
+        }
+        $pg_cnt++;
+    }# End of while(scalar(@{$data}))
 
     return ($page,--$pg_cnt,$cur_y);
 }
@@ -1051,7 +1054,7 @@ Desislav Kamenov
 
 =head1 VERSION
 
-0.9.6
+0.9.7
 
 =head1 COPYRIGHT AND LICENSE
 
