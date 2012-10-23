@@ -333,7 +333,7 @@ sub table
 
     # An array ref of arrayrefs whose values are 
     #  the actual widths of the column/row intersection
-    my $row_props = [];
+    my $row_col_widths = [];
     # An array ref with the widths of the header row 
     my $header_row_props = [];
  
@@ -341,41 +341,49 @@ sub table
     my ( $max_col_w  , $min_col_w   ) = ( 0,0 );
     my ( $row, $col_name, $col_fnt_size, $space_w );
 
-    # Hash that will hold the width of every word from input text
     my $word_widths  = {};
-    my $rows_counter = 0;
+    my $rows_height  = [];
     my $first_row    = 1;
 
-    foreach $row ( @{$data} )
+    for( my $row_idx = 0; $row_idx < scalar(@$data) ; $row_idx++ )
     {
         my $column_widths = []; #holds the width of each column
-        for( my $column_idx = 0; $column_idx < scalar(@$row) ; $column_idx++ )
+        # Set a minimum height for this row
+        $rows_height->[$row_idx] = $min_row_h;
+        
+        for( my $column_idx = 0; $column_idx < scalar(@{$data->[$row_idx]}) ; $column_idx++ )
         {
             # look for font information for this column
             my ($cell_font, $cell_font_size);
             
-            if( !$rows_counter and ref $header_props )
+            if( !$row_idx and ref $header_props )
             {   
                 $cell_font      = $header_props->{'font'};
                 $cell_font_size = $header_props->{'font_size'};
             }
             
             # Get the most specific value if none was already set from header_props
-            $cell_font      ||= $cell_props->[$rows_counter][$column_idx]->{'font'} 
+            $cell_font      ||= $cell_props->[$row_idx][$column_idx]->{'font'} 
                             ||  $col_props->[$column_idx]->{'font'}
                             ||  $fnt_name;
                               
-            $cell_font_size ||= $cell_props->[$rows_counter][$column_idx]->{'font_size'}
+            $cell_font_size ||= $cell_props->[$row_idx][$column_idx]->{'font_size'}
                             ||  $col_props->[$column_idx]->{'font_size'}
                             ||  $fnt_size;
                               
             # Set Font
             $txt->font( $cell_font, $cell_font_size ); 
 
+            # Set row height to biggest font size from row's cells
+            if( $cell_font_size  > $rows_height->[$row_idx] )
+            {
+                $rows_height->[$row_idx] = $cell_font_size;
+            }
+
             # This should fix a bug with very long words like serial numbers etc.
             if( $max_word_len > 0 )
             {
-                $row->[$column_idx] =~ s#(\S{$max_word_len}?)(?=\S)#$1 #g;  
+                $data->[$row_idx][$column_idx] =~ s#(\S{$max_word_len}?)(?=\S)#$1 #g;  
             }
             
             # Init cell size limits  
@@ -384,7 +392,7 @@ sub table
             $max_col_w                    = 0;
             $min_col_w                    = 0;
 
-            my @words = split( /\s+/, $row->[$column_idx] );
+            my @words = split( /\s+/, $data->[$row_idx][$column_idx] );
 
             foreach( @words ) 
             {
@@ -417,19 +425,18 @@ sub table
             }
         }#End of for(my $column_idx....
         
-        $row_props->[$rows_counter] = $column_widths;
+        $row_col_widths->[$row_idx] = $column_widths;
         
         # Copy the calculated row properties of header row. 
-        @$header_row_props = @$column_widths if(!$rows_counter and ref $header_props);
-        
-        $rows_counter++;
+        @$header_row_props = @$column_widths if(!$row_idx and ref $header_props);
     }
     # Calc real column widths and expand table width if needed.
     my $calc_column_widths; 
     ($calc_column_widths, $width) = CalcColumnWidths( $col_props, $width );
 
+    # Lets draw what we have!
     my $comp_cnt     = 1;
-    $rows_counter    = 0;
+    my $rows_counter = 0;
 
     my ( $gfx     , $gfx_bg     , $background_color , $font_color,              );
     my ( $bot_marg, $table_top_y, $text_start       , $record,  $record_widths  );
@@ -464,8 +471,8 @@ sub table
                 my $hrp ;
                 @$hrp = @$header_row_props ;
                 # Then prepend it to master data array
-                unshift @$data      ,@$page_header  ;
-                unshift @$row_props ,$hrp           ;
+                unshift @$data, @$page_header;
+                unshift @$row_col_widths, $hrp;
                 $first_row = 1; # Means YES
             }
         }
@@ -503,24 +510,30 @@ sub table
 
         # Each iteration adds a row to the current page until the page is full 
         #  or there are no more rows to add
+        my $row_index = -1;
         while(scalar(@{$data}) and $cur_y-$row_h > $bot_marg)
         {
             # Remove the next item from $data
             $record = shift @{$data};
+            $row_index++;
+            
             # Added to resolve infite loop bug with returned undef values
             for(my $d = 0; $d < scalar(@{$record}) ; $d++)
             { 
                 $record->[$d] = '-' unless( defined $record->[$d]); 
             }
 
-            $record_widths = shift @$row_props;
+            $record_widths = shift @$row_col_widths;
             next unless $record;
 
             # Choose colors for this row
             $background_color = $rows_counter % 2 ? $background_color_even  : $background_color_odd;
             $font_color       = $rows_counter % 2 ? $font_color_even        : $font_color_odd;
 
-            $text_start      = $cur_y - $fnt_size - $pad_top;
+            $row_h = $rows_height->[$row_index];
+            $text_start      = $cur_y - $rows_height->[$row_index] - $pad_top;
+            #warn 'TextStart '.$text_start;
+            #warn "$cur_y - $rows_height->[$row_index] - $pad_top";
             my $cur_x        = $xbase;
             my $leftovers    = undef;   # Reference to text that is returned from textblock()
             my $do_leftovers = 0;
@@ -609,7 +622,7 @@ sub table
             if( $do_leftovers )
             {
                 unshift @$data, $leftovers;
-                unshift @$row_props, $record_widths;
+                unshift @$row_col_widths, $record_widths;
                 $rows_counter--;
             }
             # Draw cell bgcolor
