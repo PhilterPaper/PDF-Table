@@ -883,7 +883,7 @@ The third item is the y position of the table bottom.
      new_page_func  => $code_ref,  # see section TABLE SPANNING
      header_props   => $hdr_props, # see section HEADER ROW PROPERTIES
      column_props   => $col_props, # see section COLUMN PROPERTIES
-     cell_props     => $row_props, # see section CELL PROPERTIES
+     cell_props     => $cel_props, # see section CELL PROPERTIES
  )
 
 =back
@@ -980,12 +980,11 @@ Each hashref can contain any of keys shown here:
 =over
 
 In case of a conflict between column, odd/even and cell formating, cell formating will overwrite the other two.
-In case of a conflict between header row cell formating, header formating will win.
+In case of a conflict between header row and cell formating, header formating will win.
 
 =back
 
 =over
-
 
 
 =item TABLE SPANNING    
