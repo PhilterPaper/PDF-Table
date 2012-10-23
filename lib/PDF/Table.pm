@@ -202,11 +202,11 @@ sub text_block
 }
 
 
-############################################################
+################################################################
 # table - utility method to build multi-row, multicolumn tables
-############################################################
+################################################################
 sub table
-    {
+{
     my $self    = shift;
     my $pdf     = shift;
     my $page    = shift;
@@ -231,8 +231,10 @@ sub table
             delete $arg{$key};
         }
     }
+    
+    ######
     #TODO: Add code for header props compatibility and col_props comp....
-    #####
+    ######
     my ( $xbase, $ybase, $width, $height ) = ( undef, undef, undef, undef );
     # Could be 'int' or 'real' values
     $xbase  = $arg{'x'      } || -1;    
@@ -252,6 +254,7 @@ sub table
 
     # Create Text Object
     my $txt     = $page->text;
+
     # Set Default Properties
     my $fnt_name    = $arg{'font'            } || $pdf->corefont('Times',-encode => 'utf8');
     my $fnt_size    = $arg{'font_size'       } || 12;
@@ -262,11 +265,13 @@ sub table
     #=====================================
     # Disable header row into the table
     my $header_props = 0;
+
     # Check if the user enabled it ?
     if(defined $arg{'header_props'} and ref( $arg{'header_props'}) eq 'HASH')
     {
         # Transfer the reference to local variable
         $header_props = $arg{'header_props'};
+
         # Check other params and put defaults if needed
         $header_props->{'repeat'        } = $header_props->{'repeat'        } || 0;
         $header_props->{'font'          } = $header_props->{'font'          } || $fnt_name;
@@ -278,12 +283,11 @@ sub table
     #=====================================
     # Other Parameters check
     #=====================================
-    
-    my $lead          = $arg{'lead'         } || $fnt_size;
-    my $pad_left      = $arg{'padding_left' } || $arg{'padding'} || 0;
-    my $pad_right     = $arg{'padding_right'    } || $arg{'padding'} || 0;
-    my $pad_top       = $arg{'padding_top'  } || $arg{'padding'} || 0;
-    my $pad_bot       = $arg{'padding_bottom'   } || $arg{'padding'} || 0;
+    my $lead          = $arg{'lead'          } || $fnt_size;
+    my $pad_left      = $arg{'padding_left'  } || $arg{'padding'} || 0;
+    my $pad_right     = $arg{'padding_right' } || $arg{'padding'} || 0;
+    my $pad_top       = $arg{'padding_top'   } || $arg{'padding'} || 0;
+    my $pad_bot       = $arg{'padding_bottom'} || $arg{'padding'} || 0;
     my $pad_w         = $pad_left + $pad_right;
     my $pad_h         = $pad_top  + $pad_bot    ;
     my $line_w        = defined $arg{'border'} ? $arg{'border'} : 1 ;
