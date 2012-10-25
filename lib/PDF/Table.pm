@@ -6,6 +6,7 @@ use warnings;
 use Carp;
 our $VERSION = '0.9.7';
 
+print __PACKAGE__.' is version: '.$VERSION.$/ if($ENV{'PDF_TABLE_DEBUG'});
 
 ############################################################
 #
@@ -314,7 +315,6 @@ sub table
     my $pg_cnt      = 1;
     my $cur_y       = $ybase;
     my $cell_props  = $arg{cell_props} || [];   # per cell properties
-    my $row_cnt     = ( ref $header_props and $header_props->{'repeat'} ) ?  1 : 0; # current row in user data
 
     #If there is no valid data array reference warn and return!
     if(ref $data ne 'ARRAY')
@@ -348,8 +348,8 @@ sub table
     for( my $row_idx = 0; $row_idx < scalar(@$data) ; $row_idx++ )
     {
         my $column_widths = []; #holds the width of each column
-        # Set a minimum height for this row
-        $rows_height->[$row_idx] = $min_row_h;
+        # Init the height for this row
+        $rows_height->[$row_idx] = 0;
         
         for( my $column_idx = 0; $column_idx < scalar(@{$data->[$row_idx]}) ; $column_idx++ )
         {
@@ -373,10 +373,10 @@ sub table
                               
             # Set Font
             $txt->font( $cell_font, $cell_font_size ); 
-
+            
             # Set row height to biggest font size from row's cells
             if( $cell_font_size  > $rows_height->[$row_idx] )
-            {
+            {   
                 $rows_height->[$row_idx] = $cell_font_size;
             }
 
@@ -435,8 +435,7 @@ sub table
     ($calc_column_widths, $width) = CalcColumnWidths( $col_props, $width );
 
     # Lets draw what we have!
-    my $comp_cnt     = 1;
-    my $rows_counter = 0;
+    my $row_index    = 0;
 
     my ( $gfx     , $gfx_bg     , $background_color , $font_color,              );
     my ( $bot_marg, $table_top_y, $text_start       , $record,  $record_widths  );
@@ -460,7 +459,7 @@ sub table
             {   
                 $page = $pdf->page; 
             }
-
+    
             $table_top_y = $next_y;
             $bot_marg = $table_top_y - $next_h;
 
@@ -510,12 +509,10 @@ sub table
 
         # Each iteration adds a row to the current page until the page is full 
         #  or there are no more rows to add
-        my $row_index = -1;
         while(scalar(@{$data}) and $cur_y-$row_h > $bot_marg)
         {
             # Remove the next item from $data
             $record = shift @{$data};
-            $row_index++;
             
             # Added to resolve infite loop bug with returned undef values
             for(my $d = 0; $d < scalar(@{$record}) ; $d++)
@@ -527,13 +524,20 @@ sub table
             next unless $record;
 
             # Choose colors for this row
-            $background_color = $rows_counter % 2 ? $background_color_even  : $background_color_odd;
-            $font_color       = $rows_counter % 2 ? $font_color_even        : $font_color_odd;
+            $background_color = $row_index % 2 ? $background_color_even  : $background_color_odd;
+            $font_color       = $row_index % 2 ? $font_color_even        : $font_color_odd;
 
-            $row_h = $rows_height->[$row_index];
-            $text_start      = $cur_y - $rows_height->[$row_index] - $pad_top;
-            #warn 'TextStart '.$text_start;
-            #warn "$cur_y - $rows_height->[$row_index] - $pad_top";
+            my $current_row_height = $pad_top + $rows_height->[$row_index] + $pad_bot;
+            # $row_h is the calculated global user requested row height.
+            # It will be honored, only if it has bigger value than the calculated one.
+            if($current_row_height < $row_h){
+                $current_row_height = $row;
+            }
+            
+            # Define the font y base position for this line.
+            $text_start      = $cur_y   - $rows_height->[$row_index] - $pad_top;
+
+            #warn "$cur_y - $rows_height->[$row_index] vs $fnt_size - $pad_top";
             my $cur_x        = $xbase;
             my $leftovers    = undef;   # Reference to text that is returned from textblock()
             my $do_leftovers = 0;
@@ -557,19 +561,19 @@ sub table
                 }
                 
                 # Get the most specific value if none was already set from header_props
-                $cell_font       ||= $cell_props->[$rows_counter][$column_idx]->{'font'} 
+                $cell_font       ||= $cell_props->[$row_index][$column_idx]->{'font'} 
                                  ||  $col_props->[$column_idx]->{'font'}
                                  ||  $fnt_name;
                                   
-                $cell_font_size  ||= $cell_props->[$rows_counter][$column_idx]->{'font_size'}
+                $cell_font_size  ||= $cell_props->[$row_index][$column_idx]->{'font_size'}
                                  ||  $col_props->[$column_idx]->{'font_size'}
                                  ||  $fnt_size;
                                   
-                $cell_font_color ||= $cell_props->[$rows_counter][$column_idx]->{'font_color'}
+                $cell_font_color ||= $cell_props->[$row_index][$column_idx]->{'font_color'}
                                  ||  $col_props->[$column_idx]->{'font_color'}
                                  ||  $font_color;
                                 
-                $justify         ||= $cell_props->[$row_cnt][$column_idx]->{'justify'}
+                $justify         ||= $cell_props->[$row_index][$column_idx]->{'justify'}
                                  ||  $col_props->[$column_idx]->{'justify'}
                                  ||  $arg{'justify'}
                                  ||  'left';                                    
@@ -609,8 +613,13 @@ sub table
                         lead     => $lead
                     );
                     # Desi - Removed $lead because of fixed incorrect ypos bug in text_block
-                    my $this_row_h = $cur_y - ( $ypos_of_last_line - $pad_bot );
-                    $row_h = $this_row_h if $this_row_h > $row_h;
+                    my  $current_cell_height = $cur_y - $ypos_of_last_line;
+                    if( $current_cell_height > $rows_height->[$row_index] )
+                    {
+                        $rows_height->[$row_index] = $current_cell_height;
+                        $current_row_height = $pad_top + $rows_height->[$row_index] + $pad_bot;
+                    }
+                    
                     if( $left_over_text )
                     {
                         $leftovers->[$column_idx] = $left_over_text;
@@ -623,48 +632,42 @@ sub table
             {
                 unshift @$data, $leftovers;
                 unshift @$row_col_widths, $record_widths;
-                $rows_counter--;
             }
+            
             # Draw cell bgcolor
             # This has to be separately from the text loop 
             #  because we do not know the final height of the cell until all text has been drawn
             $cur_x = $xbase;
-            for(my $j =0;$j < scalar(@$record);$j++)
+            for(my $column_idx = 0 ; $column_idx < scalar(@$record) ; $column_idx++)
             {
-                my $bg_color;
-                if ( $first_row && ref $header_props ){
-                    $bg_color = $header_props->{'bg_color'};
+                my $cell_bg_color;
+                                    
+                if( $first_row and ref $header_props)
+                {                                  #Compatibility                 Consistency with other props    
+                    $cell_bg_color = $header_props->{'bg_color'} || $header_props->{'background_color'};
                 }
-                elsif ( $cell_props->[$row_cnt][$j]->{'background_color'})
+                
+                # Get the most specific value if none was already set from header_props
+                $cell_bg_color ||= $cell_props->[$row_index][$column_idx]->{'background_color'} 
+                               ||  $col_props->[$column_idx]->{'background_color'}
+                               ||  $background_color;
+
+                if ($cell_bg_color)
                 {
-                    $bg_color = $cell_props->[$row_cnt][$j]->{'background_color'};
-                }
-                elsif( $col_props->[$j]->{'background_color'})
-                {
-                    $bg_color = $col_props->[$j]->{'background_color'};
-                }
-                else
-                {
-                    $bg_color = $background_color;
-                }
-                if ($bg_color)
-                {
-                    $gfx_bg->rect( $cur_x, $cur_y-$row_h, $calc_column_widths->[$j], $row_h);
-                    $gfx_bg->fillcolor($bg_color);
+                    $gfx_bg->rect( $cur_x, $cur_y-$current_row_height, $calc_column_widths->[$column_idx], $current_row_height);
+                    $gfx_bg->fillcolor($cell_bg_color);
                     $gfx_bg->fill();
                 }
-                $cur_x += $calc_column_widths->[$j];
-            }#End of for(my $j....
+                $cur_x += $calc_column_widths->[$column_idx];
+            }#End of for(my $column_idx....
 
-            $cur_y -= $row_h;
-            $row_h  = $min_row_h;
+            $cur_y -= $current_row_height;
             if ($gfx && $horiz_borders)
             {
                 $gfx->move(  $xbase , $cur_y );
                 $gfx->hline( $xbase + $width );
             }
-            $rows_counter++;
-            $row_cnt++ unless ( $first_row || $do_leftovers );
+            $row_index++ unless ( $first_row || $do_leftovers );
             $first_row = 0;
         }# End of while(scalar(@{$data}) and $cur_y-$row_h > $bot_marg)
 
