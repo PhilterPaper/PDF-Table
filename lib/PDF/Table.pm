@@ -531,7 +531,7 @@ sub table
             # $row_h is the calculated global user requested row height.
             # It will be honored, only if it has bigger value than the calculated one.
             if($current_row_height < $row_h){
-                $current_row_height = $row;
+                $current_row_height = $row_h;
             }
             
             # Define the font y base position for this line.
