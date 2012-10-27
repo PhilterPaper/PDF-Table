@@ -886,6 +886,7 @@ The third item is the y position of the table bottom.
      padding_right  => 10,   # right cell padding, overides padding
      padding_left   => 10,   # left cell padding, overides padding
      padding_bottom => 10,   # bottom padding, overides -padding
+     row_height     => 24,   # desired row_height. will be honored only if  row_height > font_size + padding_top + padding_bottom
      border         => 1,    # border width, default 1, use 0 for no border
      border_color   => 'red',# default black
      horizontal_borders => 1, # defaults to 1, use 0 for no horizontal borders
