@@ -1,4 +1,4 @@
-use Test::More tests => 2;
+use Test::More tests => 3;
 use strict;
 use warnings;
 
@@ -11,10 +11,18 @@ BEGIN {
 }
 require_ok('PDF::Table');
 
-my ( $pdf, $page, $tab, @data, @required );
+my ( $pdf, $page, $tab, @data );
 
-$tab  = PDF::Table->new();
 $pdf  = PDF::API2->new();
+$page = $pdf->page();
+$tab  = PDF::Table->new();
+
 @data = ( [ 'foo', 'bar', 'baz' ], );
 
-#note explain $pdf;
+$tab->table($pdf, $page, \@data, @TestData::required,);
+#Just a simple check for beginning (duplicate)
+ok($pdf->match(
+      [[qw(translate 10 738)],[qw(text foo)]],
+      [[qw(translate 110 738)],[qw(text bar)]],
+      [[qw(translate 210 738)],[qw(text baz)]],
+), 'default text position in first row');
