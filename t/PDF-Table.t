@@ -1,11 +1,12 @@
 use Test::More tests => 11;
 use strict;
+use warnings;
 
 BEGIN {
    use_ok('PDF::Table')
 }
-
-my ($col_widths, $width) = PDF::Table::CalcColumnWidths(
+my ($col_widths);
+($col_widths, undef) = PDF::Table::CalcColumnWidths(
 	[
 		{ min_w => 50, max_w => 50 },
 		{ min_w => 50, max_w => 50 },
@@ -15,7 +16,7 @@ my ($col_widths, $width) = PDF::Table::CalcColumnWidths(
 
 is_deeply( $col_widths, [ 100, 100, 100, 100 ], 'CalcColumnWidths - even');
 
-my ($col_widths, $width) = PDF::Table::CalcColumnWidths(
+($col_widths, undef) = PDF::Table::CalcColumnWidths(
 	[
 		{ min_w => 41, max_w => 51 },
 		{ min_w => 58, max_w => 600 },
@@ -24,7 +25,7 @@ my ($col_widths, $width) = PDF::Table::CalcColumnWidths(
 
 is_deeply( $col_widths, [ 51, 301, 48 ], 'CalcColumnWidths - uneven');
 
-my ($col_widths, $width) = PDF::Table::CalcColumnWidths(
+($col_widths, undef) = PDF::Table::CalcColumnWidths(
 	[
 		{ min_w => 50, max_w => 50 },
 		{ min_w => undef, max_w => 50 },
