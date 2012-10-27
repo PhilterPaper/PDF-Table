@@ -667,7 +667,7 @@ sub table
                 $gfx->move(  $xbase , $cur_y );
                 $gfx->hline( $xbase + $width );
             }
-            $row_index++ unless ( $first_row || $do_leftovers );
+            $row_index++ unless ( $do_leftovers );
             $first_row = 0;
         }# End of while(scalar(@{$data}) and $cur_y-$row_h > $bot_marg)
 
