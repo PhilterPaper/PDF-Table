@@ -289,8 +289,6 @@ sub table
     my $pad_right     = $arg{'padding_right' } || $arg{'padding'} || 0;
     my $pad_top       = $arg{'padding_top'   } || $arg{'padding'} || 0;
     my $pad_bot       = $arg{'padding_bottom'} || $arg{'padding'} || 0;
-    my $pad_w         = $pad_left + $pad_right;
-    my $pad_h         = $pad_top  + $pad_bot    ;
     my $line_w        = defined $arg{'border'} ? $arg{'border'} : 1 ;
     my $horiz_borders = defined $arg{'horizontal_borders'}
         ? $arg{'horizontal_borders'}
@@ -406,9 +404,9 @@ sub table
                 $max_col_w                    += $word_widths->{$_};
             }
             
-            $min_col_w                    += $pad_w;
-            $max_col_w                    += $pad_w;
-            $column_widths->[$column_idx] += $pad_w;
+            $min_col_w                    += $pad_left + $pad_right;
+            $max_col_w                    += $pad_left + $pad_right;
+            $column_widths->[$column_idx] += $pad_left + $pad_right;
 
             # Keep a running total of the overall min and max widths
             $col_props->[$column_idx]->{'min_w'} ||= 0;
@@ -607,7 +605,7 @@ sub table
                         $record->[$column_idx],
                         x        => $cur_x + $pad_left,
                         y        => $text_start,
-                        w        => $calc_column_widths->[$column_idx] - $pad_w,
+                        w        => $calc_column_widths->[$column_idx] - $pad_left - $pad_right,
                         h        => $cur_y - $bot_marg - $pad_top - $pad_bot,
                         align    => $justify,
                         lead     => $lead
