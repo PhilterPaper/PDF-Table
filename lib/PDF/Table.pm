@@ -471,6 +471,7 @@ sub table
                 unshift @$data, @$page_header;
                 unshift @$row_col_widths, $hrp;
                 $first_row = 1; # Means YES
+                $row_index--; # Rollback the row_index because a new header row has been added
             }
         }
 
@@ -507,6 +508,7 @@ sub table
 
         # Each iteration adds a row to the current page until the page is full 
         #  or there are no more rows to add
+        # Row_Loop
         while(scalar(@{$data}) and $cur_y-$row_h > $bot_marg)
         {
             # Remove the next item from $data
@@ -665,9 +667,10 @@ sub table
                 $gfx->move(  $xbase , $cur_y );
                 $gfx->hline( $xbase + $width );
             }
+
             $row_index++ unless ( $do_leftovers );
             $first_row = 0;
-        }# End of while(scalar(@{$data}) and $cur_y-$row_h > $bot_marg)
+        }# End of Row_Loop
 
         if ($gfx)
         {
