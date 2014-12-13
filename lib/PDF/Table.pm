@@ -279,7 +279,9 @@ sub table
         $header_props->{'font_color'    } = $header_props->{'font_color'    } || '#000066';
         $header_props->{'font_size'     } = $header_props->{'font_size'     } || $fnt_size + 2;
         $header_props->{'bg_color'      } = $header_props->{'bg_color'      } || '#FFFFAA';
+        $header_props->{'justify'       } = $header_props->{'justify'       } || 'left';
     }
+
     my $header_row  = undef;
     #=====================================
     # Other Parameters check
