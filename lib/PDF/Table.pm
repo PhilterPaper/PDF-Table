@@ -265,7 +265,7 @@ sub table
     # Table Header Section
     #=====================================
     # Disable header row into the table
-    my $header_props = 0;
+    my $header_props = undef;
 
     # Check if the user enabled it ?
     if(defined $arg{'header_props'} and ref( $arg{'header_props'}) eq 'HASH')
