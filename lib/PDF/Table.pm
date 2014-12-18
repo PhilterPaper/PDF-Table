@@ -430,20 +430,23 @@ sub table
         # Copy the calculated row properties of header row. 
         @$header_row_props = @$column_widths if(!$row_idx and ref $header_props);
     }
+
     # Calc real column widths and expand table width if needed.
     my $calc_column_widths; 
     ($calc_column_widths, $width) = CalcColumnWidths( $col_props, $width );
 
     # Lets draw what we have!
     my $row_index    = 0;
+    # Store header row height for later use if headers have to be repeated
+    my $header_row_height = $rows_height->[0];
 
-    my ( $gfx     , $gfx_bg     , $background_color , $font_color,              );
-    my ( $bot_marg, $table_top_y, $text_start       , $record,  $record_widths  );
+    my ( $gfx, $gfx_bg, $background_color, $font_color, $bot_marg, $table_top_y, $text_start);
 
     # Each iteration adds a new page as neccessary
     while(scalar(@{$data}))
     {
-        my $page_header;
+        my ($page_header, $columns_number);
+
         if($pg_cnt == 1)
         {
             $table_top_y = $ybase;
@@ -472,6 +475,8 @@ sub table
                 # Then prepend it to master data array
                 unshift @$data, @$page_header;
                 unshift @$row_col_widths, $hrp;
+                unshift @$rows_height, $header_row_height;
+
                 $first_row = 1; # Means YES
                 $row_index--; # Rollback the row_index because a new header row has been added
             }
@@ -514,32 +519,46 @@ sub table
         while(scalar(@{$data}) and $cur_y-$row_h > $bot_marg)
         {
             # Remove the next item from $data
-            $record = shift @{$data};
+            my $record = shift @{$data};
             
+            # Get columns number to know later how many vertical lines to draw
+            # TODO: get the max number of columns per page as currently last row's columns overrides
+            $columns_number = scalar(@$record);
+
+            # Get the next set of row related settings
+            # Row Height
+            my $pre_calculated_row_height = shift @$rows_height;
+
+            # Row cell widths
+            my $record_widths = shift @$row_col_widths;
+
+            # Row coloumn props - TODO in another commit
+
+            # Row cell props - TODO in another commit
+
             # Added to resolve infite loop bug with returned undef values
             for(my $d = 0; $d < scalar(@{$record}) ; $d++)
             { 
                 $record->[$d] = '-' unless( defined $record->[$d]); 
             }
 
-            $record_widths = shift @$row_col_widths;
-            next unless $record;
-
             # Choose colors for this row
             $background_color = $row_index % 2 ? $background_color_even  : $background_color_odd;
             $font_color       = $row_index % 2 ? $font_color_even        : $font_color_odd;
 
-            my $current_row_height = $pad_top + $rows_height->[$row_index] + $pad_bot;
+            #Determine current row height
+            my $current_row_height = $pad_top + $pre_calculated_row_height + $pad_bot;
+
             # $row_h is the calculated global user requested row height.
             # It will be honored, only if it has bigger value than the calculated one.
+            # TODO: It's questionable if padding should be inclided in this calculation or not
             if($current_row_height < $row_h){
                 $current_row_height = $row_h;
             }
-            
-            # Define the font y base position for this line.
-            $text_start      = $cur_y   - $rows_height->[$row_index] - $pad_top;
 
-            #warn "$cur_y - $rows_height->[$row_index] vs $fnt_size - $pad_top";
+            # Define the font y base position for this line.
+            $text_start      = $cur_y - ($current_row_height - $pad_bot);
+
             my $cur_x        = $xbase;
             my $leftovers    = undef;   # Reference to text that is returned from textblock()
             my $do_leftovers = 0;
@@ -615,11 +634,10 @@ sub table
                         lead     => $lead
                     );
                     # Desi - Removed $lead because of fixed incorrect ypos bug in text_block
-                    my  $current_cell_height = $cur_y - $ypos_of_last_line;
-                    if( $current_cell_height > $rows_height->[$row_index] )
+                    my  $current_cell_height = $cur_y - $ypos_of_last_line + $pad_bot;
+                    if( $current_cell_height > $current_row_height )
                     {
-                        $rows_height->[$row_index] = $current_cell_height;
-                        $current_row_height = $pad_top + $rows_height->[$row_index] + $pad_bot;
+                        $current_row_height = $current_cell_height;
                     }
                     
                     if( $left_over_text )
@@ -634,6 +652,7 @@ sub table
             {
                 unshift @$data, $leftovers;
                 unshift @$row_col_widths, $record_widths;
+                unshift @$rows_height, $pre_calculated_row_height;
             }
             
             # Draw cell bgcolor
@@ -682,7 +701,7 @@ sub table
                 $gfx->move(  $xbase, $table_top_y);
                 $gfx->vline( $cur_y );
                 my $cur_x = $xbase;
-                for( my $j = 0; $j < scalar(@$record); $j++ )
+                for( my $j = 0; $j < $columns_number; $j++ )
                 {
                     $cur_x += $calc_column_widths->[$j];
                     $gfx->move(  $cur_x, $table_top_y );
