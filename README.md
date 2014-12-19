@@ -13,10 +13,13 @@ SOME NOTES
 This module creates text blocks and tables into PDF documents using PDF::API2 Perl module.
 
 CHANGES
+
 To see a list of changes do one or more of the following:
 
 Read the Changes file
+
 Review commits history on GitHub
+
 Make a diff from the tools menu at CPAN
 
 CONTACTS 
