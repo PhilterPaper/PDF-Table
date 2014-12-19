@@ -1,5 +1,38 @@
 Revision history for Perl extension PDF::Table.
 
+Version 0.9.7
+
+Reviewed and updated README
+
+Huge POD rewrite
+
+Adding a small script that generates HTML from POD and applies CSS from CPAN. Useful for reviewing the POD before release.
+
+Added a test for POD validation
+
+Added an example file that can test GitHub Issues #8, #9, #10
+
+GitHub [Issue #9] [Issue #10]  Fixed cell_props applied to a different row when 'Repeat Headers' is enabled
+
+Introduced column_numbers variable to avoid using $record in a broader scope. Further improvement needed.
+
+Header row height is copied to each new page when 'Repeat Headers' is enabled
+
+Fixed messing up row height when repeat headers is enabled due to access by array index vs shift/unshift
+
+Fixed row height for rows with text blocks
+
+Headers_props variable has been wrongly initialised with 0 causing a copy of the first data row even when header props are not passed as parameter
+
+Added initialisation of header props justify param so that column and cell properties are not affecting the default value.
+
+Fixed an issue with messing up row properties when repeating the header row on each page.
+
+Examples have been formatted.
+
+One new example added (header.pl) for demonstrating how header row can be added to multiple pages.
+
+
 Version 0.9.6
 ----------------------------
 Fixed typo in POD. Closes #71816
