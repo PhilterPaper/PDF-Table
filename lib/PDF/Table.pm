@@ -826,11 +826,11 @@ PDF::Table - A utility class for building table layouts in a PDF::API2 object.
      $some_data,
      x => $left_edge_of_table,
      w => 495,
-     start_y => 750,
-     next_y  => 700,
+     start_y => 500,
      start_h => 300,
-     next_h  => 500,
      # some optional params
+     next_y  => 750,
+     next_h  => 500,
      padding => 5,
      padding_right => 10,
      background_color_odd  => "gray",
@@ -849,108 +849,302 @@ For a complete working example or initial script look into distribution`s 'examp
 =head1 DESCRIPTION
 
 This class is a utility for use with the PDF::API2 module from CPAN. 
-It can be used to display text data in a table layout within the PDF. 
-The text data must be in a 2d array (such as returned by a DBI statement handle fetchall_arrayref() call). 
+It can be used to display text data in a table layout within a PDF. 
+The text data must be in a 2D array (such as returned by a DBI statement handle fetchall_arrayref() call). 
 The PDF::Table will automatically add as many new pages as necessary to display all of the data. 
 Various layout properties, such as font, font size, and cell padding and background color can be specified for each column and/or for even/odd rows. 
 Also a (non)repeated header row with different layout properties can be specified. 
 
-See the METHODS section for complete documentation of every parameter.
+See the L</METHODS> section for complete documentation of every parameter.
 
-=head1  METHODS
+=head1 METHODS
 
-=head2 new
+=head2 new()
+
+    my $pdf_table = new PDF::Table;
 
 =over
 
-Returns an instance of the class. There are no parameters.
+=item Description
+
+Creates a new instance of the class. (to be improved)
+
+=item Parameters
+
+There are no parameters. 
+
+=item Returns
+
+Reference to the new instance
 
 =back
 
-=head2 table($pdf, $page_obj, $data, %opts)
+=head2 table()
 
+    my ($final_page, $number_of_pages, $final_y) = table($pdf, $page, $data, %settings)
+    
 =over
 
-The main method of this class. 
-Takes a PDF::API2 instance, a page instance, some data to build the table and formatting options. 
-The formatting options should be passed as named parameters. 
+=item Description
+
+Generates a multi-row, multi-column table into an existing PDF document based on provided data set and settings.
+
+=item Parameters
+
+    $pdf      - a PDF::API2 instance representing the document being created
+    $page     - a PDF::API2::Page instance representing the current page of the document
+    $data     - an ARRAY reference to a 2D data structure that will be used to build the table
+    %settings - HASH with geometry and formatting parameters. 
+
+For full %settings description see section L</Table settings> below.
+
 This method will add more pages to the pdf instance as required based on the formatting options and the amount of data.
 
+=item Reuturns
+
+The return value is a 3 items list where 
+
+    $final_page - The first item is a PDF::API2::Page instance that the table ends on
+    $number_of_pages - The second item is the count of pages that the table spans on
+    $final_y - The third item is the Y coordinate of the table bottom so that additional content can be added in the same document.
+
+=item Example
+
+    my $pdf  = new PDF::API2;
+    my $page = $pdf->page();
+    my $data = [
+        ['foo1','bar1','baz1'],
+        ['foo2','bar2','baz2']
+    ];
+    my %settings = (
+        x       => 10,
+        w       => 570,
+        start_y => 220,
+        start_h => 180,
+    );
+    
+    my ($final_page, $number_of_pages, $final_y) = $pdftable->table( $pdf, $page, $data, %options );
+
 =back
+
+=head3 Table settings
+
+=head4 Mandatory
+
+There are some mandatory parameteres for setting table geometry and position across page(s)
+
+=over 
+
+=item B<x> - X coordinate of upper left corner of the table. Left edge of the sheet is 0.
+
+B<Value:> can be any whole number satisfying 0 =< X < PageWidth
+B<Default:> No default value 
+
+    x => 10
+
+=item B<start_y> - Y coordinate of upper left corner of the table at the initial page.
+
+B<Value:> can be any whole number satisfying 0 < start_y < PageHeight (depending on space availability when embedding a table)
+B<Default:> No default value
+
+    start_y => 327
+
+=item B<w> - width of the table starting from X.
+
+B<Value:> can be any whole number satisfying 0 < w < PageWidth - x
+B<Default:> No default value
+
+    w  => 570
+
+=item B<start_h> - Height of the table on the initial page
+
+B<Value:> can be any whole number satisfying 0 < start_h < PageHeight - Current Y position
+B<Default:> No default value
+
+    start_h => 250
+    
+=back
+
+=head4 Optional
 
 =over
 
-The return value is a 3 item list where 
-The first item is the PDF::API2::Page instance that the table ends on,
-The second item is the count of pages that the table spans, and 
-The third item is the y position of the table bottom.
+=item B<next_h> - Height of the table on any additional page
+
+B<Value:> can be any whole number satisfying 0 < next_h < PageHeight
+B<Default:> Value of param B<'start_h'>
+
+    next_h  => 700
+
+=item B<next_y> - Y coordinate of upper left corner of the table at any additional page.
+
+B<Value:> can be any whole number satisfying 0 < next_y < PageHeight
+B<Default:> Value of param B<'start_y'>
+
+    next_y  => 750
+
+=item B<max_word_length> - Breaks long words (like serial numbers hashes etc.) by adding a space after every Nth symbol 
+
+B<Value:> can be any whole positive number
+B<Default:> 20
+
+    max_word_length => 20    # Will add a space after every 20 symbols
+
+=item B<padding> - Padding applied to every cell 
+
+=item B<padding_top>    - top cell padding, overrides 'padding'
+
+=item B<padding_right>  - right cell padding, overrides 'padding'
+
+=item B<padding_left>   - left cell padding, overrides 'padding'
+
+=item B<padding_bottom> - bottom padding, overrides 'padding'
+
+B<Value:> can be any whole positive number
+
+B<Default padding:> 0
+
+B<Default padding_*> $padding
+    
+    padding        => 5      # all sides cell padding
+    padding_top    => 8,     # top cell padding, overrides 'padding'
+    padding_right  => 6,     # right cell padding, overrides 'padding'
+    padding_left   => 2,     # left cell padding, overrides 'padding'
+    padding_bottom => undef  # bottom padding will be 5 as it will fallback to 'padding'
+
+=item B<border> - Width of table border lines. 
+
+=item B<horizontal_borders> - Width of horizontal border lines. Overrides 'border' value.
+
+=item B<vertical_borders> -  Width of vertical border lines. Overrides 'border' value.
+
+B<Value:> can be any whole positive number. When set to 0 will disable border lines.
+B<Default:> 1
+      
+    border             => 3     # border width is 3
+    horizontal_borders => 1     # horizontal borders will be 1 overriding 3
+    vertical_borders   => undef # vertical borders will be 3 as it will fallback to 'border'
+
+=item B<vertical_borders> -  Width of vertical border lines. Overrides 'border' value.
+
+B<Value:> Color specifier as 'name' or 'HEX'
+B<Default:> 'black'
+
+    border_color => 'red'
+
+=item B<font> - instance of PDF::API2::Resource::Font defining the fontf to be used in the table
+
+B<Value:> can be any PDF::API2::Resource::* type of font
+B<Default:> 'Times' with UTF8 encoding
+
+    font => $pdf->corefont("Helvetica", -encoding => "utf8")
+
+=item B<font_size> - Default size of the font that will be used across the table
+
+B<Value:> can be any positive number
+B<Default:> 12
+    
+    font_size => 16
+
+=item B<font_color> - Font color for all rows
+
+=item B<font_color_odd> - Font color for odd rows
+
+=item B<font_color_even> - Font color for even rows 
+
+=item B<background_color_odd> - Background color for odd rows
+
+=item B<background_color_even> - Background color for even rows
+
+B<Value:> Color specifier as 'name' or 'HEX'
+B<Default:> 'black' font on 'white' background
+
+    font_color            => '#333333'
+    font_color_odd        => 'purple'
+    font_color_even       => '#00FF00'
+    background_color_odd  => 'gray'     
+    background_color_even => 'lightblue'
+
+=item B<row_height> - Desired row height but it will be honored only if row_height > font_size + padding_top + padding_bottom
+
+B<Value:> can be any whole positive number
+B<Default:> font_size + padding_top + padding_bottom
+    
+    row_height => 24
+ 
+=item B<new_page_func> - CODE reference to a function that returns a PDF::API2::Page instance.
+
+If used the parameter 'new_page_func' must be a function reference which when executed will create a new page and will return the object back to the module.
+For example you can use it to put Page Title, Page Frame, Page Numbers and other staff that you need.
+Also if you need some different type of paper size and orientation than the default A4-Portrait for example B2-Landscape you can use this function ref to set it up for you. For more info about creating pages refer to PDF::API2 PAGE METHODS Section.
+Don't forget that your function must return a page object created with PDF::API2 page() method.
+
+    new_page_func  => $code_ref
+    
+=item B<header_props> - HASH reference to specific settings for the Header row of the table. See section L</Header Row Properties> below
+    
+    header_props => $hdr_props
+
+=item B<column_props> - HASH reference to specific settings for each column of the table. See section L</Column Properties> below
+
+    column_props => $col_props
+
+=item B<cell_props> - HASH reference to specific settings for each column of the table. See section L</Cell Properties> below
+    
+    cell_props => $cel_props
 
 =back
+
+=head4 Header Row Properties
+
+If the 'header_props' parameter is used, it should be a hashref. Passing an empty HASH will triger a header row initialised with Default values.
+There is no 'data' variable for the content, because the module asumes that first table row will become the header row. It will copy this row and put it on every new page if 'repeat' param is set.
 
 =over
 
-=item Example:
+=item B<font> - instance of PDF::API2::Resource::Font defining the fontf to be used in the header row
 
- ($end_page, $pages_spanned, $table_bot_y) = $pdftable->table(
-     $pdf,               # A PDF::API2 instance
-     $page_to_start_on,  # A PDF::API2::Page instance created with $page_to_start_on = $pdf->page(); 
-     $data,              # 2D arrayref of text strings
-     x  => $left_edge_of_table,    #X - coordinate of upper left corner
-     w  => 570, # width of table.
-     start_y => $initial_y_position_on_first_page,
-     next_y  => $initial_y_position_on_every_new_page,
-     start_h => $table_height_on_first_page,
-     next_h  => $table_height_on_every_new_page,
-     #OPTIONAL PARAMS BELOW
-     max_word_length=> 20,   # add a space after every 20th symbol in long words like serial numbers
-     padding        => 5,    # cell padding
-     padding_top    => 10,   # top cell padding, overides padding
-     padding_right  => 10,   # right cell padding, overides padding
-     padding_left   => 10,   # left cell padding, overides padding
-     padding_bottom => 10,   # bottom padding, overides -padding
-     row_height     => 24,   # desired row_height. will be honored only if  row_height > font_size + padding_top + padding_bottom
-     border         => 1,    # border width, default 1, use 0 for no border
-     border_color   => 'red',# default black
-     horizontal_borders => 1, # defaults to 1, use 0 for no horizontal borders
-     vertical_borders   => 1, # defaults to 1, use 0 for no vertical borders
-     font           => $pdf->corefont("Helvetica", -encoding => "utf8"), # default font
-     font_size      => 12,
-     font_color_odd => 'purple',
-     font_color_even=> 'black',
-     background_color_odd  => 'gray',         #cell background color for odd rows
-     background_color_even => 'lightblue',     #cell background color for even rows
-     new_page_func  => $code_ref,  # see section TABLE SPANNING
-     header_props   => $hdr_props, # see section HEADER ROW PROPERTIES
-     column_props   => $col_props, # see section COLUMN PROPERTIES
-     cell_props     => $cel_props, # see section CELL PROPERTIES
- )
+B<Value:> can be any PDF::API2::Resource::* type of font
+B<Default:> 'font' of the table. See table parameter 'font' for more details.
 
-=back
+=item B<font_size> - Font size of the header row
 
-=over
+B<Value:> can be any positive number
+B<Default:> 'font_size' of the table + 2  
 
-=item HEADER ROW PROPERTIES
+=item B<font_color> - Font color of the header row
 
-If the 'header_props' parameter is used, it should be a hashref. 
-It is your choice if it will be anonymous inline hash or predefined one.
-Also as you can see there is no data variable for the content because the module asumes that the first table row will become the header row. It will copy this row and put it on every new page if 'repeat' param is set.
+B<Value:> Color specifier as 'name' or 'HEX'
+B<Default:> '#000066'
 
-=back
+=item B<bg_color> - Background color of the header row
 
-    $hdr_props = 
+B<Value:> Color specifier as 'name' or 'HEX'
+B<Default:> #FFFFAA
+
+=item B<repeat> - Flag showing if header row should be repeated on every new page
+
+B<Value:> 0,1   1-Yes/True, 0-No/False 
+B<Default:> 0
+
+=item B<justify> - Alignment of text in the header row
+
+B<Value:> One of 'left', 'right', 'center'
+B<Default:> 'left'
+
+    my $hdr_props = 
     {
-        # This param could be a pdf core font or user specified TTF.
-        #  See PDF::API2 FONT METHODS for more information
-        font       => $pdf->corefont("Times", -encoding => "utf8"),
-        font_size  => 10,
-        font_color => '#006666',
-        bg_color   => 'yellow',
-        repeat     => 1,    # 1/0 eq On/Off  if the header row should be repeated to every new page
+        font       => $pdf->corefont("Helvetica", -encoding => "utf8"),
+        font_size  => 18,
+        font_color => '#004444',
+        bg_color   => 'yellow', 
+        repeat     => 1,    
+        justify    => 'center'
     };
 
-=over
+=back
 
-=item COLUMN PROPERTIES
+=head4 Column Properties
 
 If the 'column_props' parameter is used, it should be an arrayref of hashrefs, 
 with one hashref for each column of the table. The columns are counted from left to right so the hash reference at $col_props[0] will hold properties for the first column from left to right. 
@@ -958,131 +1152,197 @@ If you DO NOT want to give properties for a column but to give for another just 
 
 Each hashref can contain any of the keys shown below:
 
-=back
-
-  $col_props = [
-    {},# This is an empty hash so the next one will hold the properties for the second row from left to right.
-    {
-        min_w => 100,       # Minimum column width.
-        max_w => 150,       # Maximum column width.
-        justify => 'right', # One of left|center|right ,
-        font => $pdf->corefont("Times", -encoding => "latin1"),
-        font_size => 10,
-        font_color=> 'blue',
-        background_color => '#FFFF00',
-    },
-    # etc.
-  ];
-
 =over
 
-If the 'min_w' parameter is used for 'col_props', have in mind that it can be overwritten 
-by the calculated minimum cell witdh if the userdefined value is less that calculated.
-This is done for safety reasons. 
-In cases of a conflict between column formatting and odd/even row formatting, 
-the former will override the latter.
+=item B<min_w> - Minimum width of this column. Auto calculation will try its best to honour this param but aplying it is NOT guaranteed.
+
+B<Value:> can be any whole number satisfying 0 < min_w < w
+B<Default:> Auto calculated
+
+=item B<max_w> - Maximum width of this column. Auto calculation will try its best to honour this param but aplying it is NOT guaranteed.
+
+B<Value:> can be any whole number satisfying 0 < max_w < w
+B<Default:> Auto calculated
+
+=item B<font> - instance of PDF::API2::Resource::Font defining the fontf to be used in this column
+
+B<Value:> can be any PDF::API2::Resource::* type of font
+B<Default:> 'font' of the table. See table parameter 'font' for more details.
+
+=item B<font_size> - Font size of this column
+
+B<Value:> can be any positive number
+B<Default:> 'font_size' of the table.
+
+=item B<font_color> - Font color of this column
+
+B<Value:> Color specifier as 'name' or 'HEX'
+B<Default:> 'font_color' of the table.
+
+=item B<background_color> - Background color of this column
+
+B<Value:> Color specifier as 'name' or 'HEX'
+B<Default:> undef
+
+=item B<justify> - Alignment of text in this column
+
+B<Value:> One of 'left', 'right', 'center'
+B<Default:> 'left'
+
+Example:
+
+    my $col_props = [
+        {},# This is an empty hash so the next one will hold the properties for the second column from left to right.
+        {
+            min_w => 100,       # Minimum column width of 100.
+            max_w => 150,       # Maximum column width of 150 .
+            justify => 'right', # Right text alignment
+            font => $pdf->corefont("Helvetica", -encoding => "latin1"),
+            font_size => 10,
+            font_color=> 'blue',
+            background_color => '#FFFF00',
+        },
+        # etc.
+    ];
 
 =back
 
-=over
+NOTE: If 'min_w' and/or 'max_w' parameter is used in 'col_props', have in mind that it may be overriden by the calculated minimum/maximum cell witdh so that table can be created.
+When this happens a warning will be issued with some advises what can be done.
+In cases of a conflict between column formatting and odd/even row formatting, 'col_props' will override odd/even.
 
-=item CELL PROPERTIES
+=head4 Cell Properties
 
 If the 'cell_props' parameter is used, it should be an arrayref with arrays of hashrefs
 (of the same dimension as the data array) with one hashref for each cell of the table.
-Each hashref can contain any of keys shown here:
 
-=back
+Each hashref can contain any of the keys shown below:
 
-  $cell_props = [
-    [ #This array is for the first row. If header_props is defined it will overwrite this settings.
-      {#Row 1 cell 1
-        background_color => '#AAAA00',
-        font_color       => 'blue',
-      },
-      # etc.
-    ],
-    [ #Row 2
-      {#Row 2 cell 1
+=over
+
+=item B<font> - instance of PDF::API2::Resource::Font defining the fontf to be used in this cell
+
+B<Value:> can be any PDF::API2::Resource::* type of font
+B<Default:> 'font' of the table. See table parameter 'font' for more details.
+
+=item B<font_size> - Font size of this cell
+
+B<Value:> can be any positive number
+B<Default:> 'font_size' of the table.
+
+=item B<font_color> - Font color of this cell
+
+B<Value:> Color specifier as 'name' or 'HEX'
+B<Default:> 'font_color' of the table.
+
+=item B<background_color> - Background color of this cell
+
+B<Value:> Color specifier as 'name' or 'HEX'
+B<Default:> undef
+
+=item B<justify> - Alignment of text in this cell
+
+B<Value:> One of 'left', 'right', 'center'
+B<Default:> 'left'
+
+Example:
+
+    my $cell_props = [
+        [ #This array is for the first row. If header_props is defined it will overwrite these settings.
+            {    #Row 1 cell 1
+                background_color => '#AAAA00',
+                font_color       => 'yellow',
+            },
+
+            # etc.
+        ],
+        [#Row 2
+            {    #Row 2 cell 1
+                background_color => '#CCCC00',
+                font_color       => 'blue',
+            },
+            {    #Row 2 cell 2
+                background_color => '#BBBB00',
+                font_color       => 'red',
+            },
+            # etc.
+        ],
+        # etc.
+    ];
+
+    OR
+    
+    my $cell_props = [];
+    $cell_props->[1][0] = {
+        #Row 2 cell 1
         background_color => '#CCCC00',
         font_color       => 'blue',
-      },
-      {#Row 2 cell 2
-        background_color => '#CCCC00',
-        font_color       => 'blue',
-      },
-      # etc.
-    ],
-    # etc.
-  ];
-
-=over
-
-In case of a conflict between column, odd/even and cell formating, cell formating will overwrite the other two.
-In case of a conflict between header row and cell formating, header formating will win.
+    };
 
 =back
+    
+NOTE: In case of a conflict between column, odd/even and cell formating, cell formating will overwrite the other two.
+In case of a conflict between header row and cell formating, header formating will override cell.
+
+=head2 text_block()
+
+    my ($width_of_last_line, $ypos_of_last_line, $left_over_text) = text_block( $txt, $data, %settings)
 
 =over
 
-
-=item TABLE SPANNING    
-
-If used the parameter 'new_page_func' must be a function reference which when executed will create a new page and will return the object back to the module.
-For example you can use it to put Page Title, Page Frame, Page Numbers and other staff that you need.
-Also if you need some different type of paper size and orientation than the default A4-Portrait for example B2-Landscape you can use this function ref to set it up for you. For more info about creating pages refer to PDF::API2 PAGE METHODS Section.
-Don't forget that your function must return a page object created with PDF::API2 page() method.
-
-=back
-
-=head2 text_block( $txtobj, $string, x => $x, y => $y, w => $width, h => $height)
-
-=over
+=item Description
 
 Utility method to create a block of text. The block may contain multiple paragraphs.
 It is mainly used internaly but you can use it from outside for placing formated text anywhere on the sheet.
 
+NOTE: This method will NOT add more pages to the pdf instance if the space is not enough to place the string inside the block.
+Leftover text will be returned and has to be handled by the caller - i.e. add a new page and a new block with the leftover.
+
+=item Parameters
+
+    $txt  - a PDF::API2::Page::Text instance representing the text tool
+    $data - a string that will be placed inside the block
+    %settings - HASH with geometry and formatting parameters.
+     
+=item Reuturns
+
+The return value is a 3 items list where 
+
+    $width_of_last_line - Width of last line in the block
+    $final_y - The Y coordinate of the block bottom so that additional content can be added after it
+    $left_over_text - Text that was did not fit in the provided box geometry.
+    
+=item Example
+
+    # PDF::API2 objects
+    my $page = $pdf->page;
+    my $txt  = $page->text;
+
+    my %settings = (
+        x => 10,
+        y => 570,
+        w => 220,
+        h => 180
+        
+        #OPTIONAL PARAMS
+        lead     => $font_size | $distance_between_lines,
+        align    => "left|right|center|justify|fulljustify",
+        hang     => $optional_hanging_indent,
+        Only one of the subsequent 3params can be given. 
+        They override each other.-parspace is the weightest
+        parspace => $optional_vertical_space_before_first_paragraph,
+        flindent => $optional_indent_of_first_line,
+        fpindent => $optional_indent_of_first_paragraph,
+        indent   => $optional_indent_of_text_to_every_non_first_line,
+    );
+    
+    my ( $width_of_last_line, $final_y, $left_over_text ) = $pdftable->text_block( $txt, $data, %settings );
+ 
 =back
 
-=over
+=head1 VERSION
 
-=item Example:
-
-=back
-
-=over
-
- # PDF::API2 objects
- my $page = $pdf->page;
- my $txt = $page->text;
-
-=back
-
-=over
-
- ($width_of_last_line, $ypos_of_last_line, $left_over_text) = $pdftable->text_block(
-    $txt,
-    $text_to_place,
-    #X,Y - coordinates of upper left corner
-    x        => $left_edge_of_block,
-    y        => $y_position_of_first_line,
-    w        => $width_of_block,
-    h        => $height_of_block,
-    #OPTIONAL PARAMS
-    lead     => $font_size | $distance_between_lines,
-    align    => "left|right|center|justify|fulljustify",
-    hang     => $optional_hanging_indent,
-    Only one of the subsequent 3params can be given. 
-    They override each other.-parspace is the weightest
-    parspace => $optional_vertical_space_before_first_paragraph,
-    flindent => $optional_indent_of_first_line,
-    fpindent => $optional_indent_of_first_paragraph,
-
-    indent   => $optional_indent_of_text_to_every_non_first_line,
- );
-
-
-=back
+0.9.7
 
 =head1 AUTHOR
 
@@ -1090,13 +1350,7 @@ Daemmon Hughes
 
 =head1 DEVELOPMENT
 
-ALL IMPROVEMENTS and BUGS Since Ver: 0.02
-
-Desislav Kamenov
-
-=head1 VERSION
-
-0.9.7
+Further development since Ver: 0.02 - Desislav Kamenov
 
 =head1 COPYRIGHT AND LICENSE
 
@@ -1109,7 +1363,9 @@ at your option, any later version of Perl 5 you may have available.
 
 =head1 PLUGS
 
-by Daemmon Hughes
+=over 
+
+=item by Daemmon Hughes
 
 Much of the work on this module was sponsered by
 Stone Environmental Inc. (www.stone-env.com).
@@ -1118,15 +1374,19 @@ The text_block() method is a slightly modified copy of the one from
 Rick Measham's PDF::API2 tutorial at
 http://pdfapi2.sourceforge.net/cgi-bin/view/Main/YourFirstDocument
 
-by Desislav Kamenov
+=item by Desislav Kamenov (@deskata on Twitter)
 
-The development of this module was sponsored by SEEBURGER AG (www.seeburger.com) till 2007 year
+The development of this module was supported by SEEBURGER AG (www.seeburger.com) till year 2007
 
-Thanks to my friends Krasimir Berov and Alex Kantchev for helpful tips and QA during development.
+Thanks to my friends Krasimir Berov and Alex Kantchev for helpful tips and QA during development of versions 0.9.0 to 0.9.5
+
+Thanks to all GitHub contributors!
+
+=back
 
 =head1 CONTRIBUTION
 
-Hey PDF::Table is on GitHub. We'd be happy to join us there.
+Hey PDF::Table is on GitHub. You are more than welcome to contribute!
 
 https://github.com/kamenov/PDF-Table
 
