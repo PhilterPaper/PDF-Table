@@ -1,6 +1,6 @@
-Revision history for Perl extension PDF::Table.
+Change history for Perl extension PDF::Table.
 
-Version 0.9.7
+Version 0.9.7 - for a detailed log and changed files visit GitHub
 
 Reviewed and updated README
 
@@ -31,6 +31,41 @@ Fixed an issue with messing up row properties when repeating the header row on e
 Examples have been formatted.
 
 One new example added (header.pl) for demonstrating how header row can be added to multiple pages.
+
+No need to export variables. Added one more test.
+
+Removed pad_w and pad_h local variable as useless
+
+Fixed typo causing a bug with row_height param.
+Added example file for row_height. To be used for writing a test.
+
+Added POD for row_height param
+
+Row counting should not be skipped if it is first row.
+
+Added one more test(duplicates existing) but only to have base.
+
+Extracted PDF::API2 Mock as a separate package.
+Created New test with the very basics.
+Create a new package that will hold predefined data for tests so it can be reused.
+
+Fixed a variable that masks earlier declaration.
+
+Fixed Issue #4 - Row height is calculated correctly depending on font size.
+Some variables are renamed to more meaningful.
+Row counting is done in a new way with single counter that is used for column and cell props retrieval.
+
+Row height is now calculated for each row based on maximum font size from all cells.
+Refactored some variable names and unified row counting during column size calculation phase.
+
+Fixed doc details in POD
+
+Cosmetic changes
+
+Decreased indent and reduced if body.
+For easier review, diff with whitespace changes disabled.
+
+Added github url in readme
 
 
 Version 0.9.6
