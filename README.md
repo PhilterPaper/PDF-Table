@@ -1,29 +1,33 @@
 PDF-Table
 =========
 
-Official repo for PDF::Table module collaboration.
+Official repository for PDF::Table module collaboration.
 
 https://github.com/kamenov/PDF-Table.git
 
-Any patches, pull requests and feedback are more than welcome.
+Any patches, pull requests, issues and feedback are more than welcome!
 
 =======================
 SOME NOTES
 
-This module is intended for table generation using PDF::API2
-The current version is RC1 and I will appreciate any feedback.
-Developed and tested on i586 Linux SuSE 10.0 and Perl, v5.8.7 built for i586-linux-thread-multi
+This module creates text blocks and tables into PDF documents using PDF::API2 Perl module.
 
 CHANGES
+To see a list of changes do one or more of the following:
 
-Since version 0.02 there are many changes. 
-See the ChangeLog file or make a diff from the tools menu in CPAN
+Read the Changes file
+Review commits history on GitHub
+Make a diff from the tools menu at CPAN
 
 CONTACTS 
 
-See http://search.cpan.org/~jbazik/
+@deskata on Twitter 
+
+Use the issue tracker on GitHub
 
 See http://search.cpan.org/~omega/
+
+See http://search.cpan.org/~jbazik/
 
 INSTALLATION
 
@@ -41,8 +45,6 @@ This module requires these other modules and libraries:
   PDF::API2
 
 COPYRIGHT AND LICENCE
-
-Put the correct copyright and license information here.
 
 Copyright (C) 2006 by Daemmon Hughes
 
