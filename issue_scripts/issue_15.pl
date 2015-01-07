@@ -4,10 +4,10 @@ use strict;
 use diagnostics;
 
 use lib('../lib/');
-#Please use TABSTOP=4 for best view
 use PDF::API2;
 use PDF::Table;
 
+#Please use TABSTOP=4 for best view
 my $pdftable = new PDF::Table;
 my $pdf      = new PDF::API2( -file => "issue_15.pdf" );
 my $page     = $pdf->page();
@@ -48,4 +48,6 @@ $pdftable->table(
         font       => $pdf->corefont( "Helvetica", -encoding => "utf8" ),
     },
 );
+
 $pdf->saveas();
+
