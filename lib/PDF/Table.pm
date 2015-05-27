@@ -20,12 +20,68 @@ print __PACKAGE__.' is version: '.$VERSION.$/ if($ENV{'PDF_TABLE_DEBUG'});
 
 sub new
 {
-    my ($type) = @_;
-
+    my $type = shift(@_);
     my $class = ref($type) || $type;
     my $self  = {};
     bless ($self, $class);
+
+    # Pass all the rest to init for validation and initialisation
+    $self->_init(@_);
+
     return $self;
+}
+
+sub _init
+{
+    my ($self, $pdf, $page, $data, %options ) = @_;
+
+    # Check and set default values 
+    $self->set_defaults();
+
+    # Check and set mandatory params
+    $self->set_pdf($pdf);
+    $self->set_page($page);
+    $self->set_data($data);
+    $self->set_options(\%options);
+
+    return;
+}
+
+sub set_defaults{
+	my $self = shift;
+	
+	$self->{'font_size'} = 12;
+}
+
+sub set_pdf{
+    my ($self, $pdf) = @_;
+    $self->{'pdf'} = $pdf;
+}
+
+sub set_page{
+    my ($self, $page) = @_;
+    if ( ref($page) ne 'PDF::API2::Page' ){
+
+        if( ref($self->{'pdf'}) eq 'PDF::API2' ){
+            $self->{'page'} = $self->{'pdf'}->page();
+        } else {
+            carp 'Warning: Page must be a PDF::API2::Page object but it seems to be: '.ref($page).$/;
+            carp 'Error: Cannot set page from passed PDF object either as it is invalid!'.$/;
+        }
+        return;
+    }
+    $self->{'page'} = $page;
+
+}
+
+sub set_data{
+    my ($self, $data) = @_;
+    #TODO: implement
+}
+
+sub set_options{
+    my ($self, $options) = @_;
+    #TODO: implement
 }
 
 ############################################################

@@ -15,7 +15,7 @@ my ( $pdf, $page, $tab, @data, %opts );
 
 $pdf  = PDF::API2->new();
 $page = $pdf->page();
-$tab  = PDF::Table->new();
+$tab  = PDF::Table->new($pdf,$page);
 
 @data = ( [ 'foo', 'bar', 'baz' ], );
 $tab->table( $pdf, $page, \@data, %TestData::required, );

@@ -39,7 +39,6 @@ is_deeply( $col_widths, [ 200, 200 ], 'CalcColumnWidths - undef');
 
 my ($pdf, $page, $tab, @data, @required);
 
-$tab = PDF::Table->new;
 @data = (
       [ 'foo', 'bar', 'baz' ],
 );
@@ -54,6 +53,7 @@ $tab = PDF::Table->new;
 
 $pdf = PDF::API2->new;
 $page = $pdf->page;
+$tab = PDF::Table->new($pdf, $page);
 
 #
 # this tickles a bug (#34017) which causes an infinite loop
