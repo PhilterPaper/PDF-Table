@@ -1,5 +1,10 @@
 Change history for Perl extension PDF::Table.
 
+Version 0.9.8/9
+
+Added MANIFEST.SKIP and fixed a broken build with 0.9.8
+Added some utility methods to new()
+
 Version 0.9.7 - for a detailed log and changed files visit GitHub
 
 Added a few initialisation methods to the help new() and later on accomodate static initialisation within table() textblock()
