@@ -2,6 +2,7 @@
 use warnings;
 use strict;
 use diagnostics;
+use utf8;
 
 use lib('../lib/');
 use PDF::API2;
