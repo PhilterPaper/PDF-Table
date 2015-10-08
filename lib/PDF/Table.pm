@@ -439,7 +439,7 @@ sub table
             # This should fix a bug with very long words like serial numbers etc.
             if( $max_word_len > 0 )
             {
-                $data->[$row_idx][$column_idx] =~ s#(\S{$max_word_len}?)(?=\S)#$1 #g;  
+                $data->[$row_idx][$column_idx] =~ s#(\S{$max_word_len})(?=\S)#$1 #g;  
             }
             
             # Init cell size limits  
