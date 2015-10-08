@@ -60,7 +60,7 @@ sub set_pdf{
 
 sub set_page{
     my ($self, $page) = @_;
-    if ( ref($page) ne 'PDF::API2::Page' ){
+    if ( defined($page) && ref($page) ne 'PDF::API2::Page' ){
 
         if( ref($self->{'pdf'}) eq 'PDF::API2' ){
             $self->{'page'} = $self->{'pdf'}->page();
@@ -441,8 +441,8 @@ sub table
             {
                 $data->[$row_idx][$column_idx] =~ s#(\S{$max_word_len})(?=\S)#$1 #g;
             }
-            
-            # Init cell size limits  
+
+            # Init cell size limits
             $space_w                      = $txt->advancewidth( "\x20" );
             $column_widths->[$column_idx] = 0;
             $max_col_w                    = 0;
