@@ -60,7 +60,7 @@ sub set_pdf{
 
 sub set_page{
     my ($self, $page) = @_;
-    if ( ref($page) ne 'PDF::API2::Page' ){
+    if ( defined($page) && ref($page) ne 'PDF::API2::Page' ){
 
         if( ref($self->{'pdf'}) eq 'PDF::API2' ){
             $self->{'page'} = $self->{'pdf'}->page();
