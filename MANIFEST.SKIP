@@ -14,3 +14,8 @@
 
 #Hidden files
 ^\..*
+
+#Auto-generated files
+^MYMETA.json$
+^MYMETA.yml$
+^Makefile$
