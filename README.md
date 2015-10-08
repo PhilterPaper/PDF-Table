@@ -1,5 +1,4 @@
-PDF::Table
-==========
+# PDF::Table
 
 This module creates text blocks and tables into PDF documents using PDF::API2 Perl module.
 
@@ -8,8 +7,7 @@ https://github.com/kamenov/PDF-Table.git
 
 Any patches, pull requests, issues and feedback are more than welcome.
 
-INSTALLATION
-============
+## Installation
 To install the module from CPAN, simply type the following command:
 
 ```
@@ -25,23 +23,20 @@ make test
 make install
 ```
 
-CHANGES
-=======
+## Changes
 To see a list of changes, please do one or more of the following:
 - Read the Changes file
 - Review commits history on GitHub
 - Make a diff from the tools menu at CPAN
 
-CONTACTS 
-========
+## Contacts 
 @deskata on Twitter 
 
-Use the issue tracker on GitHub
+- Use the issue tracker on GitHub
 - See http://search.cpan.org/~omega/
 - See http://search.cpan.org/~jbazik/
 
-COPYRIGHT AND LICENCE
-=====================
+## License
 Copyright (C) 2006 by Daemmon Hughes
 
 Extended by Desislav Kamenov since version 0.02
