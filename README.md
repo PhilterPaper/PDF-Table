@@ -19,7 +19,7 @@ To test or add features to this module, please type the following command:
 
 ## Changes
 To see a list of changes, please do one or more of the following:
-- Read the Changes file
+- Read the [Changes](Changes) file
 - Review commits history on GitHub
 - Make a diff from the tools menu at CPAN
 
