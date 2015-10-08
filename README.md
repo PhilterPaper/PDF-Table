@@ -8,20 +8,14 @@ https://github.com/kamenov/PDF-Table.git
 Any patches, pull requests, issues and feedback are more than welcome.
 
 ## Installation
-To install the module from CPAN, simply type the following command:
 
-```
-cpanm PDF::Table
-```
+To install the module from CPAN, please type the following command:
 
-To test or add features to this module, please use the the following commands:
+```cpanm PDF::Table```
 
-```
-perl Makefile.PL
-make
-make test
-make install
-```
+To test or add features to this module, please type the following command:
+
+```cpanm .```
 
 ## Changes
 To see a list of changes, please do one or more of the following:
