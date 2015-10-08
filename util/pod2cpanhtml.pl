@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/env perl -w
 
 #This script has been taken from a forum somewhere in the vast Internet space :)
 #Its purpose is to generate the HTML from POD and apply some CSS as it will look like on CPAN
