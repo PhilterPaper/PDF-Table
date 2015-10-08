@@ -1,4 +1,16 @@
 Change history for Perl extension PDF::Table.
+Version 0.9.10 Changes by contributors on GitHub - azawawi, joenio
+
+6fab323 Modernize hashbang #! to be more perlbrew friendly
+58c36df Add relative link to Changes file
+efaf173 Simple installation/development commmands
+cfbcf48 More README.md simplification
+a7889bc Fix README.md
+43c2182 Fix warning: Useless use of greediness modifier '?' in regex
+db4bc44 Fix #17, page parameter should be optional
+f93ed16 "utf8" pragma solves issue with characters rendered wrong
+e69524e fix script that test issue #15
+5d5628f avoid warnind about use of greediness modifier
 
 Version 0.9.8/9
 
