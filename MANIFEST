@@ -16,4 +16,5 @@ t/lib/TestData.pm
 t/PDF-Table.t
 t/pod.t
 t/manifest.t
+t/table.t
 util/pod2cpanhtml.pl

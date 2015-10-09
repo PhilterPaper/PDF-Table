@@ -278,6 +278,52 @@ sub table
         carp "Error: Mandatory parameter is missing pdf/page/data object!\n";
         return;
     }
+
+    # Validate mandatory argument data type
+    croak "Error: Invalid pdf object received."  unless (ref($pdf) eq 'PDF::API2');
+    croak "Error: Invalid page object received." unless (ref($page) eq 'PDF::API2::Page');
+    croak "Error: Invalid data received."        unless ((ref($data) eq 'ARRAY') && scalar(@$data));
+    croak "Error: Missing required settings."    unless (scalar(keys %arg));
+
+    # Validate settings key
+    my %valid_settings_key = (
+	x                     => 1,
+        w                     => 1,
+        start_y               => 1,
+        start_h               => 1,
+        next_y                => 1,
+        next_h                => 1,
+        lead                  => 1,
+        padding               => 1,
+        padding_right         => 1,
+        padding_left          => 1,
+        padding_top           => 1,
+        padding_bottom        => 1,
+        background_color      => 1,
+        background_color_odd  => 1,
+        background_color_even => 1,
+        border                => 1,
+        border_color          => 1,
+        horizontal_borders    => 1,
+        vertical_borders      => 1,
+        font                  => 1,
+        font_size             => 1,
+        font_color            => 1,
+        font_color_even       => 1,
+        background_color_odd  => 1,
+        background_color_even => 1,
+        row_height            => 1,
+        new_page              => 1,
+        header_props          => 1,
+        column_props          => 1,
+        cell_props            => 1,
+        max_word_length       => 1,
+    );
+    foreach my $key (keys %arg) {
+	croak "Error: Invalid setting key '$key' received." 
+            unless (exists $valid_settings_key{$key});
+    }
+
     # Try to provide backward compatibility
     foreach my $key (keys %arg)
     {
