@@ -313,7 +313,7 @@ sub table
         background_color_odd  => 1,
         background_color_even => 1,
         row_height            => 1,
-        new_page              => 1,
+        new_page_func         => 1,
         header_props          => 1,
         column_props          => 1,
         cell_props            => 1,
