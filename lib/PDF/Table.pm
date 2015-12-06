@@ -1427,8 +1427,7 @@ Much of the work on this module was sponsered by
 Stone Environmental Inc. (www.stone-env.com).
 
 The text_block() method is a slightly modified copy of the one from
-Rick Measham's PDF::API2 tutorial at
-http://pdfapi2.sourceforge.net/cgi-bin/view/Main/YourFirstDocument
+Rick Measham's PDF::API2 L<tutorial|http://rick.measham.id.au/pdf-api2>.
 
 =item by Desislav Kamenov (@deskata on Twitter)
 
