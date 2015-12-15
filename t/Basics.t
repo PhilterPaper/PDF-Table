@@ -1,4 +1,4 @@
-use Test::More tests => 5;
+use Test::More tests => 6;
 use strict;
 use warnings;
 
@@ -54,4 +54,44 @@ ok(
     'default break long words on every 20th character'
 ) or note explain $pdf;
 
+#
+# Test header alignment if unspecified (should default to column alignment
+# if unspecified)
+# 
+$pdf  = PDF::API2->new();
+$page = $pdf->page();
+$tab  = PDF::Table->new($pdf,$page);
+
+@data = ( [ 'head1', 'head2', 'head3'], [ 'foo', 'bar', 'baz' ], );
+
+# Match column properties to default header properties
+my $col_props = [
+    { font_color => '#000066', font_size => 14, background_color => '#FFFFAA', justify => 'left' },
+    { font_color => '#000066', font_size => 14, background_color => '#FFFFAA', justify => 'center' },
+    { font_color => '#000066', font_size => 14, background_color => '#FFFFAA', justify => 'right' },
+];
+%opts = (
+    %TestData::required,
+    column_props => $col_props,
+);
+$tab->table( $pdf, $page, \@data, %opts );
+my @pdf_no_header_props = $pdf->getall;
+
+my $pdf2  = PDF::API2->new();
+my $page2 = $pdf2->page();
+my $tab2  = PDF::Table->new($pdf2,$page2);
+
+@data = ( [ 'head1', 'head2', 'head3'], [ 'foo', 'bar', 'baz' ], );
+%opts = (
+    %TestData::required,
+    header_props => {
+       repeat => 1,
+    },
+    column_props => $col_props,
+);
+$tab2->table( $pdf2, $page2, \@data, %opts );
+ok(
+    $pdf2->match( \@pdf_no_header_props ),
+    'Header alignment does not match column alignment if unspecified'
+) or note explain $pdf2;
 

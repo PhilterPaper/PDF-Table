@@ -381,7 +381,7 @@ sub table
         $header_props->{'font_color'    } = $header_props->{'font_color'    } || '#000066';
         $header_props->{'font_size'     } = $header_props->{'font_size'     } || $fnt_size + 2;
         $header_props->{'bg_color'      } = $header_props->{'bg_color'      } || '#FFFFAA';
-        $header_props->{'justify'       } = $header_props->{'justify'       } || 'left';
+        $header_props->{'justify'       } = $header_props->{'justify'       };
     }
 
     my $header_row  = undef;
@@ -1199,7 +1199,7 @@ Don't forget that your function must return a page object created with PDF::API2
 
 =head4 Header Row Properties
 
-If the 'header_props' parameter is used, it should be a hashref. Passing an empty HASH will triger a header row initialised with Default values.
+If the 'header_props' parameter is used, it should be a hashref. Passing an empty HASH will trigger a header row initialised with Default values.
 There is no 'data' variable for the content, because the module asumes that first table row will become the header row. It will copy this row and put it on every new page if 'repeat' param is set.
 
 =over
@@ -1229,10 +1229,10 @@ B<Default:> #FFFFAA
 B<Value:> 0,1   1-Yes/True, 0-No/False 
 B<Default:> 0
 
-=item B<justify> - Alignment of text in the header row
+=item B<justify> - Alignment of text in the header row.
 
 B<Value:> One of 'left', 'right', 'center'
-B<Default:> 'left'
+B<Default:> Same as column alignment (or 'left' if undefined)
 
     my $hdr_props = 
     {
