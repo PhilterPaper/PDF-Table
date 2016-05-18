@@ -318,6 +318,7 @@ sub table
         column_props          => 1,
         cell_props            => 1,
         max_word_length       => 1,
+        cell_render_hook      => 1,
     );
     foreach my $key (keys %arg) {
 	croak "Error: Invalid setting key '$key' received." 
@@ -748,6 +749,21 @@ sub table
                         $do_leftovers = 1;
                     }
                 }
+                
+                # Hook to pass coordinates back - http://www.perlmonks.org/?node_id=754777
+                if (ref $arg{cell_render_hook} eq 'CODE') {
+                   $arg{cell_render_hook}->(
+                                            $page,
+                                            $first_row,
+                                            $row_index,
+                                            $column_idx,
+                                            $cur_x,
+                                            $cur_y-$row_h,
+                                            $calc_column_widths->[$column_idx],
+                                            $row_h
+                                           );    
+                }
+
                 $cur_x += $calc_column_widths->[$column_idx];
             }
             if( $do_leftovers )
@@ -1002,7 +1018,7 @@ For full %settings description see section L</Table settings> below.
 
 This method will add more pages to the pdf instance as required based on the formatting options and the amount of data.
 
-=item Reuturns
+=item Returns
 
 The return value is a 3 items list where 
 
@@ -1195,6 +1211,23 @@ Don't forget that your function must return a page object created with PDF::API2
     
     cell_props => $cel_props
 
+=item B<cell_render_hook> - CODE reference to a function called with the current cell coordinates.  If used the parameter 'cell_render_hook' must be a function reference. It is most useful for creating a url link inside of a cell. The following example adds a link in the first column of each non-header row:
+
+    cell_render_hook  => sub {
+        my ($page, $first_row, $row, $col, $x, $y, $w, $h) = @_;
+
+        # Do nothing except for first column (and not a header row)
+        return unless ($col == 0);
+        return if ($first_row);
+
+        # Create link
+        my $value = $list_of_vals[$row-1];
+        my $url = "https://${hostname}/app/${value}";
+
+        my $annot = $page->annotation();
+        $annot->url( $url, -rect => [$x, $y, $x+$w, $y+$h] );
+    },
+    
 =back
 
 =head4 Header Row Properties
@@ -1473,7 +1506,8 @@ Much of the work on this module was sponsered by
 Stone Environmental Inc. (www.stone-env.com).
 
 The text_block() method is a slightly modified copy of the one from
-Rick Measham's PDF::API2 L<tutorial|http://rick.measham.id.au/pdf-api2>.
+Rick Measham's PDF::API2 tutorial at
+http://pdfapi2.sourceforge.net/cgi-bin/view/Main/YourFirstDocument
 
 =item by Desislav Kamenov (@deskata on Twitter)
 
