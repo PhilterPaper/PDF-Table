@@ -1,4 +1,4 @@
-use Test::More tests => 6;
+use Test::More tests => 7;
 use strict;
 use warnings;
 
@@ -92,6 +92,25 @@ my $tab2  = PDF::Table->new($pdf2,$page2);
 $tab2->table( $pdf2, $page2, \@data, %opts );
 ok(
     $pdf2->match( \@pdf_no_header_props ),
-    'Header alignment does not match column alignment if unspecified'
+    'Header alignment matches column alignment if unspecified'
 ) or note explain $pdf2;
+
+$pdf  = PDF::API2->new();
+$page = $pdf->page();
+@data = ( [0..2], [3..5], [6..8] );
+my $cell_data;
+%opts = (
+    %TestData::required,
+    cell_render_hook => sub {
+      my ($page, $first_row, $row, $col, $x, $y, $w, $h) = @_;
+      $cell_data .= "($row, $col), "; 
+    }
+);
+$tab = PDF::Table->new( $pdf, $page );
+$tab->table( $pdf2, $page2, \@data, %opts );
+ok(
+    $cell_data eq '(0, 0), (0, 1), (0, 2), (1, 0), (1, 1), (1, 2), (2, 0), (2, 1), (2, 2), ',
+    'The cell_render_hook() subroutine output is valid'
+) or diag explain \$pdf;
+
 
