@@ -4,7 +4,7 @@ use 5.006;
 use strict;
 use warnings;
 use Carp;
-our $VERSION = '0.9.10';
+our $VERSION = '0.9.11';
 
 print __PACKAGE__.' is version: '.$VERSION.$/ if($ENV{'PDF_TABLE_DEBUG'});
 

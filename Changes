@@ -1,4 +1,14 @@
 Change history for Perl extension PDF::Table.
+
+Version 0.9.11 Changes by contributors on GitHub - Keith Carangelo, Mohammad S Anwar
+
+3264342 Added cell_render_hook subroutine to create hyperlinks
+0fb2e57 Fixed broken link to Rick Measham's tutorial.
+8361ec3 Fixed new_page_func valid setting
+38610ec Header alignment default should be column alignment
+e3ec184 Added parameter checking in the method table(). - Added unit test t/table.t script.
+a73e67f Proposed fix to the CPANTS error as below: - Added standard unit test for MANIFEST file (t/manifest.t). - Removed MYMETA.json, MYMETA.yml and Makefile (auto generated files) - Added entry "t/manifest.t" to the MANIFEST file. - Updated MANIFEST.SKIP file.
+
 Version 0.9.10 Changes by contributors on GitHub - azawawi, joenio
 
 6fab323 Modernize hashbang #! to be more perlbrew friendly
