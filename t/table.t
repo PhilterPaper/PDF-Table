@@ -1,7 +1,13 @@
-use strict; use warnings;
-use Test::More;
-use PDF::API2;
-use PDF::Table;
+use strict;
+use warnings;
+
+use Test::More tests => 6;
+use lib 't/lib'; # Needed for 'make test' from project dirs
+use PDFAPI2Mock;
+
+BEGIN {
+    use_ok('PDF::Table');
+}
 
 local $SIG{__WARN__} = sub { my $message = shift;  die $message; };
 
@@ -32,3 +38,4 @@ eval { $object->table($pdf, $page, 'data', 'required') };
 like($@, qr/Odd number of elements in hash assignment/);
 
 done_testing();
+
