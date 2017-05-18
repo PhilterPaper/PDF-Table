@@ -320,21 +320,15 @@ sub table
         max_word_length       => 1,
         cell_render_hook      => 1,
     );
-    foreach my $key (keys %arg) {
-	croak "Error: Invalid setting key '$key' received." 
-            unless (exists $valid_settings_key{$key});
-    }
-
-    # Try to provide backward compatibility
     foreach my $key (keys %arg)
     {
-        my $newkey = $key;
-        if($newkey =~ s#^-##)
-        {
-            $arg{$newkey} = $arg{$key};
-            delete $arg{$key};
-        }
+        # Provide backward compatibility
+        $arg{$key} = delete $arg{"-$key"} if $key =~ s/^-//;
+
+        croak "Error: Invalid setting key '$key' received."
+            unless exists $valid_settings_key{$key};
     }
+
     
     ######
     #TODO: Add code for header props compatibility and col_props comp....
