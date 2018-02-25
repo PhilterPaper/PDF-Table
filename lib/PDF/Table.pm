@@ -558,7 +558,8 @@ sub table
     # Each iteration adds a new page as neccessary
     while(scalar(@{$data}))
     {
-        my ($page_header, $columns_number);
+        my ($page_header);
+        my $columns_number = 0;
 
         if($pg_cnt == 1)
         {
@@ -634,9 +635,9 @@ sub table
             # Remove the next item from $data
             my $record = shift @{$data};
 
-            # Get columns number to know later how many vertical lines to draw
-            # TODO: get the max number of columns per page as currently last row's columns overrides
-            $columns_number = scalar(@$record);
+            # Get max columns number to know later how many vertical lines to draw
+            $columns_number = scalar(@$record)
+                if scalar(@$record) > $columns_number;
 
             # Get the next set of row related settings
             # Row Height
