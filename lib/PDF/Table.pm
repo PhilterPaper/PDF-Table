@@ -1376,7 +1376,7 @@ Example:
 
 =back
 
-NOTE: If 'min_w' and/or 'max_w' parameter is used in 'col_props', have in mind that it may be overriden by the calculated minimum/maximum cell witdh so that table can be created.
+NOTE: If 'min_w' and/or 'max_w' parameter is used in 'col_props', have in mind that it may be overridden by the calculated minimum/maximum cell witdh so that table can be created.
 When this happens a warning will be issued with some advises what can be done.
 In cases of a conflict between column formatting and odd/even row formatting, 'col_props' will override odd/even.
 
@@ -1456,8 +1456,8 @@ Example:
 
 =back
 
-NOTE: In case of a conflict between column, odd/even and cell formating, cell formating will overwrite the other two.
-In case of a conflict between header row and cell formating, header formating will override cell.
+NOTE: In case of a conflict between column, odd/even and cell formatting, cell formatting will overwrite the other two.
+In case of a conflict between header row and cell formatting, header formatting will override cell.
 
 =head2 text_block()
 
@@ -1468,7 +1468,7 @@ In case of a conflict between header row and cell formating, header formating wi
 =item Description
 
 Utility method to create a block of text. The block may contain multiple paragraphs.
-It is mainly used internaly but you can use it from outside for placing formated text anywhere on the sheet.
+It is mainly used internaly but you can use it from outside for placing formatted text anywhere on the sheet.
 
 NOTE: This method will NOT add more pages to the pdf instance if the space is not enough to place the string inside the block.
 Leftover text will be returned and has to be handled by the caller - i.e. add a new page and a new block with the leftover.
