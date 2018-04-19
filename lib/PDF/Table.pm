@@ -8,7 +8,7 @@ use warnings;
 package PDF::Table;
 
 use Carp;
-our $VERSION = '0.10.0';
+our $VERSION = '0.10.1';
 
 print __PACKAGE__.' is version: '.$VERSION.$/ if($ENV{'PDF_TABLE_DEBUG'});
 
