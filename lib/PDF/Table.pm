@@ -1526,7 +1526,7 @@ The return value is a 3 items list where
 
 =head1 VERSION
 
-0.9.7
+0.10.1
 
 =head1 AUTHOR
 
