@@ -1,4 +1,5 @@
 #!/usr/bin/env perl
+# vim: softtabstop=4 tabstop=4 shiftwidth=4 ft=perl expandtab smarttab
 
 use 5.006;
 use strict;
@@ -565,6 +566,14 @@ sub table
         {
             $table_top_y = $ybase;
             $bot_marg = $table_top_y - $height;
+
+            # Check for safety reasons
+            if( $bot_marg < 0 )
+            {   # This warning should remain i think
+                carp "!!! Warning: !!! Incorrect Table Geometry! start_h (${height}) is above start_y (${table_top_y}). Setting bottom margin to end of sheet!\n";
+                $bot_marg = 0;
+            }
+
         }
         else
         {
@@ -580,6 +589,13 @@ sub table
             $table_top_y = $next_y;
             $bot_marg = $table_top_y - $next_h;
 
+            # Check for safety reasons
+            if( $bot_marg < 0 )
+            {   # This warning should remain i think
+                carp "!!! Warning: !!! Incorrect Table Geometry! next_y or start_y (${next_y}) is above next_h or start_h (${next_h}). Setting bottom margin to end of sheet!\n";
+                $bot_marg = 0;
+            }
+
             if( ref $header_props and $header_props->{'repeat'})
             {
                 # Copy Header Data
@@ -594,13 +610,6 @@ sub table
                 $first_row = 1; # Means YES
                 $row_index--; # Rollback the row_index because a new header row has been added
             }
-        }
-
-        # Check for safety reasons
-        if( $bot_marg < 0 )
-        {   # This warning should remain i think
-            carp "!!! Warning: !!! Incorrect Table Geometry! Setting bottom margin to end of sheet!\n";
-            $bot_marg = 0;
         }
 
         $gfx_bg = $page->gfx;
