@@ -636,6 +636,8 @@ sub table
             $gfx = undef;
         }
 
+        my @actual_column_widths;
+
         # Each iteration adds a row to the current page until the page is full
         #  or there are no more rows to add
         # Row_Loop
@@ -658,7 +660,6 @@ sub table
             # Row coloumn props - TODO in another commit
 
             # Row cell props - TODO in another commit
-
 
             # Choose colors for this row
             $background_color = $row_index % 2 ? $background_color_even  : $background_color_odd;
@@ -734,7 +735,6 @@ sub table
 
                 my $cell_props = $cell_props->[$row_index][$column_idx];
                 my $this_cell_width = $calc_column_widths->[$column_idx];
-
                 # Handle colspan (issue#46)
                 if ($cell_props && $cell_props->{colspan}) {
                     my $colspan = $cell_props->{colspan};
@@ -742,6 +742,7 @@ sub table
                         $this_cell_width += $calc_column_widths->[$column_idx + $offset] if $calc_column_widths->[$column_idx + $offset];
                     }
                 }
+                $actual_column_widths[$row_index][$column_idx] = $this_cell_width;
 
                 # If the content is wider than the specified width, we need to add the text as a text block
                 if( $record->[$column_idx] !~ m/(.\n.)/ and
@@ -832,7 +833,7 @@ sub table
 
                 if ($cell_bg_color)
                 {
-                    $gfx_bg->rect( $cur_x, $cur_y-$current_row_height, $calc_column_widths->[$column_idx], $current_row_height);
+                    $gfx_bg->rect( $cur_x, $cur_y-$current_row_height,  $actual_column_widths[$row_index][$column_idx], $current_row_height);
                     $gfx_bg->fillcolor($cell_bg_color);
                     $gfx_bg->fill();
                 }

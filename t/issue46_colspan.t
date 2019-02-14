@@ -18,7 +18,7 @@ my $data =[
 
 my @required = (
       x => 10,
-      w => 250,
+      w => 260,
       start_y => 750,
       start_h => 400,
       padding => 5,
