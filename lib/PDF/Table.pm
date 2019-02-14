@@ -732,19 +732,30 @@ sub table
                                        //  $col_props->[$column_idx]->{'default_text'}
                                        //  $default_text;
 
+                my $cell_props = $cell_props->[$row_index][$column_idx];
+                my $this_cell_width = $calc_column_widths->[$column_idx];
+
+                # Handle colspan (issue#46)
+                if ($cell_props && $cell_props->{colspan}) {
+                    my $colspan = $cell_props->{colspan};
+                    for my $offset (1 .. $colspan) {
+                        $this_cell_width += $calc_column_widths->[$column_idx + $offset] if $calc_column_widths->[$column_idx + $offset];
+                    }
+                }
+
                 # If the content is wider than the specified width, we need to add the text as a text block
                 if( $record->[$column_idx] !~ m/(.\n.)/ and
                     $record_widths->[$column_idx] and
-                    $record_widths->[$column_idx] <= $calc_column_widths->[$column_idx]
+                    $record_widths->[$column_idx] <= $this_cell_width
                 ){
                     my $space = $pad_left;
                     if ($justify eq 'right')
                     {
-                        $space = $calc_column_widths->[$column_idx] -($txt->advancewidth($record->[$column_idx]) + $pad_right);
+                        $space = $this_cell_width -($txt->advancewidth($record->[$column_idx]) + $pad_right);
                     }
                     elsif ($justify eq 'center')
                     {
-                        $space = ($calc_column_widths->[$column_idx] - $txt->advancewidth($record->[$column_idx])) / 2;
+                        $space = ($this_cell_width - $txt->advancewidth($record->[$column_idx])) / 2;
                     }
                     $txt->translate( $cur_x + $space, $text_start );
                     my %text_options;
@@ -759,7 +770,7 @@ sub table
                         $record->[$column_idx],
                         x        => $cur_x + $pad_left,
                         y        => $text_start,
-                        w        => $calc_column_widths->[$column_idx] - $pad_left - $pad_right,
+                        w        => $this_cell_width - $pad_left - $pad_right,
                         h        => $cur_y - $bot_marg - $pad_top - $pad_bot,
                         align    => $justify,
                         lead     => $lead
@@ -787,12 +798,12 @@ sub table
                                             $column_idx,
                                             $cur_x,
                                             $cur_y-$row_h,
-                                            $calc_column_widths->[$column_idx],
+                                            $this_cell_width,
                                             $row_h
                                            );
                 }
 
-                $cur_x += $calc_column_widths->[$column_idx];
+                $cur_x += $this_cell_width;
             }
             if( $do_leftovers )
             {
