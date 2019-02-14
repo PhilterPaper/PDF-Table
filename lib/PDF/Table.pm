@@ -1183,7 +1183,7 @@ B<Default:> 1
     horizontal_borders => 1     # horizontal borders will be 1 overriding 3
     vertical_borders   => undef # vertical borders will be 3 as it will fallback to 'border'
 
-=item B<vertical_borders> -  Width of vertical border lines. Overrides 'border' value.
+=item B<border_color> -  Border color for all borders.
 
 B<Value:> Color specifier as 'name' or 'HEX'
 B<Default:> 'black'
