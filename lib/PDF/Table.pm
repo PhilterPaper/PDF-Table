@@ -837,6 +837,14 @@ sub table
                     $gfx_bg->fillcolor($cell_bg_color);
                     $gfx_bg->fill();
                 }
+
+                # draw left vertical border of this cell
+                if ($gfx && $vert_borders)
+                {
+                    $gfx->move($cur_x, $cur_y-$current_row_height);
+                    $gfx->vline( $cur_y );
+                }
+
                 $cur_x += $calc_column_widths->[$column_idx];
             }#End of for(my $column_idx....
 
@@ -853,18 +861,11 @@ sub table
 
         if ($gfx)
         {
-            # Draw vertical lines
             if ($vert_borders)
             {
-                $gfx->move(  $xbase, $table_top_y);
+                # Draw right table border
+                $gfx->move(  $xbase + $width, $table_top_y);
                 $gfx->vline( $cur_y );
-                my $cur_x = $xbase;
-                for( my $j = 0; $j < $columns_number; $j++ )
-                {
-                    $cur_x += $calc_column_widths->[$j];
-                    $gfx->move(  $cur_x, $table_top_y );
-                    $gfx->vline( $cur_y );
-                }
             }
 
             # ACTUALLY draw all the lines
