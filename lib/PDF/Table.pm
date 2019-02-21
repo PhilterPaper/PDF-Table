@@ -1488,7 +1488,7 @@ Leftover text will be returned and has to be handled by the caller - i.e. add a 
     $data - a string that will be placed inside the block
     %settings - HASH with geometry and formatting parameters.
 
-=item Reuturns
+=item Returns
 
 The return value is a 3 items list where
 
@@ -1526,7 +1526,7 @@ The return value is a 3 items list where
 
 =head1 VERSION
 
-0.9.7
+0.10.1
 
 =head1 AUTHOR
 
