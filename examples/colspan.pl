@@ -32,6 +32,11 @@ my $data = [
         "",
         "(r4c3) Ut enim"
     ],
+
+    # Row 5, colspan in first col, then a regular col
+    [   "(r5c1+) Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+        "(r5c3) Ut enim"
+    ],
 ];
 
 $pdftable->table(
@@ -53,6 +58,8 @@ $pdftable->table(
         ],
         [ { colspan => 3 } ],    # row 2 cell 1 override
         [ {}, { colspan => 2 } ],    # row 3 cell 2 override
+        [ ],    # row 4
+        [ { colspan => 2 } ],    # row 5 cell 1 override
     ],
 );
 $pdf->saveas();
