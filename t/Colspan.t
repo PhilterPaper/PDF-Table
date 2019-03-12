@@ -1,4 +1,4 @@
-use Test::More tests => 6;
+use Test::More tests => 7;
 use strict;
 use warnings;
 
@@ -17,7 +17,7 @@ $pdf  = PDF::API2->new();
 $page = $pdf->page();
 $tab  = PDF::Table->new($pdf,$page);
 
-@data = ( [ 'c1r1', 'c1r2', 'c1r3' ], ['c2r1','c2r2'] );
+@data = ( [ 'r1c1', 'r1c2', 'r1c3' ], ['r2c1',undef,'r2c3'] );
 $tab->table( $pdf, $page, \@data, %TestData::required,
     column_props => [
             { background_color => 'red' },
@@ -28,34 +28,41 @@ $tab->table( $pdf, $page, \@data, %TestData::required,
     ]
  );
 
-#Check default font size
-ok( $pdf->match( [ [qw(font 1 12)], [qw(font 1 12)], [qw(font 1 12)] ] ),
-    'default font_size' )
-  || note explain $pdf;
-
-#Check default text placement
+#Check first row text placement
 ok(
     $pdf->match(
-        [ [qw(translate 10 688)],  [qw(text c1r1)] ],
-        [ [qw(translate 110 688)], [qw(text c1r2)] ],
-        [ [qw(translate 210 688)], [qw(text c1r3)] ],
+        [ [qw(translate 10 688)],  [qw(text r1c1)] ],
+        [ [qw(translate 110 688)], [qw(text r1c2)] ],
+        [ [qw(translate 210 688)], [qw(text r1c3)] ],
     ),
-    'default text placement in first row'
+    'text placement in first row'
 ) or note explain $pdf;
 
 ok(
     $pdf->match(
-        [ [qw(translate 10 676)],  [qw(text c2r1)] ],
+        [ [qw(translate 10 676)],  [qw(text r2c1)] ],
     ),
-    'r2c1'
+    'text placement r2c1'
 ) or note explain $pdf;
 
-ok( # a bug!
+ok(
     $pdf->match(
-        [ [qw(translate 210 676)],  [qw(text c2r2)] ],
+        [ [qw(translate 210 676)],  [qw(text r2c3)] ],
     ),
-    'r2c2'
+    'text placement r2c3'
 ) or note explain $pdf;
 
+ok(
+    $pdf->match(
+        [ [qw(rect 10 688 100 12)],  [qw(fillcolor red)] ],
+    ),
+    'r1c1 background box'
+) or note explain $pdf;
 
+ok(
+    $pdf->match(
+        [ [qw(rect 10 676 200 12)],  [qw(fillcolor red)] ],
+    ),
+    'r2c1 colspan background box'
+) or note explain $pdf;
 
