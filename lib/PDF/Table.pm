@@ -495,7 +495,7 @@ sub table
             }
 
             # This should fix a bug with very long words like serial numbers etc.
-            if( $max_word_len > 0 )
+            if( $max_word_len > 0 && $data->[$row_idx][$column_idx])
             {
                 $data->[$row_idx][$column_idx] =~ s#(\S{$max_word_len})(?=\S)#$1 #g;
             }
@@ -506,7 +506,7 @@ sub table
             $max_col_w                    = 0;
             $min_col_w                    = 0;
 
-            my @words = split( /\s+/, $data->[$row_idx][$column_idx] );
+            my @words = split( /\s+/, $data->[$row_idx][$column_idx] ) if $data->[$row_idx][$column_idx];
 
             foreach( @words )
             {
