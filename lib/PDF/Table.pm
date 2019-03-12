@@ -1446,13 +1446,27 @@ B<Default:> 'left'
 
 =item B<colspan> - Span this cell over multiple columns to the right
 
-See L<examples/colspan.pl> for detailed usage.
-
-NOTE: If you use C<colspan> to span a column, but provide data for it, your table will be mangled: the spanned-but-data-provided-column will be rendered! But as HTML works the same way, we do not consider this a bug.
-
 B<Value:> can be any positive number less than the number of columns to the right of the current column
 B<Default:> undef
 
+NOTE: If you want to have regular columns B<after> a colspan, you have to provide C<undef> for the columns that should be spanned
+
+NOTE: If you use C<colspan> to span a column, but provide data for it, your table will be mangled: the spanned-but-data-provided-column will be rendered! But as HTML works the same way, we do not consider this a bug.
+
+Example:
+
+  # row2 col1 should span 2 cols:
+  @data = ( [ 'r1c1', 'r1c2', 'r1c3' ], ['r2c1+',undef,'r2c3'] );
+  $tab->table( $pdf, $page, \@data, %TestData::required,
+    cell_props => [
+        [],
+        [{colspan=>2}]
+    ]
+  );
+
+=back
+
+See L<examples/colspan.pl> for detailed usage.
 
 Example:
 
@@ -1494,8 +1508,6 @@ Example:
         background_color => '#CCCC00',
         font_color       => 'blue',
     };
-
-=back
 
 NOTE: In case of a conflict between column, odd/even and cell formatting, cell formatting will overwrite the other two.
 In case of a conflict between header row and cell formatting, header formatting will override cell.
