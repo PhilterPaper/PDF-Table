@@ -1441,6 +1441,14 @@ B<Default:> undef
 B<Value:> One of 'left', 'right', 'center'
 B<Default:> 'left'
 
+=item B<colspan> - Span this cell over multiple columns to the right
+
+See L<examples/colspan.pl> for detailed usage.
+
+B<Value:> can be any positive number less than the number of columns to the right of the current column
+B<Default:> undef
+
+
 Example:
 
     my $cell_props = [
@@ -1461,6 +1469,12 @@ Example:
             {    #Row 2 cell 2
                 background_color => '#BBBB00',
                 font_color       => 'red',
+            },
+            # etc.
+        ],
+        [#Row 3
+            {    #Row 3 cell 1 span cell 2
+                colspan          => 2
             },
             # etc.
         ],
