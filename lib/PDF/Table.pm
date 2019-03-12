@@ -637,6 +637,7 @@ sub table
         }
 
         my @actual_column_widths;
+        my %colspanned;
 
         # Each iteration adds a row to the current page until the page is full
         #  or there are no more rows to add
@@ -687,6 +688,7 @@ sub table
             {
                 next unless $col_props->[$column_idx]->{'max_w'};
                 next unless $col_props->[$column_idx]->{'min_w'};
+                next if $colspanned{$row_index.'_'.$column_idx};
                 $leftovers->[$column_idx] = undef;
 
                 # look for font information for this cell
@@ -736,10 +738,11 @@ sub table
                 my $cell_props = $cell_props->[$row_index][$column_idx];
                 my $this_cell_width = $calc_column_widths->[$column_idx];
                 # Handle colspan (issue#46)
-                if ($cell_props && $cell_props->{colspan}) {
+                if ($cell_props && $cell_props->{colspan} && $cell_props->{colspan} > 1) {
                     my $colspan = $cell_props->{colspan};
-                    for my $offset (1 .. $colspan) {
+                    for my $offset (1 .. $colspan - 1) {
                         $this_cell_width += $calc_column_widths->[$column_idx + $offset] if $calc_column_widths->[$column_idx + $offset];
+                        $colspanned{$row_index.'_'.($column_idx + $offset)} = 1;
                     }
                 }
                 $actual_column_widths[$row_index][$column_idx] = $this_cell_width;
@@ -831,7 +834,7 @@ sub table
                                ||  $col_props->[$column_idx]->{'background_color'}
                                ||  $background_color;
 
-                if ($cell_bg_color)
+                if ($cell_bg_color && !$colspanned{$row_index.'_'.$column_idx})
                 {
                     $gfx_bg->rect( $cur_x, $cur_y-$current_row_height,  $actual_column_widths[$row_index][$column_idx], $current_row_height);
                     $gfx_bg->fillcolor($cell_bg_color);
@@ -839,7 +842,7 @@ sub table
                 }
 
                 # draw left vertical border of this cell
-                if ($gfx && $vert_borders)
+                if ($gfx && $vert_borders && !$colspanned{$row_index.'_'.$column_idx})
                 {
                     $gfx->move($cur_x, $cur_y-$current_row_height);
                     $gfx->vline( $cur_y );
