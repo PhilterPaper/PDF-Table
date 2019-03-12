@@ -27,7 +27,7 @@ my $data = [
         "(r3c2+) non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
     ],
 
-    # Row 4, just one regular col
+    # Row 4, just three regular cols, second empty
     [   "(r4c1) Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
         "",
         "(r4c3) Ut enim"
@@ -35,6 +35,7 @@ my $data = [
 
     # Row 5, colspan in first col, then a regular col
     [   "(r5c1+) Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+        undef,
         "(r5c3) Ut enim"
     ],
 ];
