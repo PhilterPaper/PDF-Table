@@ -1445,6 +1445,8 @@ B<Default:> 'left'
 
 See L<examples/colspan.pl> for detailed usage.
 
+NOTE: If you use C<colspan> to span a column, but provide data for it, your table will be mangled: the spanned-but-data-provided-column will be rendered! But as HTML works the same way, we do not consider this a bug.
+
 B<Value:> can be any positive number less than the number of columns to the right of the current column
 B<Default:> undef
 
