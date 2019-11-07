@@ -64,12 +64,14 @@ sub set_pdf{
 
 sub set_page{
     my ($self, $page) = @_;
-    if ( defined($page) && ref($page) ne 'PDF::API2::Page' ){
+    if ( defined($page) && ref($page) ne 'PDF::API2'
+                        && ref($page) ne 'PDF::Builder::Page' ){
 
-        if( ref($self->{'pdf'}) eq 'PDF::API2' ){
+        if( ref($self->{'pdf'}) eq 'PDF::API2' ||
+            ref($self->{'pdf'}) eq 'PDF::Builder' ){
             $self->{'page'} = $self->{'pdf'}->page();
         } else {
-            carp 'Warning: Page must be a PDF::API2::Page object but it seems to be: '.ref($page).$/;
+            carp 'Warning: Page must be a PDF::API2::Page or PDF::Builder::Page object but it seems to be: '.ref($page).$/;
             carp 'Error: Cannot set page from passed PDF object either as it is invalid!'.$/;
         }
         return;
@@ -284,8 +286,10 @@ sub table
     }
 
     # Validate mandatory argument data type
-    croak "Error: Invalid pdf object received."  unless (ref($pdf) eq 'PDF::API2');
-    croak "Error: Invalid page object received." unless (ref($page) eq 'PDF::API2::Page');
+    croak "Error: Invalid pdf object received."  unless (ref($pdf) eq 'PDF::API2'
+                                                      || ref($pdf) eq 'PDF::Builder');
+    croak "Error: Invalid page object received." unless (ref($page) eq 'PDF::API2::Page'
+                                                      || ref($page) eq 'PDF::Builder::Page');
     croak "Error: Invalid data received."        unless ((ref($data) eq 'ARRAY') && scalar(@$data));
     croak "Error: Missing required settings."    unless (scalar(keys %arg));
 
@@ -361,7 +365,7 @@ sub table
     my $txt     = $page->text;
 
     # Set Default Properties
-    my $fnt_name       = $arg{'font'            } || $pdf->corefont('Times',-encode => 'utf8');
+    my $fnt_name       = $arg{'font'            } || $pdf->corefont('Times',-encode => 'latin1');
     my $fnt_size       = $arg{'font_size'       } || 12;
     my $fnt_underline  = $arg{'font_underline'  } || undef; # merely stating undef is the intended default
     my $max_word_len   = $arg{'max_word_length' } || 20;
@@ -902,12 +906,12 @@ sub CalcColumnWidths
         carp "!!! Warning !!!\n Calculated Mininal width($min_width) > Table width($avail_width).\n",
             ' Expanding table width to:',int($min_width)+1,' but this could lead to unexpected results.',"\n",
             ' Possible solutions:',"\n",
-            '  0)Increase table width.',"\n",
-            '  1)Decrease font size.',"\n",
-            '  2)Choose a more narrow font.',"\n",
-            '  3)Decrease "max_word_length" parameter.',"\n",
-            '  4)Rotate page to landscape(if it is portrait).',"\n",
-            '  5)Use larger paper size.',"\n",
+            '  0) Increase table width.',"\n",
+            '  1) Decrease font size.',"\n",
+            '  2) Choose a narrower font.',"\n",
+            '  3) Decrease "max_word_length" parameter.',"\n",
+            '  4) Rotate page to landscape (if it is portrait).',"\n",
+            '  5) Use larger paper size.',"\n",
             '!!! --------- !!!',"\n";
         $avail_width = int( $min_width) + 1;
 
@@ -957,9 +961,14 @@ __END__
 
 =head1 NAME
 
-PDF::Table - A utility class for building table layouts in a PDF::API2 object.
+PDF::Table - A utility class for building table layouts in a PDF::API2 
+(or PDF::Builder) object.
 
 =head1 SYNOPSIS
+
+Rather than cluttering up the following documentation with B<(or PDF::Builder)>
+additions, wherever it refers to C<PDF::API2>, understand that you can 
+substitute C<PDF::Builder> to use that product instead.
 
  use PDF::API2;
  use PDF::Table;
@@ -996,7 +1005,8 @@ PDF::Table - A utility class for building table layouts in a PDF::API2 object.
      padding => 5,
      padding_right => 10,
      background_color_odd  => "gray",
-     background_color_even => "lightblue", #cell background color for even rows
+     background_color_even => "lightblue", # cell background color for even rows
+     max_word_length => 50, # 50 between forced splits
   );
 
  # do other stuff with $pdf
@@ -1010,7 +1020,7 @@ For a complete working example or initial script look into distribution`s 'examp
 
 =head1 DESCRIPTION
 
-This class is a utility for use with the PDF::API2 module from CPAN.
+This class is a utility for use with the PDF::API2 (or PDF::Builder) module from CPAN.
 It can be used to display text data in a table layout within a PDF.
 The text data must be in a 2D array (such as returned by a DBI statement handle fetchall_arrayref() call).
 The PDF::Table will automatically add as many new pages as necessary to display all of the data.
@@ -1145,7 +1155,7 @@ B<Default:> Value of param B<'start_y'>
 
     next_y  => 750
 
-=item B<max_word_length> - Breaks long words (like serial numbers hashes etc.) by adding a space after every Nth symbol
+=item B<max_word_length> - Breaks long words (like serial numbers, hashes etc.) by adding a space after every Nth symbol
 
 B<Value:> can be any whole positive number
 B<Default:> 20
@@ -1194,12 +1204,12 @@ B<Default:> 'black'
 
     border_color => 'red'
 
-=item B<font> - instance of PDF::API2::Resource::Font defining the fontf to be used in the table
+=item B<font> - instance of PDF::API2::Resource::Font defining the font to be used in the table
 
 B<Value:> can be any PDF::API2::Resource::* type of font
-B<Default:> 'Times' with UTF8 encoding
+B<Default:> 'Times' with latin1 encoding
 
-    font => $pdf->corefont("Helvetica", -encoding => "utf8")
+    font => $pdf->corefont("Helvetica", -encoding => "latin1")
 
 =item B<font_size> - Default size of the font that will be used across the table
 
@@ -1286,7 +1296,7 @@ There is no 'data' variable for the content, because the module asumes that firs
 
 =over
 
-=item B<font> - instance of PDF::API2::Resource::Font defining the fontf to be used in the header row
+=item B<font> - instance of PDF::API2::Resource::Font defining the font to be used in the header row
 
 B<Value:> can be any PDF::API2::Resource::* type of font
 B<Default:> 'font' of the table. See table parameter 'font' for more details.
@@ -1323,7 +1333,7 @@ B<Default:> Same as column alignment (or 'left' if undefined)
 
     my $hdr_props =
     {
-        font       => $pdf->corefont("Helvetica", -encoding => "utf8"),
+        font       => $pdf->corefont("Helvetica", -encoding => "latin1"),
         font_size  => 18,
         font_color => '#004444',
         bg_color   => 'yellow',
@@ -1353,7 +1363,7 @@ B<Default:> Auto calculated
 B<Value:> can be any whole number satisfying 0 < max_w < w
 B<Default:> Auto calculated
 
-=item B<font> - instance of PDF::API2::Resource::Font defining the fontf to be used in this column
+=item B<font> - instance of PDF::API2::Resource::Font defining the font to be used in this column
 
 B<Value:> can be any PDF::API2::Resource::* type of font
 B<Default:> 'font' of the table. See table parameter 'font' for more details.
@@ -1402,7 +1412,7 @@ Example:
 =back
 
 NOTE: If 'min_w' and/or 'max_w' parameter is used in 'col_props', have in mind that it may be overridden by the calculated minimum/maximum cell witdh so that table can be created.
-When this happens a warning will be issued with some advises what can be done.
+When this happens a warning will be issued with some advice on what can be done.
 In cases of a conflict between column formatting and odd/even row formatting, 'col_props' will override odd/even.
 
 =head4 Cell Properties
@@ -1414,7 +1424,7 @@ Each hashref can contain any of the keys shown below:
 
 =over
 
-=item B<font> - instance of PDF::API2::Resource::Font defining the fontf to be used in this cell
+=item B<font> - instance of PDF::API2::Resource::Font defining the font to be used in this cell
 
 B<Value:> can be any PDF::API2::Resource::* type of font
 B<Default:> 'font' of the table. See table parameter 'font' for more details.
@@ -1555,8 +1565,9 @@ The return value is a 3 items list where
         #OPTIONAL PARAMS
         lead     => $font_size | $distance_between_lines,
         align    => "left|right|center|justify|fulljustify",
+        max_word_length => $optional_max_word_chars_between_splits
         hang     => $optional_hanging_indent,
-        Only one of the subsequent 3params can be given.
+        Only one of the subsequent params can be given.
         They override each other.-parspace is the weightest
         parspace => $optional_vertical_space_before_first_paragraph,
         flindent => $optional_indent_of_first_line,
@@ -1620,7 +1631,7 @@ https://github.com/kamenov/PDF-Table
 
 =head1 SEE ALSO
 
-L<PDF::API2>
+L<PDF::API2>, L<PDF::Builder>
 
 =cut
 
