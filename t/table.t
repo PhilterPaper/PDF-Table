@@ -26,7 +26,7 @@ my $required = [ x => 10,
 ok($object->table($pdf, $page, [$data], @$required));
 
 eval { $object->table('pdf', $page, [$data], @$required) };
-like($@, qr/Error: Invalid pdf object received/);
+like($@, qr/Error: Invalid PDF object received/);
 
 eval { $object->table($pdf, 'page', [$data], @$required) };
 like($@, qr/Error: Invalid page object received/);

@@ -8,7 +8,7 @@ use warnings;
 package PDF::Table;
 
 use Carp;
-our $VERSION = '0.11.0';
+our $VERSION = '0.12.0';
 
 print __PACKAGE__.' is version: '.$VERSION.$/ if($ENV{'PDF_TABLE_DEBUG'});
 
@@ -510,7 +510,8 @@ sub table
             $max_col_w                    = 0;
             $min_col_w                    = 0;
 
-            my @words = split( /\s+/, $data->[$row_idx][$column_idx] ) if $data->[$row_idx][$column_idx];
+            my @words;
+            @words = split( /\s+/, $data->[$row_idx][$column_idx] ) if $data->[$row_idx][$column_idx];
 
             foreach( @words )
             {
@@ -936,9 +937,9 @@ sub CalcColumnWidths
         {
             my $new_w = $calc_widths->[$j] + $span;
 
-            if (!$is_last_iter && $new_w > $col_props->[$j]->{'max_w})
+            if (!$is_last_iter && $new_w > $col_props->[$j]->{'max_w'})
             {
-                $new_w = $col_props->[$j]->{'max_w'}
+                $new_w = $col_props->[$j]->{'max_w'};
             }
             if ($calc_widths->[$j] != $new_w )
             {
