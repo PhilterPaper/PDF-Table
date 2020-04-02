@@ -1,6 +1,7 @@
 # PDF::Table
 
-This module creates text blocks and tables into PDF documents using PDF::API2 Perl module.
+This module creates text blocks and tables into PDF documents using PDF::API2 
+or PDF::Builder Perl module.
 
 The official repository for PDF::Table module collaboration:
 https://github.com/kamenov/PDF-Table.git
@@ -37,4 +38,5 @@ Extended by Desislav Kamenov since version 0.02
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.8.7 or,
-at your option, any later version of Perl 5 you may have available.
+at your option, any later version of Perl 5 you may have available. 
+Note that Perl 5.10 is now the minimum for installation.
