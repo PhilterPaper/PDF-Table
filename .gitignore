@@ -1,0 +1,11 @@
+# ignore any PDFs except t test resources
+*.pdf
+# ignore WinMerge and ViM backups
+*.bak
+*~
+# ignore ViM editor swap files
+*.swp
+# ignore leftover POD-to-HTML stuff
+pod2htmd.tmp
+# ignore .html documentation
+*.html

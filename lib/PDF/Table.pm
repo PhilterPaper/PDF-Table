@@ -8,7 +8,7 @@ use warnings;
 package PDF::Table;
 
 use Carp;
-our $VERSION = '0.12.0';
+our $VERSION = '0.11.0';
 
 print __PACKAGE__.' is version: '.$VERSION.$/ if($ENV{'PDF_TABLE_DEBUG'});
 
@@ -1627,7 +1627,9 @@ Daemmon Hughes
 
 =head1 DEVELOPMENT
 
-Further development since Ver: 0.02 - Desislav Kamenov
+Further development Versions 0.02 -- 0.11 - Desislav Kamenov
+
+Further development since Ver: 0.12 - Phil Perry
 
 =head1 COPYRIGHT AND LICENSE
 
@@ -1637,6 +1639,7 @@ Environmental Inc. (www.stone-env.com) All Rights Reserved.
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.8.4 or,
 at your option, any later version of Perl 5 you may have available.
+Note that Perl 5.10 is the minimum supported level.
 
 =head1 PLUGS
 
