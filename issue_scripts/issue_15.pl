@@ -5,13 +5,16 @@ use diagnostics;
 use utf8;
 
 use lib('../lib/');
-use PDF::API2;
+use PDF::API2; # change two places API2 to Builder to use PDF::Builder
 use PDF::Table;
 
+# VERSION
+my $LAST_UPDATE = '0.12'; # manually update whenever code is changed
+
 #Please use TABSTOP=4 for best view
-my $pdf      = new PDF::API2( -file => "issue_15.pdf" );
+my $pdf      = PDF::API2->new( -file => "issue_15.pdf" );
 my $page     = $pdf->page();
-my $pdftable = new PDF::Table($pdf,$page);
+my $pdftable = PDF::Table->new($pdf,$page);
 $pdf->mediabox('A4');
 
 # A4 as defined by PDF::API2 is h=842 w=545 for portrait

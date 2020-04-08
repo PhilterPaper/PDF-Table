@@ -1,6 +1,7 @@
-use Test::More tests => 11;
+#!/usr/bin/perl
 use strict;
 use warnings;
+use Test::More tests => 11;
 
 use lib 't/lib'; # Needed for 'make test' from project dirs
 use TestData qw();
@@ -147,3 +148,5 @@ ok(1,'fake test because the one below is not working and must be fixed');
 ok($pdf->match(
       [['text', 'abcdefghijklm nopqrstuvwxyz']],
 ), 'break long words on max_word_length');
+
+1;

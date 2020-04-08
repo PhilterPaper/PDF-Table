@@ -1,6 +1,7 @@
-use Test::More tests => 7;
+#!/usr/bin/perl
 use strict;
 use warnings;
+use Test::More tests => 7;
 
 use lib 't/lib';    # Needed for 'make test' from project dir
 use TestData;
@@ -13,7 +14,7 @@ require_ok('PDF::Table');
 
 my ( $pdf, $page, $tab, @data, %opts );
 
-$pdf  = PDF::API2->new();
+$pdf  = PDF::API2->new(); # change 1 API2 to Builder for PDF::Builder
 $page = $pdf->page();
 $tab  = PDF::Table->new($pdf,$page);
 
@@ -66,3 +67,4 @@ ok(
     'r2c1 colspan background box'
 ) or note explain $pdf;
 
+1;

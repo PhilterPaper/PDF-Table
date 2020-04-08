@@ -2,10 +2,19 @@
 use strict;
 use warnings;
 use Carp 'verbose'; local $SIG{__DIE__} = sub { Carp::confess(@_) }; use Data::Dumper;
-use PDF::API2;
+use PDF::API2;  # two places change API2 to Builder to use PDF::Builder
 use PDF::Table;
-my ( $pdf, $page, $font, $ttfont, $ttfont_serif, $text, $pdftable, $left_edge_of_table, $try, $dir );
-$dir = '/usr/share/fonts/truetype/dejavu/';
+
+# VERSION
+my $LAST_UPDATE = '0.12'; # manually update whenever code is changed
+
+# TTF font to use. customize path per your local system.
+# DejaVuSans.ttf also needs to exist in this directory
+my $dir = 
+# '/usr/share/fonts/truetype/dejavu/';
+  '/Windows/Fonts/';
+
+my ( $pdf, $page, $font, $ttfont, $ttfont_serif, $text, $pdftable, $left_edge_of_table, $try );
 use utf8; 
 $try = " 
 accents:         á é í ó ú  Á É Í Ó Ú 
@@ -31,16 +40,17 @@ http://dejavu.sourceforge.net/samples/DejaVuSans.pdf
 # $ sudo apt update && sudo apt -y install font-manager
 # https://dejavu-fonts.github.io/Samples.html 
 
-&make_another('010_fonts-default.pdf', '', $try , 'logo.png' );
+make_another('010_fonts-default.pdf', '', $try , 'logo.png' );
 use utf8; my $try_utf8 = $try; 
-&make_another('010_fonts-use_utf.pdf', 'DejaVuSans', $try_utf8 , 'logo.png' );
+make_another('010_fonts-use_utf.pdf', 'DejaVuSans', $try_utf8 , 'logo.png' );
 no utf8; my $no_utf8 = $try; 
-&make_another('010_fonts-no_utf8.pdf', 'DejaVuSans', $no_utf8  , 'logo.png' );
-# &make_another('010_fonts-default.pdf', 'DejaVuSans', $try , 'logo.png' );
+make_another('010_fonts-no_utf8.pdf', 'DejaVuSans', $no_utf8  , 'logo.png' );
+# make_another('010_fonts-default.pdf', 'DejaVuSans', $try , 'logo.png' );
 
 
 sub make_another {
     my ($file, $passed_font_name, $passed_text, $passed_image_name ) = @_ ; 
+
     print "Passed \$file = '$file', \$font_name = '$passed_font_name', \$image_name = '$passed_image_name' \n"; 
     print "\n INLINE! 
 accents:         á é í ó ú  Á É Í Ó Ú 
@@ -62,7 +72,7 @@ http://dejavu.sourceforge.net/samples/DejaVuSans.pdf
     ";
     # Create a blank PDF file
     $pdf = PDF::API2->new();
-    $pdftable = new PDF::Table;
+    $pdftable = PDF::Table->new();
     # Add a blank page
     $page = $pdf->page();
     # Set the page size
@@ -70,13 +80,16 @@ http://dejavu.sourceforge.net/samples/DejaVuSans.pdf
     # Add a built-in font to the PDF
         # Add some text to the page
     $text = $page->text();
-    $font = $pdf->corefont('Helvetica-Bold' ,-encode => 'utf8' ); # but core fonts don't have utf8 ! 
+    $font = $pdf->corefont('Helvetica-Bold' ); # default to Latin-1 encoding
     $text->font( $font, 14 );   $text->translate( 50, 700 );
     $text->text("In core font: $passed_text\n");
-    print "$dir"."$passed_font_name".'.ttf';
+    print "$dir$passed_font_name..ttf\n";
     my $ttfont;
-    if (!$passed_font_name) {$ttfont =  $pdf->ttfont($dir.'DejaVuSans'.'.ttf');}
-    else {$ttfont =  $pdf->ttfont($dir.$passed_font_name.'.ttf');}
+    if ($passed_font_name eq '') {
+	$ttfont =  $pdf->ttfont($dir.'DejaVuSans'.'.ttf');
+    } else {
+	$ttfont =  $pdf->ttfont($dir.$passed_font_name.'.ttf');
+    }
     $text->font( $ttfont, 14 );   $text->translate( 50, 650 );
     $text->text("In true type font: $passed_text\n");
     $text->translate( 50, 600 );
@@ -151,12 +164,13 @@ http://dejavu.sourceforge.net/samples/DejaVuSans.pdf
     );
     $some_data = [ ['true type font: '. $passed_text], ];
     $left_edge_of_table = 50;
-if ($passed_font_name) {
-    $pdftable->table( $pdf, $page, $some_data, x  => $left_edge_of_table, w  => 500, start_y => 200, start_h => 300, font => $ttfont , );
-}
-else {  # go to default font 
-       $pdftable->table( $pdf, $page, $some_data, x  => $left_edge_of_table, w  => 500, start_y => 200, start_h => 300, );
-}
+    if ($passed_font_name) {
+        $pdftable->table( $pdf, $page, $some_data, x  => $left_edge_of_table, w  => 500, start_y => 200, start_h => 300, font => $ttfont , );
+    } else {  # go to default font 
+        $pdftable->table( $pdf, $page, $some_data, x  => $left_edge_of_table, w  => 500, start_y => 200, start_h => 300, );
+    }
    # Save the PDF
-$pdf->saveas($file);
+   $pdf->saveas($file);
+
+   return;
 }

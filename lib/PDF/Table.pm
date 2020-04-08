@@ -1,14 +1,15 @@
 #!/usr/bin/env perl
 # vim: softtabstop=4 tabstop=4 shiftwidth=4 ft=perl expandtab smarttab
 
-use 5.006;
+use 5.010;
 use strict;
 use warnings;
 
 package PDF::Table;
 
 use Carp;
-our $VERSION = '0.11.0';
+our $VERSION = '0.12'; # fixed, read by Makefile.PL
+my $LAST_UPDATE = '0.12'; # manually update whenever code is changed
 
 print __PACKAGE__.' is version: '.$VERSION.$/ if($ENV{'PDF_TABLE_DEBUG'});
 
@@ -55,11 +56,13 @@ sub set_defaults{
     my $self = shift;
 
     $self->{'font_size'} = 12;
+    return;
 }
 
 sub set_pdf{
     my ($self, $pdf) = @_;
     $self->{'pdf'} = $pdf;
+    return;
 }
 
 sub set_page{
@@ -77,17 +80,19 @@ sub set_page{
         return;
     }
     $self->{'page'} = $page;
-
+    return;
 }
 
 sub set_data{
     my ($self, $data) = @_;
     #TODO: implement
+    return;
 }
 
 sub set_options{
     my ($self, $options) = @_;
     #TODO: implement
+    return;
 }
 
 ############################################################
@@ -467,7 +472,7 @@ sub table
             # look for font information for this column
             my ($cell_font, $cell_font_size, $cell_font_underline);
 
-            if( !$row_idx and ref $header_props )
+            if( !$row_idx && ref $header_props )
             {
                 $cell_font           = $header_props->{'font'};
                 $cell_font_size      = $header_props->{'font_size'};
@@ -547,7 +552,7 @@ sub table
         $row_col_widths->[$row_idx] = $column_widths;
 
         # Copy the calculated row properties of header row.
-        @$header_row_props = @$column_widths if(!$row_idx and ref $header_props);
+        @$header_row_props = @$column_widths if(!$row_idx && ref $header_props);
     }
 
     # Calc real column widths and expand table width if needed.
@@ -1619,7 +1624,7 @@ The return value is a 3 item list where
 
 =head1 VERSION
 
-0.11
+0.12
 
 =head1 AUTHOR
 
@@ -1636,8 +1641,10 @@ Further development since Ver: 0.12 - Phil Perry
 Copyright (C) 2006 by Daemmon Hughes, portions Copyright 2004 Stone
 Environmental Inc. (www.stone-env.com) All Rights Reserved.
 
+Copyright (C) 2020 by Phil M Perry.
+
 This library is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself, either Perl version 5.8.4 or,
+it under the same terms as Perl itself, either Perl version 5.8.7 or,
 at your option, any later version of Perl 5 you may have available.
 Note that Perl 5.10 is the minimum supported level.
 
@@ -1668,7 +1675,7 @@ Thanks to all GitHub contributors!
 
 Hey, PDF::Table is on GitHub. You are more than welcome to contribute!
 
-https://github.com/kamenov/PDF-Table
+https://github.com/PhilterPaper/PDF-Table
 
 =head1 SEE ALSO
 

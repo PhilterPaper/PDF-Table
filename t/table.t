@@ -1,7 +1,8 @@
+#!/usr/bin/perl
 use strict;
 use warnings;
-
 use Test::More tests => 6;
+
 use lib 't/lib'; # Needed for 'make test' from project dirs
 use PDFAPI2Mock;
 
@@ -39,3 +40,4 @@ like($@, qr/Odd number of elements in hash assignment/);
 
 done_testing();
 
+1;

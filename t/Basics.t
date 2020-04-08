@@ -1,6 +1,7 @@
-use Test::More tests => 7;
+#!/usr/bin/perl
 use strict;
 use warnings;
+use Test::More tests => 7;
 
 use lib 't/lib';    # Needed for 'make test' from project dir
 use TestData;
@@ -13,7 +14,7 @@ require_ok('PDF::Table');
 
 my ( $pdf, $page, $tab, @data, %opts );
 
-$pdf  = PDF::API2->new();
+$pdf  = PDF::API2->new(); # change 4 API2 to Builder to use PDF::Builder
 $page = $pdf->page();
 $tab  = PDF::Table->new($pdf,$page);
 
@@ -113,4 +114,4 @@ ok(
     'The cell_render_hook() subroutine output is valid'
 ) or diag explain \$pdf;
 
-
+1;

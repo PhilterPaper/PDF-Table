@@ -2,11 +2,14 @@
 use strict;
 use warnings;
 
-use PDF::API2;
+use PDF::API2;  # two places change API2 to Builder to use PDF::Builder
 use PDF::Table;
 
-my $pdftable = new PDF::Table;
-my $pdf      = new PDF::API2( -file => "colspan.pdf" );
+# VERSION
+my $LAST_UPDATE = '0.12'; # manually update whenever code is changed
+
+my $pdftable = PDF::Table->new();
+my $pdf      = PDF::API2->new( -file => "colspan.pdf" );
 my $page     = $pdf->page();
 $pdf->mediabox('A4');
 

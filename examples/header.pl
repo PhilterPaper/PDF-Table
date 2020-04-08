@@ -4,11 +4,14 @@ use strict;
 use diagnostics;
 
 #Please use TABSTOP=4 for best view
-use PDF::API2;
+use PDF::API2;  # two places change API2 to Builder to use PDF::Builder
 use PDF::Table;
 
-my $pdftable = new PDF::Table;
-my $pdf      = new PDF::API2( -file => "headers.pdf" );
+# VERSION
+my $LAST_UPDATE = '0.12'; # manually update whenever code is changed
+
+my $pdftable = PDF::Table->new();
+my $pdf      = PDF::API2->new( -file => "headers.pdf" );
 my $page     = $pdf->page();
 $pdf->mediabox('A4');
 

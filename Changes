@@ -2,11 +2,13 @@ Change history for Perl extension PDF::Table.
 
 Version 0.12.0 (preliminary) 
 
-Permit either PDF::API2 or PDF::Builder (#51)
-Don't use UTF-8 with corefonts
-General cleanup of typos and misspellings in Table.pm
-Minimum Perl 5.10 in Makefile.PL (#53) 
-More cleanup of text in Table.pm
+ Permit either PDF::API2 or PDF::Builder (#51)
+ Don't use UTF-8 with corefonts
+ General cleanup of typos and misspellings in Table.pm
+ Minimum Perl 5.10 in Makefile.PL (#53) 
+ More cleanup of text in Table.pm
+ Add tools (util) for running PerlCritic, t-tests, examples
+ Clean up code to pass PerlCritic
 
 Version 0.11.0 Colspan feature by domm
 
