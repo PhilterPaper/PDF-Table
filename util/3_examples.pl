@@ -95,10 +95,10 @@ for ($i=0; $i<scalar(@example_list); $i++) {
         $arg = '';
     }
     print "\n=== Running test examples/$file $arg\n";
+    print $desc;
 
     system("perl examples/$file $arg");
 
-    print $desc;
     if ($type eq '-cont') { next; }
     print "Press Enter to continue: ";
     $pause = <>;

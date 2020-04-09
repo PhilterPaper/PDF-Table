@@ -2,11 +2,66 @@
 use strict;
 use warnings;
 use Carp 'verbose'; local $SIG{__DIE__} = sub { Carp::confess(@_) }; use Data::Dumper;
-use PDF::API2;  # two places change API2 to Builder to use PDF::Builder
 use PDF::Table;
+# -------------
+my ($PDFpref, $rcA, $rcB); # which is available?
+my $prefFile = "./PDFpref";
+my $prefDefault = "B"; # PDF::Builder default if no prefFile, or both installed
+if (-f $prefFile && -r $prefFile) {
+    open my $FH, '<', $prefFile or die "error opening $prefFile: $!\n";
+    $PDFpref = <$FH>;
+    if      ($PDFpref =~ m/^A/i) {
+	# something starting with A, assume want PDF::API2
+	$PDFpref = 'A';
+    } elsif ($PDFpref =~ m/^B/i) {
+	# something starting with B, assume want PDF::Builder
+	$PDFpref = 'B';
+    } elsif ($PDFpref =~ m/^PDF:{1,2}A/i) {
+	# something starting with PDF:A or PDF::A, assume want PDF::API2
+	$PDFpref = 'A';
+    } elsif ($PDFpref =~ m/^PDF:{1,2}B/i) {
+	# something starting with PDF:B or PDF::B, assume want PDF::Builder
+	$PDFpref = 'B';
+    } else {
+	print STDERR "Don't see A... or B..., default to $prefDefault\n";
+	$PDFpref = $prefDefault;
+    }
+    close $FH;
+} else {
+    # no preference expressed, default to PDF::Builder
+    print STDERR "No preference file found, so default to $prefDefault\n";
+    $PDFpref = $prefDefault;
+}
+foreach (1 .. 2) {
+    if ($PDFpref eq 'A') { # A(PI2) preferred
+        $rcA = eval {
+            require PDF::API2;
+            1;
+        };
+        if (!defined $rcA) { $rcA = 0; } # else is 1;
+        if ($rcA) { $rcB = 0; last; }
+	$PDFpref = 'B';
+    } 
+    if ($PDFpref eq 'B') { # B(uilder) preferred
+        $rcB = eval {
+            require PDF::Builder;
+            1;
+        };
+        if (!defined $rcB) { $rcB = 0; } # else is 1;
+	if ($rcB) { $rcA = 0; last; }
+	$PDFpref = 'A';
+    }
+}
+if (!$rcA && !$rcB) {
+    die "Neither PDF::API2 nor PDF::Builder is installed!\n";
+}
+# -------------
 
 # VERSION
 my $LAST_UPDATE = '0.12'; # manually update whenever code is changed
+
+my $outfile = $0;
+$outfile =~ s/\.pl$/.pdf/;
 
 # TTF font to use. customize path per your local system.
 # DejaVuSans.ttf also needs to exist in this directory
@@ -71,7 +126,16 @@ http://dejavu.sourceforge.net/samples/DejaVuSans.pdf
 
     ";
     # Create a blank PDF file
-    $pdf = PDF::API2->new();
+    # -------------
+    my $pdf;
+    if ($rcA) {
+        print STDERR "Using PDF::API2 library\n";
+        $pdf      = PDF::API2->new();
+    } else {
+        print STDERR "Using PDF::Builder library\n";
+        $pdf      = PDF::Builder->new();
+    }
+    # -------------
     $pdftable = PDF::Table->new();
     # Add a blank page
     $page = $pdf->page();
