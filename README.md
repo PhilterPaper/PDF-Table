@@ -8,6 +8,14 @@ https://github.com/PhilterPaper/PDF-Table.git
 
 Any patches, pull requests, issues and feedback are more than welcome.
 
+## Prerequisites
+
+Required for installation: Test::More
+Optional for installation: Test::Pod, Test::CheckManifest
+
+Required for running: Carp, PDF::API2 and/or PDF::Builder
+Optional for running: Pod::Simple::HTML
+
 ## Installation
 
 To install the module from CPAN, please type the following command:

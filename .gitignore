@@ -9,3 +9,5 @@
 pod2htmd.tmp
 # ignore .html documentation
 *.html
+# local build process
+/version

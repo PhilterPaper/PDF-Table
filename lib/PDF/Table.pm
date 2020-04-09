@@ -1574,7 +1574,7 @@ In case of a conflict between header row and cell formatting, header formatting 
 =item Description
 
 Utility method to create a block of text. The block may contain multiple paragraphs.
-It is mainly used internaly but you can use it from outside for placing formatted text anywhere on the sheet.
+It is mainly used internally but you can use it from outside for placing formatted text anywhere on the sheet.
 
 NOTE: This method will NOT add more pages to the PDF instance if the space is not enough to place the string inside the block.
 Leftover text will be returned and has to be handled by the caller - i.e. add a new page and a new block with the leftover.
