@@ -4,7 +4,8 @@ use warnings;
 use Test::More tests => 6;
 
 use lib 't/lib'; # Needed for 'make test' from project dirs
-use PDFAPI2Mock;
+use PDFAPI2Mock;    # provide dummy PDF::API2. obviously a real PDF::API2 or
+                    # PDF::Builder installation will be needed in order to run
 
 BEGIN {
     use_ok('PDF::Table');

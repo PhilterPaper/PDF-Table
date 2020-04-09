@@ -5,7 +5,8 @@ use Test::More tests => 7;
 
 use lib 't/lib';    # Needed for 'make test' from project dir
 use TestData;
-use PDFAPI2Mock;
+use PDFAPI2Mock;    # provide dummy PDF::API2. obviously a real PDF::API2 or
+                    # PDF::Builder installation will be needed in order to run
 
 BEGIN {
     use_ok('PDF::Table');
@@ -14,7 +15,7 @@ require_ok('PDF::Table');
 
 my ( $pdf, $page, $tab, @data, %opts );
 
-$pdf  = PDF::API2->new(); # change 4 API2 to Builder to use PDF::Builder
+$pdf  = PDF::API2->new();
 $page = $pdf->page();
 $tab  = PDF::Table->new($pdf,$page);
 
