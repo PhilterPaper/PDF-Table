@@ -131,5 +131,5 @@ $pdftable->table(
         [ { colspan => 2 } ],    # row 5 cell 1 override
     ],
 );
-$pdf->saveas();
+$pdf->save();
 

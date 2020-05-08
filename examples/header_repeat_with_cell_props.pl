@@ -143,4 +143,4 @@ $pdftable->table(
 	},
 	cell_props => $cell_props
 );
-$pdf->saveas();
+$pdf->save();

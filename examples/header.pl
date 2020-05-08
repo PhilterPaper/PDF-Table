@@ -120,4 +120,4 @@ $pdftable->table(
 	],
 );
 
-$pdf->saveas();
+$pdf->save();

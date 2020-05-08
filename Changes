@@ -1,6 +1,11 @@
 Change history for Perl extension PDF::Table.
 
-Version 0.12.0 (preliminary) 
+Version 1.000 (2020-05-08)  UNRELEASED
+  
+ Minor build process cleanup
+ Minor spelling and typo fixes in POD and examples
+
+Version 0.12.0 (2020-04-09) 
 
  Permit either PDF::API2 or PDF::Builder (#51)
  Don't use UTF-8 with corefonts

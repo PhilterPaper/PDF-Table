@@ -8,8 +8,8 @@ use warnings;
 package PDF::Table;
 
 use Carp;
-our $VERSION = '0.12'; # fixed, read by Makefile.PL
-my $LAST_UPDATE = '0.12'; # manually update whenever code is changed
+our $VERSION = '1.000'; # fixed, read by Makefile.PL
+my $LAST_UPDATE = '1.000'; # manually update whenever code is changed
 
 print __PACKAGE__.' is version: '.$VERSION.$/ if($ENV{'PDF_TABLE_DEBUG'});
 
@@ -133,6 +133,7 @@ sub text_block
     $width  = $arg{'w'} || -1;
     $height = $arg{'h'} || -1;
     unless( $xbase  > 0 ){ carp "Error: Left Edge of Block is NOT defined!\n";  return; }
+    TBD move most of the message to the POD
     unless( $ybase  > 0 ){ carp "Error: Base Line of Block is NOT defined!\n"; return; }
     unless( $width  > 0 ){ carp "Error: Width of Block is NOT defined!\n";  return; }
     unless( $height > 0 ){ carp "Error: Height of Block is NOT defined!\n"; return; }
@@ -680,8 +681,10 @@ sub table
             my $current_row_height = $pad_top + $pre_calculated_row_height + $pad_bot;
 
             # $row_h is the calculated global user requested row height.
-            # It will be honored, only if it has bigger value than the calculated one.
-            # TODO: It's questionable if padding should be included in this calculation or not
+            # It will be honored, only if it has larger value than the 
+            # calculated one.
+            # TODO: It's questionable if padding should be included in this 
+            # calculation or not
             if($current_row_height < $row_h){
                 $current_row_height = $row_h;
             }
@@ -906,7 +909,8 @@ sub CalcColumnWidths
         $min_width += $col_props->[$j]->{'min_w'} || 0;
     }
 
-    # I think this is the optimal variant when good view can be guaranateed
+    # I think this is the optimal variant when a good view can be guaranteed
+    # TBD move most of the message to the POD
     if($avail_width < $min_width)
     {
         carp "!!! Warning !!!\n Calculated Minimal width ($min_width) > Table width ($avail_width).\n",
@@ -1261,7 +1265,7 @@ B<Default:> C<'black'> font on C<'white'> background
     background_color_odd  => 'gray'
     background_color_even => 'lightblue'
 
-=item B<row_height> - Desired row height but it will be honored only if C<row_height > font_size + padding_top + padding_bottom>
+=item B<row_height> - Desired row height, but it will be honored only if C<row_height E<gt> font_size + padding_top + padding_bottom>
 
 B<Value:> can be any whole positive number
 
@@ -1312,7 +1316,7 @@ Don't forget that your function must return a page object created with PDF::API2
 
 =head4 Header Row Properties
 
-If the 'header_props' parameter is used, it should be a hashref. Passing an empty HASH will trigger a header row initialised with Default values.
+If the 'header_props' parameter is used, it should be a hashref. Passing an empty HASH will trigger a header row initialized with Default values.
 There is no 'data' variable for the content, because the module asumes that first table row will become the header row. It will copy this row and put it on every new page if 'repeat' param is set.
 
 =over
@@ -1375,19 +1379,19 @@ B<Default:> Same as column alignment (or C<'left'> if undefined)
 
 If the 'column_props' parameter is used, it should be an arrayref of hashrefs,
 with one hashref for each column of the table. The columns are counted from left to right so the hash reference at $col_props[0] will hold properties for the first column from left to right.
-If you DO NOT want to give properties for a column but to give for another just insert and empty hash reference into the array for the column that you want to skip. This will cause the counting to proceed as expected and the properties to be applyed at the right columns.
+If you DO NOT want to give properties for a column but to give for another just insert and empty hash reference into the array for the column that you want to skip. This will cause the counting to proceed as expected and the properties to be applied at the right columns.
 
 Each hashref can contain any of the keys shown below:
 
 =over
 
-=item B<min_w> - Minimum width of this column. Auto calculation will try its best to honour this param but applying it is NOT guaranteed.
+=item B<min_w> - Minimum width of this column. Auto calculation will try its best to honor this parameter, but applying it is NOT guaranteed.
 
 B<Value:> can be any whole number satisfying C<0 < min_w < w>
 
 B<Default:> Auto calculated
 
-=item B<max_w> - Maximum width of this column. Auto calculation will try its best to honour this param but applying it is NOT guaranteed.
+=item B<max_w> - Maximum width of this column. Auto calculation will try its best to honor this parameter, but applying it is NOT guaranteed.
 
 B<Value:> can be any whole number satisfying C<0 < max_w < w>
 

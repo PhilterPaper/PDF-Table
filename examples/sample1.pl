@@ -202,4 +202,4 @@ $pdftable->table(
 		# etc.
 	],
 );
-$pdf->saveas();
+$pdf->save();

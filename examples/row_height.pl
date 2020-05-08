@@ -110,4 +110,4 @@ $pdftable->table(
 	padding         => 5,
 	row_height      => 30,
 );
-$pdf->saveas();
+$pdf->save();
