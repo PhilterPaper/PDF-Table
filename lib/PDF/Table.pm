@@ -225,7 +225,8 @@ sub text_block
         $line_width += $text_object->advancewidth(join('', @line));
 
         # calculate the space width
-        if( $arg{'align'} eq 'fulljustify' or ($arg{'align'} eq 'justify' and @paragraph))
+        $align = $arg{'align'} || 'left';
+        if( $align eq 'fulljustify' or ($align eq 'justify' and @paragraph))
         {
             @line = split(//,$line[0]) if (scalar(@line) == 1) ;
             $wordspace = ($width - $line_width) / (scalar(@line) - 1);
@@ -233,7 +234,7 @@ sub text_block
         }
         else
         {
-            $align=($arg{'align'} eq 'justify') ? 'left' : $arg{'align'};
+            $align = 'left' if $align eq 'justify';
             $wordspace = $space_width;
         }
         $line_width += $wordspace * (scalar(@line) - 1);
