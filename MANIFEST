@@ -8,6 +8,9 @@ examples/header_repeat_with_cell_props.pl
 examples/PDFpref
 examples/row_height.pl
 examples/sample1.pl
+INFO/Changes_2019
+INFO/Deprecated
+INFO/Table.html
 lib/PDF/Table.pm
 Makefile.PL
 MANIFEST

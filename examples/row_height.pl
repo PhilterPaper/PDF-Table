@@ -59,7 +59,7 @@ if (!$rcA && !$rcB) {
 # -------------
 
 # VERSION
-my $LAST_UPDATE = '0.12'; # manually update whenever code is changed
+my $LAST_UPDATE = '1.000'; # manually update whenever code is changed
 
 my $outfile = $0;
 if ($outfile =~ m#[\\/]([^\\/]+)$#) { $outfile = $1; }
@@ -98,9 +98,9 @@ $pdftable->table(
 	$data,
 	x       => 10,
 	w       => 150,
-	start_y => 750,
+	start_y => 750,  # or y. start near top of page
 	next_y  => 700,
-	start_h => 200,
+	start_h => 200,  # or h. first page short, subsequent much longer
 	next_h  => 500,
 
 	# some optional params
@@ -108,6 +108,6 @@ $pdftable->table(
 	font_size       => 10,
 	max_word_length => 15,
 	padding         => 5,
-	row_height      => 30,
+	row_height      => 30, # much more than necessary
 );
 $pdf->save();

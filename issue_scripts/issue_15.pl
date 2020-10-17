@@ -9,7 +9,7 @@ use PDF::API2; # change two places API2 to Builder to use PDF::Builder
 use PDF::Table;
 
 # VERSION
-my $LAST_UPDATE = '0.12'; # manually update whenever code is changed
+my $LAST_UPDATE = '1.000'; # manually update whenever code is changed
 
 #Please use TABSTOP=4 for best view
 my $pdf      = PDF::API2->new( -file => "issue_15.pdf" );
@@ -47,9 +47,9 @@ $pdftable->table(
     font_size          => 10,
     padding_right      => 10,
     horizontal_borders => 1,
-    font               => $pdf->corefont( "Helvetica", -encoding => "utf8" ),
+    font               => $pdf->corefont( "Helvetica", -encoding => "latin1" ),
     header_props       => {
-        font       => $pdf->corefont( "Helvetica", -encoding => "utf8" ),
+        font       => $pdf->corefont( "Helvetica", -encoding => "latin1" ),
     },
 );
 

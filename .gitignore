@@ -9,6 +9,7 @@
 pod2htmd.tmp
 # ignore .html documentation
 *.html
+!/INFO/Table.html
 # local build process
 /version
 /RoadMap

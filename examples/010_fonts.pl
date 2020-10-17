@@ -58,7 +58,7 @@ if (!$rcA && !$rcB) {
 # -------------
 
 # VERSION
-my $LAST_UPDATE = '0.12'; # manually update whenever code is changed
+my $LAST_UPDATE = '1.000'; # manually update whenever code is changed
 
 my $outfile = $0;
 $outfile =~ s/\.pl$/.pdf/;
@@ -147,7 +147,7 @@ http://dejavu.sourceforge.net/samples/DejaVuSans.pdf
     $font = $pdf->corefont('Helvetica-Bold' ); # default to Latin-1 encoding
     $text->font( $font, 14 );   $text->translate( 50, 700 );
     $text->text("In core font: $passed_text\n");
-    print "$dir$passed_font_name..ttf\n";
+    print "$dir$passed_font_name.ttf\n";
     my $ttfont;
     if ($passed_font_name eq '') {
 	$ttfont =  $pdf->ttfont($dir.'DejaVuSans'.'.ttf');
@@ -224,14 +224,14 @@ http://dejavu.sourceforge.net/samples/DejaVuSans.pdf
      #   padding       => 5,
       #  padding_right => 10,
 #     background_color_odd  => "gray",
-#     background_color_even => "lightblue", #cell background color for even rows
+#     background_color_even => "lightblue", # cell background color for even rows
     );
     $some_data = [ ['true type font: '. $passed_text], ];
     $left_edge_of_table = 50;
     if ($passed_font_name) {
-        $pdftable->table( $pdf, $page, $some_data, x  => $left_edge_of_table, w  => 500, start_y => 200, start_h => 300, font => $ttfont , );
+        $pdftable->table( $pdf, $page, $some_data, x  => $left_edge_of_table, w  => 500, start_y => 500, start_h => 300, font => $ttfont , );
     } else {  # go to default font 
-        $pdftable->table( $pdf, $page, $some_data, x  => $left_edge_of_table, w  => 500, start_y => 200, start_h => 300, );
+        $pdftable->table( $pdf, $page, $some_data, x  => $left_edge_of_table, w  => 500, start_y => 500, start_h => 300, );
     }
    # Save the PDF
    $pdf->saveas($file);

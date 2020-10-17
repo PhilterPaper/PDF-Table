@@ -2,16 +2,16 @@
 use warnings;
 use strict;
 use diagnostics;
+use PDF::Table;
 
 =pod 
 
-This example file gives an overview of the functionalities provided by PDF::Table
-Also it can be used to bootstrap your code.
+This example file gives an overview of the functionalities provided by 
+PDF::Table. Also it can be used to bootstrap your code.
 
 =cut
 
-#Please use TABSTOP=4 for best view
-use PDF::Table;
+# Please use TABSTOP=4 for best view
 # -------------
 my ($PDFpref, $rcA, $rcB); # which is available?
 my $prefFile = "./PDFpref";
@@ -67,7 +67,7 @@ if (!$rcA && !$rcB) {
 # -------------
 
 # VERSION
-my $LAST_UPDATE = '0.12'; # manually update whenever code is changed
+my $LAST_UPDATE = '1.000'; # manually update whenever code is changed
 
 my $outfile = $0;
 if ($outfile =~ m#[\\/]([^\\/]+)$#) { $outfile = $1; }
@@ -81,7 +81,7 @@ if ($rcA) {
     $pdf      = PDF::API2->new( -file => $outfile );
 } else {
     print STDERR "Using PDF::Builder library\n";
-    $pdf      = PDF::Builder->new( -file => $outfile );
+    $pdf      = PDF::Builder->new( -file => $outfile, -compress => 'none' );
 }
 # -------------
 my $page     = $pdf->page();
@@ -89,18 +89,20 @@ $pdf->mediabox('A4');
 
 # A4 as defined by PDF::API2 is h=842 w=545 for portrait
 
-# some data to layout
+# some data to lay out
 my $some_data = [
 	[ 'Header', 'Row', 'Test' ],
 	[
 		'1 Lorem ipsum dolor',
 		'Donec odio neque, faucibus vel',
-		'consequat quis, tincidunt vel, felis.'
+		'1 consequat quis, tincidunt vel, felis.'
 	],
 	[ 'Nulla euismod sem eget neque.', 'Donec odio neque', 'Sed eu velit.' ],
 	[
 		'Az sym bulgarin',
+		# column 2 has explicit \n's for 3 physical lines
 		"i ne razbiram DESI\ngorniq \nezik",
+		# column 3 has implied \n's for 4 physical lines
 		"zatova reshih
 		da dobavq
 		edin ili dva
@@ -112,9 +114,9 @@ my $some_data = [
 		'na bulgarski ezik s latinica'
 	],
 	[
-		'1 Lorem ipsum dolor',
+		'5 Lorem ipsum dolor',
 		'Donec odio neque, faucibus vel',
-		'consequat quis, tincidunt vel, felis.'
+		'5 consequat quis, tincidunt vel, felis.'
 	],
 	[ 'Nulla euismod sem eget neque.', 'Donec odio neque', 'Sed eu velit.' ],
 	[ 'Az sym bulgarin', 'i ne razbiram gorniq ezik', 'zatova reshih' ],
@@ -125,7 +127,8 @@ my $some_data = [
 	],
 ];
 
-# build the table layout
+# build the table layout. like the data (text), the various properties and
+# settings could be pulled out of line.
 $pdftable->table(
 
 	# required params
@@ -135,71 +138,85 @@ $pdftable->table(
 
 	# Geometry of the document
 	x  => 50,
-	-w => 495
-	, # dashed params supported for backward compatibility. dash/non-dash params can be mixed
-	start_y  => 792,
+	-w => 495,  # width: most of an A4 page
+       	# dashed params supported for backward compatibility. 
+	# dash/non-dash params can be mixed
+	start_y  => 792, # or y
 	next_y   => 700,
-	-start_h => 400,
+	-start_h => 400, # or h. reduce to force overflow to new page
 	next_h   => 500,
 
 	# some optional params for fancy results
 	-padding              => 3,
 	padding_right         => 10,
-	background_color_odd  => 'lightblue',
-	background_color_even => "#EEEEAA",     #cell background color for even rows
+	background_color_odd  => 'lightblue', # bg_color_odd
+	background_color_even => "#EEEEAA",   # bg_color_even
+	# using default font (Times-Roman 12pt)
+	
 	header_props          => {
 		bg_color   => "#F0AAAA",
-		font       => $pdf->corefont( "Helvetica", -encoding => "utf8" ),
+		font       => $pdf->corefont( "Helvetica", -encoding => "latin1" ),
 		font_size  => 14,
-		font_color => "#006600",
-		repeat     => 1
+		font_color => "#006600",  # fg_color
+		repeat     => 1  # default
+		# note that col 2 inherits RJ from column_props setting
 	},
 	column_props => [
-		{},                                 #no properties for the first column
-		{
+		{},                    # no properties for the first column
+		{                      # column 2 overrides: force wider,
+			               # larger font, right-justified, own bg.
 			min_w      => 250,
 			justify    => "right",
 			font       => $pdf->corefont( "Times", -encoding => "latin1" ),
-			font_size  => 14,
-			font_color => 'white',
-			background_color => '#8CA6C5',
+			font_size  => 14, 
+			font_color => 'white',  # fg_color
+			background_color => '#8CA6C5',  # bg_color
 		},
+		                       # column 3 no overrides
 	],
 	cell_props => [
-		[ #This is the first(header) row of the table and here wins %header_props
+		[ # This is the first(header) row of the table and here 
+		  # %header_prop has priority, so no effect with these settings
 			{
-				background_color => '#000000',
-				font_color       => 'blue',
+				background_color => '#000000', # bg_color
+				font_color       => 'blue',    # fg_color
 			},
 
 			# etc.
 		],
-		[    #Row 2
-			{    #Row 2 cell 1
+		[ # Row 2 (first data row)
+			{ # Row 2 col 1
 				background_color => '#000000',
 				font_color       => 'white',
 			},
-			{    #Row 2 cell 2
+			{ # Row 2 col 2
 				background_color => '#AAAA00',
 				font_color       => 'red',
 			},
-			{    #Row 2 cell 3
+			{ # Row 2 col 3
 				background_color => '#FFFFFF',
 				font_color       => 'green',
 			},
 
 			# etc.
 		],
-		[        #Row 3
-			{    #Row 3 cell 1
+		[ # Row 3 (second data row)
+			{ # Row 3 cell 1
 				background_color => '#AAAAAA',
 				font_color       => 'blue',
 			},
 
-			# etc.
+			# etc. rest of columns are normal
 		],
 
-		# etc.
+		# etc. rest of rows are normal
 	],
-);
+	row_props => [
+		{}, {}, {}, {},
+		{ # Row 5 (4th data row)
+			'row_height' => 50, # extra height on this row
+		},
+	],
+);  # end of table() call
+
 $pdf->save();

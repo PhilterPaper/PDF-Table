@@ -2,9 +2,9 @@
 use warnings;
 use strict;
 use diagnostics;
-
-#Please use TABSTOP=4 for best view
 use PDF::Table;
+
+# Please use TABSTOP=4 for best view
 # -------------
 my ($PDFpref, $rcA, $rcB); # which is available?
 my $prefFile = "./PDFpref";
@@ -60,7 +60,7 @@ if (!$rcA && !$rcB) {
 # -------------
 
 # VERSION
-my $LAST_UPDATE = '0.12'; # manually update whenever code is changed
+my $LAST_UPDATE = '1.000'; # manually update whenever code is changed
 
 my $outfile = $0;
 if ($outfile =~ m#[\\/]([^\\/]+)$#) { $outfile = $1; }
@@ -100,8 +100,8 @@ my $some_data = [
 # build the table layout
 my $cell_props = [];
 $cell_props->[2][1] = {
-	background_color => '#000000',
-	font_color       => 'blue',
+	background_color => '#000000',  # or bg_color
+	font_color       => 'blue',     # or fg_color
 	justify          => 'left'
 };
 $cell_props->[4][1] = {
@@ -115,6 +115,7 @@ $cell_props->[6][1] = {
 	justify          => 'right'
 };
 
+# note that cell properties taken out-of-line
 $pdftable->table(
 
 	# required params
@@ -123,24 +124,25 @@ $pdftable->table(
 	$some_data,
 	x       => 10,
 	w       => 350,
-	start_y => 780,
+	start_y => 780,  # or y
 	next_y  => 780,
-	start_h => 200,
-	next_h  => 200,
-	padding => 10,
+	start_h => 210,  # or h
+	next_h  => 210,
 
 	# some optional params
 	font_size          => 10,
-	padding_right      => 10,
+	padding            => 10,
+       #padding_right      => 10,
 	horizontal_borders => 1,
 	header_props       => {
 		bg_color   => "silver",
 		font       => $pdf->corefont( "Helvetica", -encoding => "utf8" ),
 		font_size  => 20,
-		font_color => "#006600",
+		font_color => "#006600",  # or fg_color
 		#justify => 'left',
-		repeat  => 1,
+		repeat  => 1,  # default
 	},
 	cell_props => $cell_props
 );
+
 $pdf->save();

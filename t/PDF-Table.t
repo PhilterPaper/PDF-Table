@@ -76,16 +76,16 @@ $tab->table($pdf, $page, [@data], @required,
 );
 
 ok($pdf->match(
-      [[qw(translate 10 738)],[qw(text foo)]],
-      [[qw(translate 110 738)],[qw(text bar)]],
-      [[qw(translate 210 738)],[qw(text baz)]],
-), 'text position');
+      [[qw(translate 12 736)],[qw(text foo)]],
+      [[qw(translate 112 736)],[qw(text bar)]],
+      [[qw(translate 212 736)],[qw(text baz)]],
+), 'text position') or note explain $pdf;
 
 ok($pdf->match(
-      [[qw(rect 10 738 100 12)],[qw(fillcolor gray)]],
-      [[qw(rect 110 738 100 12)],[qw(fillcolor red)]],
-      [[qw(rect 210 738 100 12)],[qw(fillcolor blue)]],
-), 'default header fillcolor');
+      [[qw(rect 10 731 100 19)],[qw(fillcolor gray)]],
+      [[qw(rect 110 731 100 19)],[qw(fillcolor red)]],
+      [[qw(rect 210 731 100 19)],[qw(fillcolor blue)]],
+), 'default header fillcolor') or note explain $pdf;
 
 ok($pdf->match(
       [[qw(gfx)],[qw(strokecolor black)],[qw(linewidth 1)]],
@@ -107,10 +107,10 @@ $tab->table($pdf, $page, [@data], @required,
 );
 
 ok($pdf->match(
-      [[qw(translate 52.5 738)],[qw(text foo)]],
-      [[qw(translate 152.5 738)],[qw(text bar)]],
-      [[qw(translate 295 738)],[qw(text baz)]],
-), 'justify right and center');
+      [[qw(translate 52.5 736)],[qw(text foo)]],
+      [[qw(translate 152.5 736)],[qw(text bar)]],
+      [[qw(translate 293 736)],[qw(text baz)]],
+), 'justify right and center') or note explain $pdf;
 
 ok(!$pdf->match(
       [[qw(gfx)],[qw(strokecolor black)],[qw(linewidth 0)]],

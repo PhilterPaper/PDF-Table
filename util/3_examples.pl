@@ -9,7 +9,7 @@ use strict;
 use warnings;
 
 # VERSION
-my $LAST_UPDATE = '0.12'; # manually update whenever code is changed
+my $LAST_UPDATE = '1.000'; # manually update whenever code is changed
 
 # dependent on optional packages:
 
@@ -19,8 +19,8 @@ my $LAST_UPDATE = '0.12'; # manually update whenever code is changed
 my $pause;
 
 my (@example_list, @example_results);
-  push @example_list, "010_fonts.pl";
-  push @example_results, "show examples of accented and other non-ASCII characters.\n";
+# push @example_list, "010_fonts.pl";
+# push @example_results, "show examples of accented and other non-ASCII characters.\n";
 
   push @example_list, "colspan.pl";
   push @example_results, "demonstrate colspan=n table organization.\n";
