@@ -13,29 +13,26 @@ BEGIN {
 }
 my ($col_widths);
 ($col_widths, undef) = PDF::Table::CalcColumnWidths(
-	[
-		{ min_w => 50, max_w => 50 },
-		{ min_w => 50, max_w => 50 },
-		{ min_w => 50, max_w => 50 },
-		{ min_w => 50, max_w => 50 },
-	], 400);
+        400,
+	[  50,  50,  50,  50 ],
+	[ 200, 200, 200, 200 ]
+);
 
 is_deeply( $col_widths, [ 100, 100, 100, 100 ], 'CalcColumnWidths - even');
 
 ($col_widths, undef) = PDF::Table::CalcColumnWidths(
-	[
-		{ min_w => 41, max_w => 51 },
-		{ min_w => 58, max_w => 600 },
-		{ min_w => 48, max_w => 48 },
-	], 400);
+	400,
+	[ 41,  58,  48 ],
+	[ 51, 600,  48 ]
+);
 
-is_deeply( $col_widths, [ 51, 301, 48 ], 'CalcColumnWidths - uneven');
+is_deeply( $col_widths, [ 51, 300.758439703998, 48 ], 'CalcColumnWidths - uneven');
 
 ($col_widths, undef) = PDF::Table::CalcColumnWidths(
-	[
-		{ min_w => 50, max_w => 50 },
-		{ min_w => undef, max_w => 50 },
-	], 400);
+	400,
+	[ 50,     0 ],  # undef min_w value
+	[ 50,    50 ]
+);
 
 is_deeply( $col_widths, [ 200, 200 ], 'CalcColumnWidths - undef');
 
@@ -107,9 +104,9 @@ $tab->table($pdf, $page, [@data], @required,
 );
 
 ok($pdf->match(
-      [[qw(translate 52.5 736)],[qw(text foo)]],
-      [[qw(translate 152.5 736)],[qw(text bar)]],
-      [[qw(translate 293 736)],[qw(text baz)]],
+      [[qw(translate 60 736)],[qw(text_center foo)]],
+      [[qw(translate 160 736)],[qw(text_center bar)]],
+      [[qw(translate 308 736)],[qw(text_right baz)]],
 ), 'justify right and center') or note explain $pdf;
 
 ok(!$pdf->match(

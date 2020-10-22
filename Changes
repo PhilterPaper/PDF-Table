@@ -1,19 +1,18 @@
 Change history for Perl extension PDF::Table.
 
-=== Version 1.000 (2020-10-17)  UNRELEASED
-
-*Problem with padding when one column had larger font size: insufficient
-   space at bottom of each cell. re-examine table row heights afresh.
-
-*Problem with header row picking up justification of previous row (on repeat)
-   rather than using the fixed justification. consider pulling out header row
-   (and eventually footer row) at beginning, and freezing its characteristics.
+=== Version 1.000 (2020-10-22)  UNRELEASED
 
 *Add rowspan similar to colspan, to permit spanning of rows.
 
 *Old "borders" was vertical and horizontal rules PLUS outside rules (frame).
    Separate into "frame" (outside) and "rules" (inside), reserving "border"
    for per-cell border + margin (TBD later).
+
+ lib/PDF/Table.pm, INFO/Deprecated, INFO/Table.html, MANIFEST, 
+   examples/chess.pl, t/PDF-Table.t, t/lib/PDFAPI2Mock.pm, util/3_examples.pl
+  Clean up handling of minimum and maximum cell widths (min_w and max_w).
+   Clean up handling of background and foreground colors. Add chess.pl example
+   to show off color handling. Update t-tests for slight coordinate changes.
 
  Add row_props (row properties) similar to column_props, to set things on a
    per-row basis.
@@ -29,7 +28,7 @@ Change history for Perl extension PDF::Table.
    code to use the new setting names. The settings involved are:
       'start_y'               is now 'y'
       'start_h'               is now 'h'
-      'lead'                  is now 'leading'
+      'row_height'            is now 'min_rh'
       'background_color'      is now 'bg_color'
       'background_color_odd'  is now 'bg_color_odd'
       'background_color_even' is now 'bg_color_even'
@@ -37,6 +36,7 @@ Change history for Perl extension PDF::Table.
       'font_color_odd'        is now 'fg_color_odd'
       'font_color_even'       is now 'fg_color_even'
       'font_underline'        is now 'underline'
+      'lead'                  is now 'leading'
    These are listed in INFO/Deprecated. In the near future, the examples and
    t-tests will be updated to use the new setting names.
 

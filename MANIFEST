@@ -3,6 +3,7 @@
 Changes
 examples/010_fonts.pl
 examples/colspan.pl
+examples/chess.pl
 examples/header.pl
 examples/header_repeat_with_cell_props.pl
 examples/PDFpref

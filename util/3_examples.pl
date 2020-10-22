@@ -37,6 +37,9 @@ my (@example_list, @example_results);
   push @example_list, "sample1.pl";
   push @example_results, "show a number of PDF::Table capabilities.\n";
 
+  push @example_list, "chess.pl";
+  push @example_results, "show a chessboard with some effects.\n";
+
 # run with perl examples/<file> [args]
 
 my %args;

@@ -190,15 +190,15 @@ sub table {
         'padding_bottom'        => 1,  # global
         'bg_color'              => 1,  # global, header, row, column, cell
           'background_color'    => 1,  #  deprecated
-        'bg_color_odd'          => 1,  # global
+        'bg_color_odd'          => 1,  # global, column, cell
           'background_color_odd'=> 1,  #  deprecated
-        'bg_color_even'         => 1,  # global
+        'bg_color_even'         => 1,  # global, column, cell
           'background_color_even'=> 1,  # deprecated
         'fg_color'              => 1,  # global, header, row, column, cell
           'font_color'          => 1,  #  deprecated
-        'fg_color_odd'          => 1,  # global
+        'fg_color_odd'          => 1,  # global, column, cell
           'font_color_odd'      => 1,  #  deprecated
-        'fg_color_even'         => 1,  # global
+        'fg_color_even'         => 1,  # global, column, cell
           'font_color_even'     => 1,  #  deprecated
         'border'                => 1,  # global
         'border_color'          => 1,  # global
@@ -212,7 +212,8 @@ sub table {
           'font_underline'      => 1,  #  deprecated
         'min_w'                 => 1,  # global, header, row, column, cell
         'max_w'                 => 1,  # global, header, row, column, cell
-        'row_height'            => 1,  # global, header, row, column, cell
+        'min_rh'                 => 1,  # global, header, row, column, cell
+          'row_height'          => 1,  # deprecated
         'new_page_func'         => 1,  # global
         'header_props'          => 1,   # includes sub-settings like repeat
         'row_props'             => 1,   # includes sub-settings like fg_color
@@ -347,13 +348,6 @@ sub table {
                           undef; # merely stating undef is the intended default
     my $max_word_len    = $arg{'max_word_length' } || $max_wordlen_default;
     my $default_text    = $arg{'default_text'  } // $empty_cell_text;
-
-    # odd and even row colors (bg/fg) can be overridden
-    # FIX doc to reflect this
-    my $bg_color_even   = $arg{'bg_color_even' } || undef;
-    my $bg_color_odd    = $arg{'bg_color_odd'  } || undef;
-    my $fg_color_even   = $arg{'fg_color_even' } || undef;
-    my $fg_color_odd    = $arg{'fg_color_odd'  } || undef;
     my $border_color    = $arg{'border_color'  } || $fg_color_default;
 
     # An array ref of arrayrefs whose values are
@@ -375,7 +369,8 @@ sub table {
     my ($cell_font, $cell_font_size, $cell_underline, $cell_justify, 
         $cell_height, $cell_pad_top, $cell_pad_right, $cell_pad_bot, 
         $cell_pad_left, $cell_leading, $cell_max_word_len, $cell_bg_color,
-        $cell_fg_color, $cell_min_w, $cell_max_w);
+        $cell_fg_color, $cell_bg_color_even, $cell_bg_color_odd,
+        $cell_fg_color_even, $cell_fg_color_odd, $cell_min_w, $cell_max_w);
 
     # for use by find_value()
     my $GLOBALS = [$cell_props, $col_props, $row_props, -1, -1, \%arg];
@@ -387,9 +382,9 @@ sub table {
     #
     # $rows_height->[$row_idx] array overall height of each row
     # $calc_column_widths overall width of each column
-    # $row_col_widths->[$row_idx] array of widths per row
-    #   at this point, could have different widths within a column, or
-    #   different heights within a row!
+    my $col_min_width = []; # holds the running width of each column
+    my $col_max_width = []; #  min and max (min_w & longest word, max_w &
+                            #  length of content
     for ( my $row_idx = 0; $row_idx < scalar(@$data) ; $row_idx++ ) {
         $GLOBALS->[3] = $row_idx;
         my $column_widths = []; # holds the width of each column
@@ -400,6 +395,8 @@ sub table {
               $col_idx < scalar(@{$data->[$row_idx]}); 
               $col_idx++ ) {
             $GLOBALS->[4] = $col_idx;
+            $col_min_width->[$col_idx]=0 if !defined $col_min_width->[$col_idx];
+            $col_max_width->[$col_idx]=0 if !defined $col_max_width->[$col_idx];
 
             if ( !$row_idx && $do_headers ) {
                 # header row
@@ -408,22 +405,28 @@ sub table {
                 $cell_font         = $header_props->{'font'};
                 $cell_font_size    = $header_props->{'font_size'};
                 $cell_leading      = $header_props->{'leading'};
-                $cell_height       = $header_props->{'row_height'};
-                $cell_pad_top      = $header_props->{'padding_top'};
-                $cell_pad_right    = $header_props->{'padding_right'};
-                $cell_pad_bot      = $header_props->{'padding_bottom'};
-                $cell_pad_left     = $header_props->{'padding_left'};
+                $cell_height       = $header_props->{'min_rh'};
+                $cell_pad_top      = $header_props->{'padding_top'} ||
+                                     $header_props->{'padding'};
+                $cell_pad_right    = $header_props->{'padding_right'} ||
+                                     $header_props->{'padding'};
+                $cell_pad_bot      = $header_props->{'padding_bottom'} ||
+                                     $header_props->{'padding'};
+                $cell_pad_left     = $header_props->{'padding_left'} ||
+                                     $header_props->{'padding'};
                 $cell_max_word_len = $header_props->{'max_word_length'};
                 $cell_min_w        = $header_props->{'min_w'};
                 $cell_max_w        = $header_props->{'max_w'};
+               # items not of interest for determining geometry
                #$cell_underline    = $header_props->{'underline'};
                #$cell_def_text     = $header_props->{'default_text'};
                #$cell_justify      = $header_props->{'justify'};
                #$cell_bg_color     = $header_props->{'bg_color'};
                #$cell_fg_color     = $header_props->{'fg_color'};
-                if (!defined $cell_font_size) { 
-                    $cell_font_size = $fnt_size + 2;
-                }
+               #$cell_bg_color_even= undef;
+               #$cell_bg_color_odd = undef;
+               #$cell_fg_color_even= undef;
+               #$cell_fg_color_odd = undef;
             } else {
                 # not a header row, so uninitialized
                 $is_header_row     = 0;
@@ -438,11 +441,16 @@ sub table {
                 $cell_max_word_len = undef;
                 $cell_min_w        = undef;
                 $cell_max_w        = undef;
+               # items not of interest for determining geometry
                #$cell_underline    = undef;
                #$cell_def_text     = undef;
                #$cell_justify      = undef;
                #$cell_bg_color     = undef;
                #$cell_fg_color     = undef;
+               #$cell_bg_color_even= undef;
+               #$cell_bg_color_odd = undef;
+               #$cell_fg_color_even= undef;
+               #$cell_fg_color_odd = undef;
             }
 
             # Get the most specific value if none was already set from header_props
@@ -454,11 +462,17 @@ sub table {
                                             'font', '', $fnt_obj, $GLOBALS);
             $cell_font_size    = find_value($cell_font_size, 
                                            'font_size', '', 0, $GLOBALS);
-            if ($cell_font_size == 0) { $cell_font_size = $fnt_size; }
+            if ($cell_font_size == 0) { 
+                if ($is_header_row) {
+                    $cell_font_size = $fnt_size + 2; 
+                } else {
+                    $cell_font_size = $fnt_size;
+                }
+            }
             $cell_leading      = find_value($cell_leading, 'leading', 
                                             '', -1, $GLOBALS);
             $cell_height       = find_value($cell_height, 
-                                            'row_height', '', 0, $GLOBALS);
+                                            'min_rh', '', 0, $GLOBALS);
             $cell_pad_top      = find_value($cell_pad_top, 'padding_top', 
                                             'padding', $padding_default, 
                                             $GLOBALS);
@@ -477,6 +491,10 @@ sub table {
                                             '', undef, $GLOBALS);
             $cell_max_w        = find_value($cell_max_w, 'max_w', 
                                             '', undef, $GLOBALS);
+            if (defined $cell_max_w && defined $cell_min_w) {
+                $cell_max_w = max($cell_max_w, $cell_min_w);
+            }
+           # items not of interest for determining geometry
            #$cell_underline = find_value($cell_underline, 
            #                             'underline', '', $underline, $GLOBALS);
            #$cell_def_text  = find_value($cell_def_text, 'default_text', '', 
@@ -487,6 +505,14 @@ sub table {
            #                             '', undef, $GLOBALS);
            #$cell_fg_color  = find_value($cell_fg_color, 'fg_color',
            #                             '', $fg_color_default, $GLOBALS);
+           #$cell_bg_color_even = find_value($cell_bg_color_even, 
+           #                             'bg_color_even', '', undef, $GLOBALS);
+           #$cell_bg_color_odd = find_value($cell_bg_color_odd, 
+           #                             'bg_color_odd', '', undef, $GLOBALS);
+           #$cell_fg_color_even = find_value($cell_fg_color_even, 
+           #                             'fg_color_even', '', undef, $GLOBALS);
+           #$cell_fg_color_odd = find_value($cell_fg_color_odd, 
+           #                             'fg_color_odd', '', undef, $GLOBALS);
 
             my $min_leading    = $cell_font_size * $leading_ratio;
             if ($cell_leading <= 0) {
@@ -517,80 +543,88 @@ sub table {
                 $data->[$row_idx][$col_idx] =~ s#(\S{$cell_max_word_len})(?=\S)#$1 #g;
             }
 
-            # Init cell size limits
+            # Init cell size limits (per row)
             $space_w                   = $txt->advancewidth( "\x20" );
-            $column_widths->[$col_idx] = 0;
+                # font/size can change for each cell, so space width can vary
+            $column_widths->[$col_idx] = 0;  # per-row basis
             $max_col_w                 = 0;
             $min_col_w                 = 0;
 
             my @words;
             @words = split( /\s+/, $data->[$row_idx][$col_idx] )
                 if $data->[$row_idx][$col_idx];
+            # TBD count up spaces instead of assuming one between each word,
+            #       don't know what to do about \t (not defined!). NBSP would
+            #       be treated as non-space for these calculations, not sure
+            #       how it would render. \r, \n, etc. no space? then there is
+            #       check how text is split into lines in text_block if 
+            #       multiple spaces between words.
 
             # for cell, minimum width is longest word, maximum is entire text
             # treat header row like any data row for this
+            # NOTE that cells with only blanks will be treated as empty (no
+            #   words) and have only L+R padding for a width!
             foreach ( @words ) {
                 unless ( exists $word_widths->{$_} ) {
                     # Calculate the width of every word and add the space width to it
-                    $word_widths->{$_} = $txt->advancewidth( $_ ) + $space_w;
+                    $word_widths->{$_} = $txt->advancewidth($_);
                 }
 
-                $min_col_w                     = $word_widths->{$_} if $word_widths->{$_} > $min_col_w;
+                # minimum width is longest word or fragment
+                $min_col_w = max($min_col_w, $word_widths->{$_});
                 if ($max_col_w) {
                     # already have text, so add a space first
-                    $max_col_w                 += $word_widths->{$_} + $space_w;
-                    $column_widths->[$col_idx] += $word_widths->{$_} + $space_w;
+                    # note that multiple spaces between words become one!
+                    $max_col_w += $space_w;
                 } else {
                     # first word, so no space [before]
-                    $max_col_w                 += $word_widths->{$_};
-                    $column_widths->[$col_idx] += $word_widths->{$_};
                 }
+                $max_col_w += $word_widths->{$_};
             }
 
+            # at this point we have longest word (min_col_w), overall length
+            # (max_col_w) of this cell. add L+R padding
             $min_col_w                 += $cell_pad_left + $cell_pad_right;
+            $min_col_w = max($min_col_w, $cell_min_w) if defined $cell_min_w;
             $max_col_w                 += $cell_pad_left + $cell_pad_right;
-            $column_widths->[$col_idx] += $cell_pad_left + $cell_pad_right;
+            $max_col_w = min($max_col_w, $cell_max_w) if defined $cell_max_w;
+            $max_col_w = max($min_col_w, $max_col_w);
+            $col_min_width->[$col_idx] = max($col_min_width->[$col_idx], $min_col_w);
+            $col_max_width->[$col_idx] = max($col_max_width->[$col_idx], $max_col_w);
+            $column_widths->[$col_idx] = $max_col_w;
 
-            # Keep a running total of the overall min and max widths
-            $col_props->[$col_idx]->{'min_w'} ||= 0;
-            $col_props->[$col_idx]->{'max_w'} ||= 0;
-
-            # Calculated Minimum Column Width is more than user-defined?
-            $col_props->[$col_idx]->{'min_w'} = max($min_col_w, $cell_min_w||0);
 
             # not sure what point of "maximum width" is, as a long line will
             # usually be folded into several lines
             # TBD what we need is how many lines of text will be produced, to
             # get the cell height
-            # Calculated Maximum Column Width is more than user-defined?
-            $col_props->[$col_idx]->{'max_w'} = max($max_col_w, $cell_max_w||0);
-        } # End of for (my $col_idx....
+        } # (End of cols) for (my $col_idx....
 
         $row_col_widths->[$row_idx] = $column_widths;
 
         # Copy the calculated row properties of header row.
         @$h_row_widths = @$column_widths if !$row_idx && $do_headers;
-    } # End of for ( my $row_idx   row heights and column widths
+
+    } # (End of rows) for ( my $row_idx   row heights and column widths
 
     # Calc real column widths and expand table width if needed.
     my $calc_column_widths;
-    ($calc_column_widths, $width) = CalcColumnWidths( $col_props, $width );
+    ($calc_column_widths, $width) = 
+        CalcColumnWidths( $width, $col_min_width, $col_max_width );
 
     # ----------------------------------------------------------------------
-
     # Let's draw what we have!
     my $row_idx      = 0;  # first row (might be header)
-    my $row_is_odd   = 1;  # first data row output is "odd"
+    my $row_is_odd   = 0;  # first data row output (row 0) is "even"
     # Store header row height for later use if headers have to be repeated
-    my $header_row_height = $rows_height->[0];
+    my $header_min_rh = $rows_height->[0]; # harmless if no header
 
     my ( $gfx, $gfx_bg, $bg_color, $fg_color, 
          $bot_margin, $table_top_y, $text_start_y);
 
     # Each iteration adds a new page as necessary
-    while (scalar(@{$data})) {
-        my ($page_header);
-        my $columns_number = 0;
+    while (scalar(@{$data})) {  # still row(s) remaining to output
+        my ($page_header, $columns_number);
 
         if ($pg_cnt == 1) {
             # on first page output
@@ -644,7 +678,7 @@ sub table {
                 # Then prepend it to master data array
                 unshift @$data, @$page_header;
                 unshift @$row_col_widths, $hrw;
-                unshift @$rows_height, $header_row_height;
+                unshift @$rows_height, $header_min_rh;
 
                 $first_row = 1; # Means YES
                 # Roll back the row_idx because a new header row added
@@ -692,7 +726,10 @@ sub table {
             $gfx->strokecolor($border_color);
             $gfx->linewidth($line_w);
 
-            # Draw the top line
+            # Draw the top line (border)
+            # TBD: if continuation page, use rule-width line if starting a new
+            #      row, or a dashed rule-width line if splitting a row.
+            #      if repeated header, it always gets the full border
             if ($horiz_borders) {
                 $gfx->move( $xbase , $cur_y );
                 $gfx->hline($xbase + $width );
@@ -712,42 +749,28 @@ sub table {
             my $data_row = shift @{$data};
 
             # Get max columns number to know later how many vertical lines to draw
-            $columns_number = max(scalar(@$data_row), $columns_number);
+            $columns_number = scalar(@$data_row);
 
             # Get the next set of row related settings
-            # Row Height
-            my $current_row_height = shift @$rows_height;
+            # Row Height (starting point for $current_min_rh)
+            my $current_min_rh = shift @$rows_height;
 
             # Row cell widths
             my $data_row_widths = shift @$row_col_widths;
 
-            # Choose colors for this row. may still be 'undef' after this!
-            if ($oddeven_default) {  # new method with consistent odd/even
-                $bg_color = $row_is_odd ? $bg_color_odd : $bg_color_even;
-                $fg_color = $row_is_odd ? $fg_color_odd : $fg_color_even;
-                if ( !($first_row and $do_headers) ) {
-                    # only toggle if not a header
-                    $row_is_odd = ! $row_is_odd;
-                }
-            } else {  # old method with inconsistent odd/even
-                $bg_color = $row_idx % 2 ? $bg_color_even : $bg_color_odd;
-                $fg_color = $row_idx % 2 ? $fg_color_even : $fg_color_odd;
-            }
-
             # remember, don't have cell_ stuff yet, just row items ($row_idx)!
             my $cur_x        = $xbase;
             my $leftovers    = undef;   # Reference to text that is returned from text_block()
-            my $do_leftovers = 0;
+            my $do_leftovers = 0; # part of a row spilled to next page
 
             # Process every cell(column) from current row
+            # due to colspan, some rows have fewer columns than others
             my @save_bg_color; # clear out for each row
-            for ( my $col_idx = 0; $col_idx < scalar(@$data_row); $col_idx++ ) {
+            my @save_fg_color; 
+            for ( my $col_idx = 0; $col_idx < $columns_number; $col_idx++ ) {
                 $GLOBALS->[3] = $row_idx;
                 $GLOBALS->[4] = $col_idx;
                 # now have each cell[$row_idx][$col_idx]
-                # FIX both max AND min need to be defined? what is this for?
-               #next unless defined $col_props->[$col_idx]->{'max_w'} ||
-               #            defined $col_props->[$col_idx]->{'min_w'};
                 next if $colspanned{$row_idx.'_'.$col_idx};
                 $leftovers->[$col_idx] = undef;
 
@@ -757,6 +780,7 @@ sub table {
                     $cell_pad_left, $cell_justify, $cell_fg_color, 
                     $cell_bg_color, $cell_def_text, $cell_min_w, $cell_max_w);
                 # FIX Note that cell_def_text bypasses max_word_len split!
+                #     It may also bypass minimum cell width!
 
                 if ($first_row and $do_headers) {
                     $is_header_row     = 1;
@@ -764,11 +788,15 @@ sub table {
                     $cell_font         = $header_props->{'font'};
                     $cell_font_size    = $header_props->{'font_size'};
                     $cell_leading      = $header_props->{'leading'};
-                    $cell_height       = $header_props->{'row_height'};
-                    $cell_pad_top      = $header_props->{'padding_top'};
-                    $cell_pad_right    = $header_props->{'padding_right'};
-                    $cell_pad_bot      = $header_props->{'padding_bottom'};
-                    $cell_pad_left     = $header_props->{'padding_left'};
+                    $cell_height       = $header_props->{'min_rh'};
+                    $cell_pad_top      = $header_props->{'padding_top'} ||
+                                         $header_props->{'padding'};
+                    $cell_pad_right    = $header_props->{'padding_right'} ||
+                                         $header_props->{'padding'};
+                    $cell_pad_bot      = $header_props->{'padding_bottom'} ||
+                                         $header_props->{'padding'};
+                    $cell_pad_left     = $header_props->{'padding_left'} ||
+                                         $header_props->{'padding'};
                     $cell_max_word_len = $header_props->{'max_word_length'};
                     $cell_min_w        = $header_props->{'min_w'};
                     $cell_max_w        = $header_props->{'max_w'};
@@ -777,11 +805,12 @@ sub table {
                     $cell_justify      = $header_props->{'justify'};
                     $cell_bg_color     = $header_props->{'bg_color'};
                     $cell_fg_color     = $header_props->{'fg_color'};
-                    if (!defined $cell_font_size) { 
-                        $cell_font_size = $fnt_size + 2;
-                    }
+                    $cell_bg_color_even= undef;
+                    $cell_bg_color_odd = undef;
+                    $cell_fg_color_even= undef;
+                    $cell_fg_color_odd = undef;
                 } else {
-                    # not header row, so initialize to any row_props
+                    # not header row, so initialize to undefined
                     $is_header_row     = 0;
                     $cell_font         = undef;
                     $cell_font_size    = undef;
@@ -799,6 +828,10 @@ sub table {
                     $cell_justify      = undef;
                     $cell_bg_color     = undef;
                     $cell_fg_color     = undef;
+                    $cell_bg_color_even= undef;
+                    $cell_bg_color_odd = undef;
+                    $cell_fg_color_even= undef;
+                    $cell_fg_color_odd = undef;
                 }
 
                 # Get the most specific value if none was already set from header_props
@@ -807,8 +840,12 @@ sub table {
                 # FIX need to set text size after this
                 $cell_font_size  = find_value($cell_font_size, 
                                               'font_size', '', 0, $GLOBALS);
-                if ($cell_font_size == 0) {
-                    $cell_font_size  = $fnt_size;
+                if ($cell_font_size == 0) { 
+                    if ($is_header_row) {
+                        $cell_font_size = $fnt_size + 2; 
+                    } else {
+                        $cell_font_size = $fnt_size;
+                    }
                 }
                 $cell_leading    = find_value($cell_leading, 'leading', 
                                               'leading', -1, $GLOBALS);
@@ -816,7 +853,7 @@ sub table {
                     $cell_leading = $cell_font_size * $leading_ratio;
                 }
                 $cell_height     = find_value($cell_height, 
-                                              'row_height', '', 0, $GLOBALS);
+                                              'min_rh', '', 0, $GLOBALS);
                 $cell_pad_top    = find_value($cell_pad_top, 'padding_top', 
                                               'padding', $padding_default, 
                                               $GLOBALS);
@@ -836,6 +873,9 @@ sub table {
                                                 '', undef, $GLOBALS);
                 $cell_max_w        = find_value($cell_max_w, 'max_w', 
                                                 '', undef, $GLOBALS);
+                if (defined $cell_max_w && defined $cell_min_w) {
+                    $cell_max_w = max($cell_max_w, $cell_min_w);
+                }
                 $cell_underline  = find_value($cell_underline, 
                                               'underline', '', $underline, 
                                               $GLOBALS);
@@ -843,6 +883,7 @@ sub table {
                                               '', $default_text, $GLOBALS);
                 $cell_justify    = find_value($cell_justify, 'justify', 
                                               'justify', 'left', $GLOBALS);
+
                 # cell bg may still be undef after this, fg must be defined
                 if ($is_header_row) {
                     $cell_bg_color   = find_value($cell_bg_color, 'bg_color', 
@@ -851,14 +892,45 @@ sub table {
                     $cell_fg_color   = find_value($cell_fg_color, 'fg_color',
                                             '', $h_fg_color_default, 
                                             $GLOBALS);
+                    # don't use even/odd colors in header
                 } else {
-                    # if odd/even defined, will be using that as default 
                     $cell_bg_color   = find_value($cell_bg_color, 'bg_color', 
-                                            '', $bg_color, $GLOBALS);
+                                            '', undef, $GLOBALS);
                     $cell_fg_color   = find_value($cell_fg_color, 'fg_color',
-                                            '', $fg_color || $fg_color_default, 
-                                            $GLOBALS);
+                                            '', undef, $GLOBALS);
+                    $cell_bg_color_even = find_value($cell_bg_color_even, 
+                                            'bg_color_even', '', undef, $GLOBALS);
+                    $cell_bg_color_odd = find_value($cell_bg_color_odd, 
+                                            'bg_color_odd', '', undef, $GLOBALS);
+                    $cell_fg_color_even = find_value($cell_fg_color_even, 
+                                            'fg_color_even', '', undef, $GLOBALS);
+                    $cell_fg_color_odd = find_value($cell_fg_color_odd, 
+                                            'fg_color_odd', '', undef, $GLOBALS);
                 }
+
+                # Choose colors for this row. may still be 'undef' after this!
+                # cell, column, row, global color settings always override
+                #   whatever _even/odd sets
+                $bg_color = $cell_bg_color;
+                $fg_color = $cell_fg_color;
+                if ($oddeven_default) {  # new method with consistent odd/even
+                    if (!defined $bg_color) {
+                        $bg_color = $row_is_odd ? $cell_bg_color_odd : $cell_bg_color_even;
+                    }
+                    if (!defined $fg_color) {
+                        $fg_color = $row_is_odd ? $cell_fg_color_odd : $cell_fg_color_even;
+                    }
+                    # don't toggle odd/even yet, wait til end of row
+                } else {  # old method with inconsistent odd/even
+                    if (!defined $bg_color) {
+                        $bg_color = $row_idx % 2 ? $cell_bg_color_even : $cell_bg_color_odd;
+                    }
+                    if (!defined $fg_color) {
+                        $fg_color = $row_idx % 2 ? $cell_fg_color_even : $cell_fg_color_odd;
+                    }
+                }
+                # force fg_color to have a value, but bg_color may remain undef
+                $fg_color ||= $fg_color_default; 
 
                ## check if so much padding that baseline forced below cell 
                ## bottom, possibly resulting in infinite loop!
@@ -873,17 +945,43 @@ sub table {
                 # Define the font y base position for this line.
                 $text_start_y = $cur_y - $cell_pad_top - $cell_font_size;
 
+                # VARIOUS WIDTHS:
+                #  $col_min_w->[$col_idx] the minimum needed for a column,
+                #    based on requested min_w and maximum word size (longest
+                #    word just fits). this is the running minimum, not the
+                #    per-row value.
+                #  $col_max_w->[$col_idx] the maximum needed for a column,
+                #    based on requested max_w and total length of text, as if
+                #    the longest entire cell is to be written out as one line.
+                #    this is the running maximum, not the per-row value.
+                #    
+                #  $calc_column_widths->[$col_idx] = calculated column widths
+                #    (at least the minimum requested and maximum word size)
+                #    apportioned across the full requested width. these are the
+                #    column widths you'll actually see drawn (before colspan).
+                #  $actual_column_widths[$row_idx][$col_idx] = calculated width
+                #    for this cell, increased by colspan (cols to right).
+                #
+                #  $data_row_widths->[$col_idx] = cell content width list for 
+                #    a row, first element of row_col_widths. could vary down a
+                #    column due to differing length of content.
+                #  $row_col_widths->[$row_idx] = list of max widths per row, 
+                #    which can vary down a column due to differing length of 
+                #    content.
+                #  $column_widths->[$col_idx] = list of maximum cell widths 
+                #    across this row, used to load up $row_col_widths and
+                #    $h_row_widths (header).
+
                 # Initialize cell font object
                 $txt->font( $cell_font, $cell_font_size );
-                $txt->fillcolor($cell_fg_color);
+                $txt->fillcolor($fg_color);
 
                 # make sure cell's text is never undef
                 $data_row->[$col_idx] //= $cell_def_text;
 
+                # Handle colspan
                 my $c_cell_props = $cell_props->[$row_idx][$col_idx];
                 my $this_cell_width = $calc_column_widths->[$col_idx];
-
-                # Handle colspan (issue #46)
                 if ($c_cell_props && $c_cell_props->{'colspan'} && $c_cell_props->{'colspan'} > 1) {
                     my $colspan = $c_cell_props->{'colspan'};
                     for my $offset (1 .. $colspan - 1) {
@@ -897,41 +995,52 @@ sub table {
                 my %text_options;
                 if ($cell_underline) {
                     $text_options{'-underline'} = $cell_underline;
-                    $text_options{'-strokecolor'} = $cell_fg_color;
+                    $text_options{'-strokecolor'} = $fg_color;
                 }
                 # If the content is wider than the specified width, 
                 # we need to add the text as a text block
                 # Otherwise just use the $page->text() method
-                if ( $data_row->[$col_idx] !~ m/(.\n.)/ and
+                my $content = $data_row->[$col_idx];
+                if ( $content !~ m/(.\n.)/ and
                      $data_row_widths->[$col_idx] and
-                     $data_row_widths->[$col_idx] <= $this_cell_width ) {
-                    my $space = $cell_pad_left;
+                     $data_row_widths->[$col_idx] <= 
+                         $actual_column_widths[$row_idx][$col_idx] ) {
+                    # no embedded newlines (no multiple lines)
+                    # and the content width is <= calculated column width?
+                    # content will fit on one line, use text_* calls
                     if      ($cell_justify eq 'right') {
-                        $space = $this_cell_width - ($txt->advancewidth($data_row->[$col_idx]) + $cell_pad_right);
+                        # right justified before right padding
+                        $txt->translate($cur_x + $actual_column_widths[$row_idx][$col_idx] - $cell_pad_right, $text_start_y);
+                        $txt->text_right($content, %text_options);
                     } elsif ($cell_justify eq 'center') {
-                        $space = ($this_cell_width - $txt->advancewidth($data_row->[$col_idx])) / 2;
+                        # center text within the margins (padding)
+                        $txt->translate($cur_x + $cell_pad_left + ($actual_column_widths[$row_idx][$col_idx] - $cell_pad_left - $cell_pad_right)/2, $text_start_y);
+                        $txt->text_center($content, %text_options);
+                    } else { 
+                        # left justified after left padding
+                        $txt->translate($cur_x + $cell_pad_left, $text_start_y);
+                        $txt->text($content, %text_options);
                     }
-                    $txt->translate( $cur_x + $space, $text_start_y );
-                    $txt->text( $data_row->[$col_idx], %text_options );
+                    
                 } else {
                     my ($width_of_last_line, $ypos_of_last_line, 
-                        $left_over_text) 
+                          $left_over_text) 
                       = $self->text_block(
-                        $txt,
-                        $data_row->[$col_idx],
-                        'x'        => $cur_x + $cell_pad_left,
-                        'y'        => $text_start_y,
-                        'w'        => $this_cell_width - 
-                                        $cell_pad_left - $cell_pad_right,
-                        'h'        => $cur_y - $bot_margin - 
-                                        $cell_pad_top - $cell_pad_bot,
-                        'align'    => $cell_justify,
-                        'leading'  => $cell_leading,
-                        'text_opt' => \%text_options,
+                          $txt,
+                          $content,
+                          'x'        => $cur_x + $cell_pad_left,
+                          'y'        => $text_start_y,
+                          'w'        => $actual_column_widths[$row_idx][$col_idx] - 
+                                          $cell_pad_left - $cell_pad_right,
+                          'h'        => $cur_y - $bot_margin - 
+                                          $cell_pad_top - $cell_pad_bot,
+                          'align'    => $cell_justify,
+                          'leading'  => $cell_leading,
+                          'text_opt' => \%text_options,
                     );
                     # Desi - Removed $leading because of 
                     #        fixed incorrect ypos bug in text_block
-                    $current_row_height = max($current_row_height,
+                    $current_min_rh = max($current_min_rh,
                                $cur_y - $ypos_of_last_line + $cell_pad_bot +
                                ($cell_leading - $cell_font_size)*2.5);
                     # 2.5 multiplier is a good-looking fudge factor to add a 
@@ -951,20 +1060,27 @@ sub table {
                                             $row_idx,
                                             $col_idx,
                                             $cur_x,
-                                            $cur_y-$current_row_height,
-                                            $this_cell_width,
-                                            $current_row_height
+                                            $cur_y-$current_min_rh,
+                                            $actual_column_widths[$row_idx][$col_idx],
+                                            $current_min_rh
                                            );
                 }
 
-                $cur_x += $this_cell_width;
-                $save_bg_color[$col_idx] = $cell_bg_color;
+                $cur_x += $actual_column_widths[$row_idx][$col_idx];
+                $save_bg_color[$col_idx] = $bg_color;
+                $save_fg_color[$col_idx] = $fg_color;
             } # done looping through columns for this row
             if ( $do_leftovers ) {
-                # leftover text to output later as new-ish row?
+                # leftover text in row to output later as new-ish row?
                 unshift @$data, $leftovers;
                 unshift @$row_col_widths, $data_row_widths;
-                unshift @$rows_height, $current_row_height;
+                unshift @$rows_height, $current_min_rh;
+            }
+            if ($oddeven_default) {  # new method with consistent odd/even
+                if ( !($first_row and $do_headers) ) {
+                    # only toggle if not a header
+                    $row_is_odd = ! $row_is_odd;
+                }
             }
 
             # Draw cell bgcolor
@@ -977,30 +1093,32 @@ sub table {
                  $col_idx < scalar(@$data_row); 
                  $col_idx++) {
                 # restore cell_bg_color
-                $cell_bg_color = $save_bg_color[$col_idx];
+                $bg_color = $save_bg_color[$col_idx];
+                $fg_color = $save_fg_color[$col_idx];
 
         # TBD rowspan!
-                if (defined $cell_bg_color && 
+                if (defined $bg_color && 
                     !$colspanned{$row_idx.'_'.$col_idx}) {
-                    $gfx_bg->rect( $cur_x, $cur_y-$current_row_height,  
-                                   $actual_column_widths[$row_idx][$col_idx], $current_row_height);
-                    $gfx_bg->fillcolor($cell_bg_color);
+                    $gfx_bg->rect( $cur_x, $cur_y-$current_min_rh,  
+                                   $actual_column_widths[$row_idx][$col_idx], $current_min_rh);
+                    $gfx_bg->fillcolor($bg_color);
                     $gfx_bg->fill();
                 }
 
                 # draw left vertical border of this cell
                 if ($gfx && $vert_borders && 
                     !$colspanned{$row_idx.'_'.$col_idx}) {
-                    $gfx->move($cur_x, $cur_y-$current_row_height);
+                    $gfx->move($cur_x, $cur_y-$current_min_rh);
                     $gfx->vline( $cur_y );
                 }
 
                 $cur_x += $calc_column_widths->[$col_idx];
             } # End of for (my $col_idx....
 
-# FIX does current row height cover multiple lines of text?
-            $cur_y -= $current_row_height;
+            $cur_y -= $current_min_rh;
             if ($gfx && $horiz_borders) {
+                # TBD: with rowspan, will not be able to draw a line all the
+                #      way across! also, need explicit bottom border draw
                 $gfx->move(  $xbase , $cur_y );
                 $gfx->hline( $xbase + $width );
             }
@@ -1031,26 +1149,36 @@ sub table {
 
 ###################################################################
 # calculate the column widths
-#   min_w was longest word in column, max_w was total text width in col
-#   apply per-column min_w and max_w to update widths
-#   TBD: rules and borders? currently overlay cells
-#   expand to fill to desired width
+#   minimum: any specified min_w, increased to longest word in column
+#   maximum: largest total length of content, reduced to any spec. max_w
+#   maximum must be at least as large as minimum
+#   TBD: rules and borders? currently overlay cells. consider 
+#        expanding h and w by width of rules and borders. would involve
+#        mucking with cell background fill dimensions? remember that
+#        rule widths could vary by cell. perhaps could just increase cell
+#        dimensions (and padding) by rule widths, and continue to overlay?
+#   expand min widths to fill to desired total width, try not to
+#     exceed maximum widths
 ###################################################################
 
 sub CalcColumnWidths {
-    my $col_props   = shift;
-    my $avail_width = shift; # specified table width
-    my $min_width   = 0;     # calculate minimum width needed
+    my $avail_width   = shift;  # specified table width
+    my $col_min_width = shift;  # content-driven min widths incl. min_w
+    my $col_max_width = shift;  # content-driven max widths incl. max_w
 
+    my $min_width   = 0;     # calculate minimum overall table width needed
     my $calc_widths ;        # each column's calculated width
     my $temp;
 
-    # total requested minimum width (column properties)
-    for (my $j = 0; $j < scalar( @$col_props); $j++) {
-        $calc_widths->[$j] = $col_props->[$j]->{'min_w'} || 0;
+    # total requested minimum width (min_w property) plus min for content
+    for (my $j = 0; $j < scalar(@$col_min_width); $j++) {
+        # min_w requested minimum AND longest word
+        $calc_widths->[$j] = $col_min_width->[$j];
+        # overall table minimum width
         $min_width += $calc_widths->[$j];
     }
 
+    # minimum possible width for each column results in wider table?
     # I think this is the optimal variant when a good view can be guaranteed
     if ($avail_width < $min_width) {
         carp "!!! Warning !!!\n Table width expanded from $avail_width to ",int($min_width)+1,".\n",
@@ -1058,21 +1186,28 @@ sub CalcColumnWidths {
     }
 
     # Calculate how much can be added to every column to fit the available width
-
     # Allow columns to expand to max_w before applying extra space equally.
+    # $col_max_width is SMALLER of max_w and content length, but at least as
+    #   large as $col_min_width
     my $is_last_iter;
-    for (;;) {
-        my $span = ($avail_width - $min_width) / scalar( @$col_props);
-        last if $span <= 0;
+    my $num_cols = scalar(@$calc_widths);
+    while (1) {
+        # amount to widen each cell (equally)
+        my $span = ($avail_width - $min_width) / $num_cols;
+        last if $span <= 0.1; # have filled out all columns to sum to desired w?
 
         $min_width = 0;
-        my $next_will_be_last_iter = 1;
-        for (my $j = 0; $j < scalar(@$col_props); $j++) {
-            my $new_w = $calc_widths->[$j] + $span;
+        my $next_will_be_last_iter = 1; # at least two iterations
+        for (my $j = 0; $j < $num_cols; $j++) {
 
+            # add extra to be distributed to each, reduce to desired max
+            # EXCEPT on the last time around (break the 'max' limit)
+            my $new_w = $calc_widths->[$j] + $span;
             if (!$is_last_iter) { 
-                $new_w = min($new_w, $col_props->[$j]->{'max_w'});
+                $new_w = min($new_w, $col_max_width->[$j]);
             }
+
+            # if any widths changed, go around again
             if ($calc_widths->[$j] != $new_w) {
                 $calc_widths->[$j] = $new_w;
                 $next_will_be_last_iter = 0;
@@ -1097,12 +1232,18 @@ sub CalcColumnWidths {
 
 sub deprecated_settings {
     my ($data, $row_props, $col_props, $cell_props, $header_props, $argref) = @_;
+# 1 $row_props, 2 $col_props, 3 $cell_props, 4 $header_props
+# need to use $_[n] form so that its call be reference, not value
+#my $data = $_[0]; 
+#my $argref = $_[5];
+#my %arg = %{$argref};
 
     my %cur_names = (
         # old deprecated name        new current name
         #  (old_key)
         'start_y'               => 'y',
         'start_h'               => 'h',
+        'row_height'            => 'min_rh',
         'background_color'      => 'bg_color',
         'background_color_odd'  => 'bg_color_odd',
         'background_color_even' => 'bg_color_even',
@@ -1219,7 +1360,7 @@ sub check_settings {
     # TBD $arg{} values, some col, row, cell, header?
     # x, y >= 0; w, h >= 0; x+w < page width; y+h < page height
     # next_h (if def) > 0, next_y (if def) >= 0; next_y+next_h < page height
-    # line widths >= 0, row_height > 0
+    # line widths >= 0, min_rh > 0
     return;
 }
 
@@ -1242,6 +1383,9 @@ sub find_value {
     # $default should never be undefined, except for specific cases!
     if (!defined $default &&
         ($name ne 'underline' && $name ne 'bg_color' &&
+         $name ne 'fg_color' && 
+         $name ne 'bg_color_even' && $name ne 'bg_color_odd' &&
+         $name ne 'fg_color_even' && $name ne 'fg_color_odd' &&
          $name ne 'min_w' && $name ne 'max_w') ) {
         carp "Error! find_value() default value undefined for '$name'\n";
     }
@@ -1282,6 +1426,14 @@ sub find_value {
 #   %arg          settings to control the formatting and
 #                  output.
 #       mandatory: x, y, w, h (block position and dimensions)
+#
+# $text comes in as one string, possibly with \n embedded.
+# split at \n to form 2 or more @paragraphs. each @paragraph
+# is a @paragraphs element split on ' ' (list of words to
+# fill the available width). one word at a time is moved
+# from @paragraph to @line, until the width of the joined
+# @line (with ' ' between words) can't be any larger.
+# TBD: deal with multiple spaces between words
 ############################################################
 
 sub text_block {
@@ -1332,8 +1484,6 @@ sub text_block {
 
     # set some defaults !!!!
     $arg{'leading' } ||= -1;                # leading TBD
-   #$arg{'cell_render_hook' } ||= undef; 
-   #$arg{'fg_color'} ||= $fg_color_default;      # default global text color
 
     # Check if any text to display
     unless ( defined( $text) and length($text) > 0 ) {
@@ -1354,11 +1504,6 @@ sub text_block {
 
     # Calculate width of all words
     my $space_width = $text_object->advancewidth("\x20");
-    my @words = split(/\s+/, $text);
-    foreach (@words) {
-        next if exists $width{$_};
-        $width{$_} = $text_object->advancewidth($_);
-    }
 
     my @paragraph = split(' ', shift(@paragraphs));
     my $first_line = 1;
@@ -1417,13 +1562,33 @@ sub text_block {
         }
 
         # Let's take from paragraph as many words as we can put
-        # into $width - $indent
-        while ( @paragraph and 
-                $text_object->advancewidth( join("\x20", @line)."\x20" . $paragraph[0]) +
-                    $line_width < $width ) {
-            push(@line, shift(@paragraph));
+        # into $width - $indent. repeatedly test with "just one more" word
+        # from paragraph list, until overflow.
+        while ( @paragraph ) { 
+            if ( !@line ) {
+                # first time through, @line is empty
+                # first word in paragraph SHOULD fit!!
+                # TBD: what if $line_width > 0???
+                if ( $text_object->advancewidth( $paragraph[0] ) +
+                     $line_width <= $width ) {
+                    push(@line, shift(@paragraph));
+                    next if @paragraph;
+                } else {
+                    # this should never happen, but just in case, to
+                    # prevent an infinite loop...
+                    die("!!! Error !!! first word in paragraph ($paragraph[0]) doesn't fit into empty line!");
+                }
+            } else {
+                # @line has text in it already
+                if ( $text_object->advancewidth( join(" ", @line)." " . $paragraph[0] ) +
+                     $line_width <= $width ) {
+                    push(@line, shift(@paragraph));
+                    next if @paragraph;
+                }
+            }
+            last;
         }
-        $line_width += $text_object->advancewidth(join('', @line));
+        $line_width += $text_object->advancewidth(join(' ', @line));
 
         # calculate the space width
         $align = $arg{'align'} || 'left';
@@ -1460,11 +1625,12 @@ sub text_block {
 
             # render the line
             $text_object->translate( $xpos, $ypos );
-            # FIX %text_options in text() call
             $endw = $text_object->text( join("\x20", @line), %text_options);
         }
         $first_line = 0;
     } # End of while
+
+    # any leftovers of current paragraph? will return as first new paragraph
     unshift(@paragraphs, join(' ',@paragraph)) if scalar(@paragraph);
 
     return ($endw, $ypos, join("\n", @paragraphs))
@@ -1908,6 +2074,15 @@ B<Default:> C<1>  ($border_w_default)
     'vertical_borders'   => undef, # vertical borders will be 3, as it will 
                                    # fall back to 'border'
 
+Note that both borders and rules overlay the exact boundary between two cells
+(i.e., the centerline). That is, one half of a rule or border will overlay the
+adjoining cells. Rules do not expand the size of the table, although
+borders will (by a total of their thickness/width). If you set particularly
+thick (wide) rules, pay attention to adding some padding on the appropriate
+side(s), so that valuable content is not overlaid. For cells along the outer
+border, one half the width of a border will overlay the cell, so account for
+this in the padding specification.
+
 =item B<border_color> -  Border color for all borders.
 
 B<Value:> Color specifier as 'name' or '#rrggbb'
@@ -1980,17 +2155,19 @@ B<Default:> none
 
 B<Deprecated name:> I<font_underline> (will go away in the future!)
 
-=item B<row_height> - Desired row height.
+=item B<min_rh> - Desired minimum row height.
 
 This setting will be honored only if 
-C<row_height E<gt> font_size + padding_top + padding_bottom> (i.e., it is
+C<min_rh E<gt> font_size + padding_top + padding_bottom> (i.e., it is
 taller than the calculated minimum value).
 
 B<Value:> can be any whole positive number
 
 B<Default:> C<font_size + padding_top + padding_bottom>
 
-    'row_height' => 24,
+    'min_rh' => 24,
+
+B<Deprecated name:> I<row_height> (will go away in the future!)
 
 =item B<new_page_func> - CODE reference to a function that returns a 
 PDF::Builder::Page instance.
@@ -2436,9 +2613,11 @@ a new page and a new block with the leftover.
 
 =item Parameters
 
-    $txt  - a PDF::Builder::Page::Text instance representing the text tool
-    $data - a string that will be placed inside the block
-    %settings - HASH with geometry and formatting parameters.
+    $txt  - a PDF::Builder::Page::Text instance representing the text tool.
+    $data - a string that will be placed inside the block, broken up into
+            lines that fit within the indicated width.
+    %settings - HASH with geometry and formatting parameters. Note that
+                several parameters are mandatory.
 
 =item Returns
 
