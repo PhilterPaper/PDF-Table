@@ -4,10 +4,13 @@ Change history for Perl extension PDF::Table.
 
 *Add rowspan similar to colspan, to permit spanning of rows.
 
-*lib/PDF/Table.pm, MANIFEST, examples/border_rules.pl
+*lib/PDF/Table.pm, MANIFEST, examples/border_rules.pl, util/3_examples.pl
   Old "borders" was vertical and horizontal rules PLUS outside rules (frame).
    Separate into "borders" (outside) and "rules" (inside). Add border_rules.pl
    example to illustrate.
+
+ .github/worksflows/test.yml, README.md  minor fixes in README to make lint
+   run happily, stop checking Table.html.
 
  examples/*.pl  Allow -A or -B on the command line (case insensitive) to
    override PDFpref file (if any) setting. This speeds up testing for PDF::API2
