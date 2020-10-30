@@ -19,5 +19,4 @@ jobs:
       - uses: github/super-linter@v3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          FILTER_REGEX_EXCLUDE: Makefile\.PL
-          FILTER_REGEX_EXCLUDE: .*\.html
+          FILTER_REGEX_EXCLUDE: (Makefile\.PL)|(Table\.html)
