@@ -1,12 +1,17 @@
 Change history for Perl extension PDF::Table.
 
-=== Version 1.000 (2020-10-22)  UNRELEASED
+=== Version 1.000 (2020-10-30)  UNRELEASED
 
 *Add rowspan similar to colspan, to permit spanning of rows.
 
-*Old "borders" was vertical and horizontal rules PLUS outside rules (frame).
-   Separate into "frame" (outside) and "rules" (inside), reserving "border"
-   for per-cell border + margin (TBD later).
+*lib/PDF/Table.pm, MANIFEST, examples/border_rules.pl
+  Old "borders" was vertical and horizontal rules PLUS outside rules (frame).
+   Separate into "borders" (outside) and "rules" (inside). Add border_rules.pl
+   example to illustrate.
+
+ examples/*.pl  Allow -A or -B on the command line (case insensitive) to
+   override PDFpref file (if any) setting. This speeds up testing for PDF::API2
+   vs PDF::Builder (default).
 
  lib/PDF/Table.pm, INFO/Deprecated, INFO/Table.html, MANIFEST, 
    examples/chess.pl, t/PDF-Table.t, t/lib/PDFAPI2Mock.pm, util/3_examples.pl

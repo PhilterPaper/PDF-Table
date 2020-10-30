@@ -6,33 +6,45 @@ use PDF::Table;
 
 # Please use TABSTOP=4 for best view
 # -------------
+# -A or -B on command line to select preferred library (if available)
+# then look for PDFpref file and read A or B forms
 my ($PDFpref, $rcA, $rcB); # which is available?
 my $prefFile = "./PDFpref";
 my $prefDefault = "B"; # PDF::Builder default if no prefFile, or both installed
-if (-f $prefFile && -r $prefFile) {
-    open my $FH, '<', $prefFile or die "error opening $prefFile: $!\n";
-    $PDFpref = <$FH>;
-    if      ($PDFpref =~ m/^A/i) {
-	# something starting with A, assume want PDF::API2
-	$PDFpref = 'A';
-    } elsif ($PDFpref =~ m/^B/i) {
-	# something starting with B, assume want PDF::Builder
-	$PDFpref = 'B';
-    } elsif ($PDFpref =~ m/^PDF:{1,2}A/i) {
-	# something starting with PDF:A or PDF::A, assume want PDF::API2
-	$PDFpref = 'A';
-    } elsif ($PDFpref =~ m/^PDF:{1,2}B/i) {
-	# something starting with PDF:B or PDF::B, assume want PDF::Builder
-	$PDFpref = 'B';
+if (@ARGV) {
+    # A or -A argument: set PDFpref to A else B
+    if ($ARGV[0] =~ m/^-?([AB])/i) {
+	$PDFpref = uc($1);
     } else {
-	print STDERR "Don't see A... or B..., default to $prefDefault\n";
-	$PDFpref = $prefDefault;
+	print STDERR "Unknown command line flag $ARGV[0] ignored.\n";
     }
-    close $FH;
-} else {
-    # no preference expressed, default to PDF::Builder
-    print STDERR "No preference file found, so default to $prefDefault\n";
-    $PDFpref = $prefDefault;
+}
+if (!defined $PDFpref) {
+    if (-f $prefFile && -r $prefFile) {
+        open my $FH, '<', $prefFile or die "error opening $prefFile: $!\n";
+        $PDFpref = <$FH>;
+        if      ($PDFpref =~ m/^A/i) {
+	    # something starting with A, assume want PDF::API2
+	    $PDFpref = 'A';
+        } elsif ($PDFpref =~ m/^B/i) {
+	    # something starting with B, assume want PDF::Builder
+	    $PDFpref = 'B';
+        } elsif ($PDFpref =~ m/^PDF:{1,2}A/i) {
+	    # something starting with PDF:A or PDF::A, assume want PDF::API2
+	    $PDFpref = 'A';
+        } elsif ($PDFpref =~ m/^PDF:{1,2}B/i) {
+	    # something starting with PDF:B or PDF::B, assume want PDF::Builder
+	    $PDFpref = 'B';
+        } else {
+	    print STDERR "Don't see A... or B..., default to $prefDefault\n";
+	    $PDFpref = $prefDefault;
+        }
+        close $FH;
+    } else {
+        # no preference expressed, default to PDF::Builder
+        print STDERR "No preference file found, so default to $prefDefault\n";
+        $PDFpref = $prefDefault;
+    }
 }
 foreach (1 .. 2) {
     if ($PDFpref eq 'A') { # A(PI2) preferred
