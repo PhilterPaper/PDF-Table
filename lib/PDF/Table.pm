@@ -19,14 +19,11 @@ my $compat_mode = 0; # 0 = new behaviors, 1 = compatible with old
 my $repeat_default   = 1;  # header repeat: old = change to 0
 my $oddeven_default  = 1;  # odd/even lines, use old method = change to 0
 my $padding_default  = 2;  # 2 points of padding. old = 0 (no padding)
-my $borders_as_rules = 0;  # if 1, use borders settings as rules
 # ==================================================================
-if ($compat_mode) {
-    ($repeat_default, $oddeven_default, $padding_default, $borders_as_rules) =
-    (0, 0, 0, 1);
-} else {
-    ($repeat_default, $oddeven_default, $padding_default, $borders_as_rules) =
-    (1, 1, 2, 0);
+if ($compat_mode) {  # 1: be compatible with older PDF::Table behavior
+    ($repeat_default, $oddeven_default, $padding_default) = (0, 0, 0);
+} else {  # 0: do not force compatibility with older PDF::Table behavior
+    ($repeat_default, $oddeven_default, $padding_default) = (1, 1, 2);
 }
 
 # ================ OTHER GLOBAL DEFAULTS =========================== per #7
@@ -165,7 +162,7 @@ sub table {
 
     # ==================================================================
     # did client code ask to redefine?
-    ($repeat_default, $oddeven_default, $padding_default, $borders_as_rules) =
+    ($repeat_default, $oddeven_default, $padding_default) =
       @{$arg{'compatibility'}} if defined $arg{'compatibility'};
 
     # set some defaults  !!!!
@@ -200,12 +197,21 @@ sub table {
           'font_color_odd'      => 1,  #  deprecated
         'fg_color_even'         => 1,  # global, column, cell
           'font_color_even'     => 1,  #  deprecated
-        'border'                => 1,  # global
-        'border_color'          => 1,  # global
-    #   'h_borders'             => 1,  # global
+        'border_w'              => 1,  # global
+          'border'              => 1,  #  deprecated
+        'h_border_w'            => 1,  # global
           'horizontal_borders'  => 1,  #  deprecated
-    #   'v_borders'             => 1,  # global
+        'v_border_w'            => 1,  # global
           'vertical_borders'    => 1,  #  deprecated
+        'border_c'              => 1,  # global
+          'border_color'        => 1,  #  deprecated
+        # possibly in future, separate h_border_c and v_border_c
+        'rule_w'                => 1,  # global, row, column, cell
+        'h_rule_w'              => 1,  # global, row, column, cell
+        'v_rule_w'              => 1,  # global, row, column, cell
+        'rule_c'                => 1,  # global, row, column, cell
+        'h_rule_c'              => 1,  # global, row, column, cell
+        'v_rule_c'              => 1,  # global, row, column, cell
         'font'                  => 1,  # global, header, row, column, cell
         'font_size'             => 1,  # global, header, row, column, cell
         'underline'             => 1,  # global, header, row, column, cell
@@ -337,18 +343,18 @@ sub table {
         $arg{'leading'} = $leading = $min_leading;
     }
 
-    # TBD line_w becomes rule_w, all 'border' become 'rule'
-    # can't condense $line_w to || because border=>0 gets default of 1!
-    my $line_w        = defined $arg{'border'}? $arg{'border'}: 1;
-    my $horiz_borders = $arg{'horizontal_borders'} || $line_w;
-    my $vert_borders  = $arg{'vertical_borders'}   || $line_w;
+    # can't condense $border_w to || because border_w=>0 gets default of 1!
+    my $border_w        = defined $arg{'border_w'}? $arg{'border_w'}: 1;
+    my $h_border_w = $arg{'h_border_w'} || $border_w;
+    my $v_border_w  = $arg{'v_border_w'} || $border_w;
 
-    # non-geometry global settings
+    # non-geometry global settings  FIX 1st 3 not globals! use find_value
     my $underline       = $arg{'underline'       } || 
                           undef; # merely stating undef is the intended default
     my $max_word_len    = $arg{'max_word_length' } || $max_wordlen_default;
     my $default_text    = $arg{'default_text'  } // $empty_cell_text;
-    my $border_color    = $arg{'border_color'  } || $fg_color_default;
+
+    my $border_c        = $arg{'border_c'} || $fg_color_default;
 
     # An array ref of arrayrefs whose values are
     # the actual widths of the column/row intersection
@@ -370,7 +376,8 @@ sub table {
         $cell_height, $cell_pad_top, $cell_pad_right, $cell_pad_bot, 
         $cell_pad_left, $cell_leading, $cell_max_word_len, $cell_bg_color,
         $cell_fg_color, $cell_bg_color_even, $cell_bg_color_odd,
-        $cell_fg_color_even, $cell_fg_color_odd, $cell_min_w, $cell_max_w);
+        $cell_fg_color_even, $cell_fg_color_odd, $cell_min_w, $cell_max_w,
+        $cell_h_rule_w, $cell_v_rule_w, $cell_h_rule_c, $cell_v_rule_c);
 
     # for use by find_value()
     my $GLOBALS = [$cell_props, $col_props, $row_props, -1, -1, \%arg];
@@ -427,6 +434,10 @@ sub table {
                #$cell_bg_color_odd = undef;
                #$cell_fg_color_even= undef;
                #$cell_fg_color_odd = undef;
+               #$cell_h_rule_w     = header_props->{'h_rule_w'}; 
+               #$cell_v_rule_w     = header_props->{'v_rule_w'}; 
+               #$cell_h_rule_c     = header_props->{'h_rule_c'}; 
+               #$cell_v_rule_c     = header_props->{'v_rule_c'};
             } else {
                 # not a header row, so uninitialized
                 $is_header_row     = 0;
@@ -451,6 +462,10 @@ sub table {
                #$cell_bg_color_odd = undef;
                #$cell_fg_color_even= undef;
                #$cell_fg_color_odd = undef;
+               #$cell_h_rule_w     = undef; 
+               #$cell_v_rule_w     = undef; 
+               #$cell_h_rule_c     = undef; 
+               #$cell_v_rule_c     = undef;
             }
 
             # Get the most specific value if none was already set from header_props
@@ -513,6 +528,14 @@ sub table {
            #                             'fg_color_even', '', undef, $GLOBALS);
            #$cell_fg_color_odd = find_value($cell_fg_color_odd, 
            #                             'fg_color_odd', '', undef, $GLOBALS);
+           #$cell_h_rule_w = find_value($cell_h_rule_w, 'h_rule_w',
+           #                             'rule_w', $h_border_w, $GLOBALS);
+           #$cell_v_rule_w = find_value($cell_v_rule_w, 'v_rule_w',
+           #                             'rule_w', $v_border_w, $GLOBALS);
+           #$cell_h_rule_c = find_value($cell_h_rule_c, 'h_rule_c',
+           #                             'rule_c', $border_c, $GLOBALS);
+           #$cell_v_rule_c = find_value($cell_v_rule_c, 'v_rule_c',
+           #                             'rule_c', $border_c, $GLOBALS);
 
             my $min_leading    = $cell_font_size * $leading_ratio;
             if ($cell_leading <= 0) {
@@ -618,6 +641,8 @@ sub table {
     my $row_is_odd   = 0;  # first data row output (row 0) is "even"
     # Store header row height for later use if headers have to be repeated
     my $header_min_rh = $rows_height->[0]; # harmless if no header
+    # kind of top border to draw, depending on start or continuation
+    my $next_top_border = 0;
 
     my ( $gfx, $gfx_bg, $bg_color, $fg_color, 
          $bot_margin, $table_top_y, $text_start_y);
@@ -721,18 +746,27 @@ sub table {
 
         $cur_y = $table_top_y;
 
-        if ($line_w) {
+        if ($border_w) {
             $gfx = $page->gfx();  # for borders, rules, etc.
-            $gfx->strokecolor($border_color);
-            $gfx->linewidth($line_w);
+            $gfx->strokecolor($border_c);
 
             # Draw the top line (border)
-            # TBD: if continuation page, use rule-width line if starting a new
-            #      row, or a dashed rule-width line if splitting a row.
-            #      if repeated header, it always gets the full border
-            if ($horiz_borders) {
-                $gfx->move( $xbase , $cur_y );
-                $gfx->hline($xbase + $width );
+            if ($h_border_w) {
+                if      ($next_top_border == 0) {
+                    # first top border (page 1), use specified border
+                    $gfx->linewidth($h_border_w);
+                } elsif ($next_top_border == 1) {
+                    # solid thin line at start of a row
+                    $gfx->linewidth($border_w_default);
+                } else {  # == 2
+                    # dashed thin line at contination in middle of row
+                    $gfx->linewidth($border_w_default);
+                    $gfx->linedash(5);
+                }
+                $gfx->move( $xbase-$v_border_w/2 , $cur_y );
+                $gfx->hline($xbase + $width + $v_border_w/2);
+                $gfx->stroke();
+                $gfx->linedash();
             }
         } else {
             $gfx = undef;
@@ -767,6 +801,7 @@ sub table {
             # due to colspan, some rows have fewer columns than others
             my @save_bg_color; # clear out for each row
             my @save_fg_color; 
+            my (@save_v_rule_w, @save_v_rule_c, @save_h_rule_w, @save_h_rule_c);
             for ( my $col_idx = 0; $col_idx < $columns_number; $col_idx++ ) {
                 $GLOBALS->[3] = $row_idx;
                 $GLOBALS->[4] = $col_idx;
@@ -809,6 +844,10 @@ sub table {
                     $cell_bg_color_odd = undef;
                     $cell_fg_color_even= undef;
                     $cell_fg_color_odd = undef;
+                    $cell_h_rule_w     = $header_props->{'h_rule_w'}; 
+                    $cell_v_rule_w     = $header_props->{'v_rule_w'}; 
+                    $cell_h_rule_c     = $header_props->{'h_rule_c'}; 
+                    $cell_v_rule_c     = $header_props->{'v_rule_c'};
                 } else {
                     # not header row, so initialize to undefined
                     $is_header_row     = 0;
@@ -832,6 +871,10 @@ sub table {
                     $cell_bg_color_odd = undef;
                     $cell_fg_color_even= undef;
                     $cell_fg_color_odd = undef;
+                    $cell_h_rule_w     = undef; 
+                    $cell_v_rule_w     = undef; 
+                    $cell_h_rule_c     = undef; 
+                    $cell_v_rule_c     = undef;
                 }
 
                 # Get the most specific value if none was already set from header_props
@@ -907,6 +950,14 @@ sub table {
                     $cell_fg_color_odd = find_value($cell_fg_color_odd, 
                                             'fg_color_odd', '', undef, $GLOBALS);
                 }
+                $cell_h_rule_w = find_value($cell_h_rule_w, 'h_rule_w',
+                                            'rule_w', $h_border_w, $GLOBALS);
+                $cell_v_rule_w = find_value($cell_v_rule_w, 'v_rule_w',
+                                            'rule_w', $v_border_w, $GLOBALS);
+                $cell_h_rule_c = find_value($cell_h_rule_c, 'h_rule_c',
+                                            'rule_c', $border_c, $GLOBALS);
+                $cell_v_rule_c = find_value($cell_v_rule_c, 'v_rule_c',
+                                            'rule_c', $border_c, $GLOBALS);
 
                 # Choose colors for this row. may still be 'undef' after this!
                 # cell, column, row, global color settings always override
@@ -1018,6 +1069,7 @@ sub table {
                         $txt->text_center($content, %text_options);
                     } else { 
                         # left justified after left padding
+                        # (text_left alias for text, in PDF::Builder only)
                         $txt->translate($cur_x + $cell_pad_left, $text_start_y);
                         $txt->text($content, %text_options);
                     }
@@ -1067,8 +1119,13 @@ sub table {
                 }
 
                 $cur_x += $actual_column_widths[$row_idx][$col_idx];
+                # otherwise lose track of column-related settings
                 $save_bg_color[$col_idx] = $bg_color;
                 $save_fg_color[$col_idx] = $fg_color;
+                $save_v_rule_w[$col_idx] = $cell_v_rule_w;
+                $save_h_rule_w[$col_idx] = $cell_h_rule_w;
+                $save_v_rule_c[$col_idx] = $cell_v_rule_c;
+                $save_h_rule_c[$col_idx] = $cell_h_rule_c;
             } # done looping through columns for this row
             if ( $do_leftovers ) {
                 # leftover text in row to output later as new-ish row?
@@ -1092,9 +1149,13 @@ sub table {
             for (my $col_idx = 0; 
                  $col_idx < scalar(@$data_row); 
                  $col_idx++) {
-                # restore cell_bg_color
+                # restore cell_bg_color, etc.
                 $bg_color = $save_bg_color[$col_idx];
                 $fg_color = $save_fg_color[$col_idx];
+                $cell_v_rule_w = $save_v_rule_w[$col_idx];
+                $cell_h_rule_w = $save_h_rule_w[$col_idx];
+                $cell_v_rule_c = $save_v_rule_c[$col_idx];
+                $cell_h_rule_c = $save_h_rule_c[$col_idx];
 
         # TBD rowspan!
                 if (defined $bg_color && 
@@ -1105,40 +1166,81 @@ sub table {
                     $gfx_bg->fill();
                 }
 
-                # draw left vertical border of this cell
-                if ($gfx && $vert_borders && 
+                # draw left vertical border of this cell unless leftmost
+                if ($gfx && $cell_v_rule_w && $col_idx &&
                     !$colspanned{$row_idx.'_'.$col_idx}) {
+                    $gfx->linewidth($cell_v_rule_w);
+                    $gfx->strokecolor($cell_v_rule_c);
                     $gfx->move($cur_x, $cur_y-$current_min_rh);
-                    $gfx->vline( $cur_y );
+                    $gfx->vline( $cur_y - ($row_idx? 0: $h_border_w/2));
+                    $gfx->stroke(); # don't confuse different widths and colors
+                }
+
+                # draw bottom horizontal rule of this cell unless bottom
+                # of page (no more data or not room for at least one line).
+                # TBD fix up when implement rowspan
+                if ($gfx && $cell_h_rule_w && scalar(@{$data}) && 
+                    $cur_y-$current_min_rh-$rows_height->[0] > $bot_margin ) {
+                    $gfx->linewidth($cell_h_rule_w);
+                    $gfx->strokecolor($cell_h_rule_c);
+                    $gfx->move($cur_x, $cur_y-$current_min_rh);
+                    $gfx->hline( $cur_x + $calc_column_widths->[$col_idx] );
+                    $gfx->stroke(); # don't confuse different widths and colors
                 }
 
                 $cur_x += $calc_column_widths->[$col_idx];
             } # End of for (my $col_idx....
 
             $cur_y -= $current_min_rh;
-            if ($gfx && $horiz_borders) {
-                # TBD: with rowspan, will not be able to draw a line all the
-                #      way across! also, need explicit bottom border draw
-                $gfx->move(  $xbase , $cur_y );
-                $gfx->hline( $xbase + $width );
-            }
 
-            $row_idx++ unless ( $do_leftovers );
             if ($do_leftovers) {
                 # a row has been split across pages. undo bg toggle
                 $row_is_odd = !$row_is_odd;
+                $next_top_border = 2; # dashed line
+            } else {
+                $row_idx++;
+                $next_top_border = 1; # solid line
             }
             $first_row = 0;
-        } # End of Row_Loop
+        } # End of Row_Loop for this page, and possibly whole table
+
+        # draw bottom border on this page. first, is this very last row?
+        # The line overlays and hides any odd business with vertical rules
+        # in the last row
+        if (!scalar(@{$data})) { $next_top_border = 0; }
+        if ($gfx && $h_border_w) {
+            if      ($next_top_border == 0) {
+                # last bottom border, use specified border
+                $gfx->linewidth($h_border_w);
+            } elsif ($next_top_border == 1) {
+                # solid thin line at start of a row
+                $gfx->linewidth($border_w_default);
+            } else {  # == 2
+                # dashed thin line at contination in middle of row
+                $gfx->linewidth($border_w_default);
+                $gfx->linedash(5);
+            }
+            # leave next_top_border for next page top of continued table
+            $gfx->strokecolor($border_c);
+            $gfx->move( $xbase-$v_border_w/2 , $cur_y );
+            $gfx->hline($xbase + $width + $v_border_w/2);
+            $gfx->stroke();
+            $gfx->linedash();
+        }
 
         if ($gfx) {
-            if ($vert_borders) {
-                # Draw right table border
+            if ($v_border_w) {
+                # Draw left and right table borders
+                # These overlay and hide any odd business with horizontal 
+                # rules at the left or right edge
+                $gfx->linewidth($v_border_w);
+                $gfx->move(  $xbase,          $table_top_y);
+                $gfx->vline( $cur_y );
                 $gfx->move(  $xbase + $width, $table_top_y);
                 $gfx->vline( $cur_y );
             }
 
-            # ACTUALLY draw all the lines
+            # draw all the unrendered lines
             $gfx->stroke();
         }
         $pg_cnt++;  # on a spillover page
@@ -1253,8 +1355,11 @@ sub deprecated_settings {
         'font_underline'        => 'underline',
        #'justify'               => 'align',  # different set of values allowed
         'lead'                  => 'leading',
-# 'horizontal_borders' => 'h_rules',
-# 'vertical_borders'   => 'v_rules',
+        'border'                => 'border_w',
+        'horizontal_borders'    => 'h_border_w',
+        'vertical_borders'      => 'v_border_w',
+        'border_color'          => 'border_c',
+        # currently same color for H and V borders
     );
 
     # global arg
@@ -1361,6 +1466,8 @@ sub check_settings {
     # x, y >= 0; w, h >= 0; x+w < page width; y+h < page height
     # next_h (if def) > 0, next_y (if def) >= 0; next_y+next_h < page height
     # line widths >= 0, min_rh > 0
+    # TBD in general, validate integer values and possibly some
+    #     other values, per #12
     return;
 }
 
@@ -1373,8 +1480,8 @@ sub check_settings {
 ############################################################
 
 sub find_value {
-    my ($cell_val, $name, $arg_name, $default, $GLOBALS) = @_;
-    # $arg_name can be '' (will be skipped)
+    my ($cell_val, $name, $fallback, $default, $GLOBALS) = @_;
+    # $fallback can be '' (will be skipped)
 
     my ($cell_props, $col_props, $row_props, $row_idx, $col_idx, $argref) = 
         @$GLOBALS;
@@ -1382,8 +1489,8 @@ sub find_value {
     my %arg = %$argref;
     # $default should never be undefined, except for specific cases!
     if (!defined $default &&
-        ($name ne 'underline' && $name ne 'bg_color' &&
-         $name ne 'fg_color' && 
+        ($name ne 'underline' && 
+         $name ne 'bg_color' && $name ne 'fg_color' && 
          $name ne 'bg_color_even' && $name ne 'bg_color_odd' &&
          $name ne 'fg_color_even' && $name ne 'fg_color_odd' &&
          $name ne 'min_w' && $name ne 'max_w') ) {
@@ -1392,26 +1499,18 @@ sub find_value {
 
     # upon entry, $cell_val is usually either undefined (data row) or 
     # header property setting (in which case, already set and we're done here)
+    $cell_val = $cell_props->[$row_idx][$col_idx]->{$name} if !defined $cell_val;
+    $cell_val = $cell_props->[$row_idx][$col_idx]->{$fallback} if !defined $cell_val and $fallback ne '';
+    $cell_val = $col_props->[$col_idx]->{$name} if !defined $cell_val;
+    $cell_val = $col_props->[$col_idx]->{$fallback} if !defined $cell_val and $fallback ne '';
+    $cell_val = $row_props->[$row_idx]->{$name} if !defined $cell_val;
+    $cell_val = $row_props->[$row_idx]->{$fallback} if !defined $cell_val and $fallback ne '';
+    $cell_val = $arg{$name} if !defined $cell_val;
+    $cell_val = $arg{$fallback} if !defined $cell_val and $fallback ne '';
+
+    # final court of appeal is the global default (usually defined)
     if (!defined $cell_val) {
-        $cell_val ||= $cell_props->[$row_idx][$col_idx]->{$name}
-                  ||  $col_props->[$col_idx]->{$name}
-                  ||  $row_props->[$row_idx]->{$name};
-
-        $cell_val ||= $arg{$name};
-    }
-
-    # fallbacks such as padding_left inherit from padding
-    if (!defined $cell_val && $arg_name ne '') {
-        $cell_val ||= $cell_props->[$row_idx][$col_idx]->{$arg_name}
-                  ||  $col_props->[$col_idx]->{$arg_name}
-                  ||  $row_props->[$row_idx]->{$arg_name};
-
-        $cell_val ||= $arg{$arg_name};
-    }
-
-    # final court of appeal is the global default
-    if (!defined $cell_val) {
-        $cell_val ||= $default;
+        $cell_val = $default;
     }
 
     return $cell_val;
@@ -1752,11 +1851,12 @@ The old default for padding around the contents of a cell was 0. It is now
 =item behavior of borders
 
 The old behavior was calling both the frame around the table I<and> the
-cell-divider rules as "borders", and using the same settings for both. This has
+cell-divider rules as "border", and using the same settings for both. This has
 been changed to separate the two classes, with "border" referring to the outside
-framework, and "rules" referring to the dividers. Change C<$borders_as_rules> 
-from 0 to 1 to get the old behavior. Note that explicit definition of "rules"
-will still override the "border" setting for interior dividers.
+framework, and "rules" referring to the dividers. Note that "rules" still
+inherit from "border", so an explicit definition of C<rules => 0> (to hide
+interior rules) or another width (line weight) may still be needed to override 
+the "border" setting for interior dividers.
 
 =back
 
@@ -1775,11 +1875,11 @@ If you do not wish to change the PDF::Table code section to permanently change
 old-versus-new behavior, you can use the I<compatibility> flag in the settings
 to temporarily change the variables listed above.
 
-    compatibility => [ 0, 0, 0, 1 ]
+    compatibility => [ 0, 0, 0 ]
 
 will restore all behaviors to the old style, while 
 
-    compatibility => [ 1, 0, 2, 0 ]
+    compatibility => [ 1, 0, 2 ]
 
 will change only the designation of "odd/even" rows to the old behavior.
 
@@ -2017,9 +2117,12 @@ B<Value:> any string (can be empty)
 
 B<Default:> '-'
 
-=item B<max_word_length> - Breaks long words (like serial numbers, hashes, 
-etc.) by adding a space after every Nth symbol, unless a space (x20) is found 
-already in the text. 
+=item B<max_word_length> - Breaks long words 
+
+It may be necessary to break up long words (like serial numbers, hashes, 
+etc.) to fit within a column, by adding a space after every Nth symbol, 
+unless a space (x20) is found already in the text. 
+
 B<Note> that this does I<not> add a hyphen (dash)!
 It merely ensures that there will be no runs of non-space characters longer
 than I<N> characters, reducing the chance of overflowing a cell.
@@ -2056,23 +2159,30 @@ B<Default padding_*> C<$padding>
     'padding_bottom' => undef, # bottom padding will be 5, as it will fall
                                # back to 'padding' value
 
-=item B<border> - Width of table border lines.
+=item B<border_w> - Width of table border lines.
 
-=item B<horizontal_borders> - Width of horizontal border lines. Overrides 
-'border' value.
+=item B<h_border_w> - Width of horizontal border lines. Overrides 
+'border_w' value for horizontal usage.
 
-=item B<vertical_borders> -  Width of vertical border lines. Overrides 
-'border' value.
+=item B<v_border_w> -  Width of vertical border lines. Overrides 
+'border_w' value for vertical usage.
 
 B<Value:> can be any whole positive number. When set to 0, it will disable 
-border lines.
+border lines. This is the line thickness for drawing a border.
 
 B<Default:> C<1>  ($border_w_default)
 
-    'border'             => 3,     # border width is 3
-    'horizontal_borders' => 1,     # horizontal borders will be 1 overriding 3
-    'vertical_borders'   => undef, # vertical borders will be 3, as it will 
-                                   # fall back to 'border'
+The I<border> is the B<outside> frame around the table. It does not enter into
+table height or width calculations, so be sure to set your C<x> and C<w>
+settings to allow for the width of vertical borders, and your C<y> or C<next_y>
+and C<h> or C<next_h> settings to allow for the width (thickness or height) of 
+the horizontal borders, especially if you make them more than a Point or two 
+in thickness (line width).
+
+    'border_w'     => 3,     # border width is 3
+    'h_border_w'   => 1,     # horizontal borders will be 1, overriding 3
+    'v_border_w'   => undef, # vertical borders will be 3, as it will 
+                             # fall back to 'border_w'
 
 Note that both borders and rules overlay the exact boundary between two cells
 (i.e., the centerline). That is, one half of a rule or border will overlay the
@@ -2083,13 +2193,21 @@ side(s), so that valuable content is not overlaid. For cells along the outer
 border, one half the width of a border will overlay the cell, so account for
 this in the padding specification.
 
-=item B<border_color> -  Border color for all borders.
+B<Deprecated names:> I<border> (now 'border_w'), 
+I<horizontal_borders> (now 'h_border_w'), 
+and I<vertical_borders> (now 'v_border_w'); will go away in the future!
+
+=item B<border_c> -  Border color for all borders.
 
 B<Value:> Color specifier as 'name' or '#rrggbb'
 
-B<Default:> C<'black'>
+B<Default:> C<'black'> ($fg_color_default)
 
-    'border_color' => 'red',
+    'border_c' => 'red',
+
+B<Deprecated name:> I<border_color> (will go away in the future!)
+
+The same color is used for both the horizontal and vertical borders.
 
 =item B<font> - instance of PDF::Builder::Resource::Font defining the font to 
 be used in the table.
