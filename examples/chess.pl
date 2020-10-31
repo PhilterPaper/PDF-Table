@@ -4,6 +4,10 @@ use strict;
 use diagnostics;
 use PDF::Table;
 
+#my $mode = 'text';     # use letters from Helvetica
+my $mode = 'graphics';  # use Unicode chess glyphs from DejaVu-Sans
+#my $mode = 'images';   # TBD use of images
+
 # Demonstrate a chessboard using even and odd row bg and fg color definitions
 #  on a per-column ($column_props) basis.
 # Gray bg shows move of White Knight to catpure Black King's Bishop (both red),
@@ -101,7 +105,9 @@ $pdf->mediabox('A4');
 # A4 as defined by PDF::API2 is h=842 w=545 for portrait
 
 # some data to lay out. notice that there are 8 rows of 8 columns
-my $chessboard = [
+my $chessboard;
+if ($mode eq 'text') {
+    $chessboard = [
 	# rows TTB, LTR value=piece name, or blank for empty
 	# unfortunately, none of the corefonts include chess pieces
 	[ 'WKB', ' ',  ' ',   ' ', ' ',  ' ',  'WK', 'WKR' ],
@@ -113,14 +119,37 @@ my $chessboard = [
 	[ ' ',   'Wp', ' ',   ' ', 'Wp', ' ',  ' ',  'Wp'  ],
 	[ ' ',   ' ',  ' ',   ' ', ' ',  'WN', ' ',  ' '   ],
 ];
+} else {
+    $chessboard = [
+	# rows TTB, LTR value=piece name, or blank for empty
+	[ "\x{2657}", ' ', ' ', ' ', ' ', ' ', "\x{2654}", "\x{2656}" ],
+	[ ' ', ' ', ' ', ' ', ' ', ' ', ' ', "\x{265C}" ],
+	[ ' ', ' ', "\x{2656}", ' ', ' ', ' ', ' ', ' '   ],
+	[ ' ', ' ', "\x{265D}", ' ', "\x{265F}", ' ', "\x{265F}", ' ' ],
+	[ "\x{2658}", ' ', "\x{2659}", ' ', "\x{265A}", ' ', "\x{2659}", ' ' ],
+	[ ' ', "\x{265F}", ' ', ' ', "\x{2659}", ' ', ' ', "\x{265F}" ],
+	[ ' ', "\x{2659}", ' ', ' ', "\x{2659}", ' ', ' ', "\x{2659}" ],
+	[ ' ', ' ', ' ', ' ', ' ', "\x{2658}", ' ', ' ' ],
+];
+}
 
 # what's the longest string (widest text) we'll use?
-my $font_size = 15;
-my $font = $pdf->corefont('Helvetica');
+my ($font, $font_size, $min_width);
+if ($mode eq 'text') {
+    $font = $pdf->corefont('Helvetica');
+    $font_size = 15;
+} else {
+    $font = $pdf->ttfont('/Windows/Fonts/dejavusans.ttf');
+    $font_size = 30;
+}
 my $text = $page->text();
 $text->font($font, $font_size);
-my $min_width = $text->advancewidth('WKR');
-   $min_width += 2 * 2;  # L + R padding
+if ($mode eq 'text') {
+   $min_width = $text->advancewidth('WKR');
+} else {
+    $min_width = 1.7*$text->advancewidth($chessboard->[0][0]);   
+}
+$min_width += 2 * 2;  # L + R padding
 
 # build the table layout
 $pdftable->table(
@@ -132,11 +161,12 @@ $pdftable->table(
 	x  => 10,
 	w  => 8 * $min_width + 1,
 	y  => 700, 
-	h  => 8 * $min_width + 1,
+	h  => 9 * $min_width + 1, # if 8, last row to next page!
 
 	# some optional params
 	padding    => 2,
-	padding_top => 10.4,  # center vertically in cell
+	padding_top =>        # center vertically in cell, trial & error
+	   ($mode eq 'text')? 10.4: 6.4,
 	justify    => "center",
 	font       => $font,
 	font_size  => $font_size,
@@ -144,6 +174,9 @@ $pdftable->table(
 	max_w      => $min_width,
 	min_rh     => $min_width,
 
+	# unfortunately, the chess pieces (graphics) are designed for
+	# black on white, and black fg disappears against black bg.
+	# however BonW and WonB make it hard to tell B and W pieces!
 	column_props => [
 		{bg_color_odd => 'black', fg_color_odd => 'white',    # col 0
 		bg_color_even => 'white', fg_color_even => 'black' },
@@ -164,14 +197,16 @@ $pdftable->table(
         ],
 	cell_props => [
 		[],[],[],  # rows 0-2, no cell overrides
+		# red fg looks good for text, but bad for symbols
+		# anyone who knows chess will figure out it's NxB
 		[    # row 3 col 2 gray bg, red fg
 			{}, {}, 
-			{ bg_color => '#888888', fg_color => 'red' } 
+			{ bg_color => '#888888' } 
 		],
 		[    # row 4 cols 0-2 gray bg, red fg for col 0
-		        { bg_color => '#888888', fg_color => 'red' },
-		        { bg_color => '#888888'                    },
-		        { bg_color => '#888888'                    },
+		        { bg_color => '#888888' },
+		        { bg_color => '#888888' },
+		        { bg_color => '#888888' },
 		],
 	],
 );
