@@ -2,7 +2,7 @@ Change history for Perl extension PDF::Table.
 
 === Version 1.000 (2020-10-30)  UNRELEASED
 
-*Add rowspan similar to colspan, to permit spanning of rows.
+ t/lib/PDFAPI2Mock.pm  add linedash dummy call so t tests can run.
 
  lib/PDF/Table.pm, MANIFEST, examples/border_rules.pl, util/3_examples.pl
   Old "borders" was vertical and horizontal rules PLUS outside rules (frame).
