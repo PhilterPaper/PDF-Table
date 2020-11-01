@@ -364,7 +364,8 @@ $pdftable->table(
 	h  => 150,      # adjust to split in middle of row
 
 	next_y => 700,
-	next_h => 500,  # adjust to split at row boundary
+	next_h => 500,  # adjust to split at least once at row boundary
+	                # 530 is also a good split
 
 	# some optional params
 	default_text => ' ',

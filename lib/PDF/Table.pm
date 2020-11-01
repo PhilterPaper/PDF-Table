@@ -36,6 +36,7 @@ my $leading_ratio      = 1.25;  # leading/font_size ratio (if 'lead' not given)
 my $border_w_default   = 1;  # line width for borders
 my $max_wordlen_default = 20; # split any run of 20 non-space chars
 my $empty_cell_text    = '-'; # something to put in an empty cell
+my $dashed_rule_default = 2;  # dash/space pattern length for broken rows
 # ==================================================================
 
 print __PACKAGE__.' is version: '.$VERSION.$/ if ($ENV{'PDF_TABLE_DEBUG'});
@@ -761,7 +762,7 @@ sub table {
                 } else {  # == 2
                     # dashed thin line at contination in middle of row
                     $gfx->linewidth($border_w_default);
-                    $gfx->linedash(5);
+                    $gfx->linedash($dashed_rule_default);
                 }
                 $gfx->move( $xbase-$v_border_w/2 , $cur_y );
                 $gfx->hline($xbase + $width + $v_border_w/2);
@@ -788,6 +789,7 @@ sub table {
             # Get the next set of row related settings
             # Row Height (starting point for $current_min_rh)
             my $current_min_rh = shift @$rows_height;
+            my $actual_row_height = $current_min_rh;
 
             # Row cell widths
             my $data_row_widths = shift @$row_col_widths;
@@ -1092,11 +1094,16 @@ sub table {
                     );
                     # Desi - Removed $leading because of 
                     #        fixed incorrect ypos bug in text_block
-                    $current_min_rh = max($current_min_rh,
+                    $actual_row_height = max($actual_row_height,
                                $cur_y - $ypos_of_last_line + $cell_pad_bot +
                                ($cell_leading - $cell_font_size)*2.5);
                     # 2.5 multiplier is a good-looking fudge factor to add a 
                     # little space between bottom of text and bottom of cell
+
+                    # at this point, actual_row_height is the used
+                    # height of this row, for purposes of background cell
+                    # color and left rule drawing. current_min_rh is left as
+                    # the height of one line + padding.
 
                     if ( $left_over_text ) {
                         $leftovers->[$col_idx] = $left_over_text;
@@ -1112,9 +1119,9 @@ sub table {
                                             $row_idx,
                                             $col_idx,
                                             $cur_x,
-                                            $cur_y-$current_min_rh,
+                                            $cur_y-$actual_row_height,
                                             $actual_column_widths[$row_idx][$col_idx],
-                                            $current_min_rh
+                                            $actual_row_height
                                            );
                 }
 
@@ -1132,6 +1139,8 @@ sub table {
                 unshift @$data, $leftovers;
                 unshift @$row_col_widths, $data_row_widths;
                 unshift @$rows_height, $current_min_rh;
+                # if push actual_row_height back onto rows_height, it will be
+                # far too much in some cases, resulting in excess blank space at bottom.
             }
             if ($oddeven_default) {  # new method with consistent odd/even
                 if ( !($first_row and $do_headers) ) {
@@ -1160,8 +1169,8 @@ sub table {
         # TBD rowspan!
                 if (defined $bg_color && 
                     !$colspanned{$row_idx.'_'.$col_idx}) {
-                    $gfx_bg->rect( $cur_x, $cur_y-$current_min_rh,  
-                                   $actual_column_widths[$row_idx][$col_idx], $current_min_rh);
+                    $gfx_bg->rect( $cur_x, $cur_y-$actual_row_height,  
+                                   $actual_column_widths[$row_idx][$col_idx], $actual_row_height);
                     $gfx_bg->fillcolor($bg_color);
                     $gfx_bg->fill();
                 }
@@ -1171,7 +1180,7 @@ sub table {
                     !$colspanned{$row_idx.'_'.$col_idx}) {
                     $gfx->linewidth($cell_v_rule_w);
                     $gfx->strokecolor($cell_v_rule_c);
-                    $gfx->move($cur_x, $cur_y-$current_min_rh);
+                    $gfx->move($cur_x, $cur_y-$actual_row_height);
                     $gfx->vline( $cur_y - ($row_idx? 0: $h_border_w/2));
                     $gfx->stroke(); # don't confuse different widths and colors
                 }
@@ -1180,10 +1189,10 @@ sub table {
                 # of page (no more data or not room for at least one line).
                 # TBD fix up when implement rowspan
                 if ($gfx && $cell_h_rule_w && scalar(@{$data}) && 
-                    $cur_y-$current_min_rh-$rows_height->[0] > $bot_margin ) {
+                    $cur_y-$actual_row_height-$current_min_rh > $bot_margin ) {
                     $gfx->linewidth($cell_h_rule_w);
                     $gfx->strokecolor($cell_h_rule_c);
-                    $gfx->move($cur_x, $cur_y-$current_min_rh);
+                    $gfx->move($cur_x, $cur_y-$actual_row_height);
                     $gfx->hline( $cur_x + $calc_column_widths->[$col_idx] );
                     $gfx->stroke(); # don't confuse different widths and colors
                 }
@@ -1191,7 +1200,7 @@ sub table {
                 $cur_x += $calc_column_widths->[$col_idx];
             } # End of for (my $col_idx....
 
-            $cur_y -= $current_min_rh;
+            $cur_y -= $actual_row_height;
 
             if ($do_leftovers) {
                 # a row has been split across pages. undo bg toggle
@@ -1218,7 +1227,7 @@ sub table {
             } else {  # == 2
                 # dashed thin line at contination in middle of row
                 $gfx->linewidth($border_w_default);
-                $gfx->linedash(5);
+                $gfx->linedash($dashed_rule_default);
             }
             # leave next_top_border for next page top of continued table
             $gfx->strokecolor($border_c);
