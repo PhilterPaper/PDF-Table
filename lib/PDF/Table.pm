@@ -1861,8 +1861,8 @@ For a complete working example or initial script look into distribution's
 
 =head1 DESCRIPTION
 
-This class is a utility for use with the PDF::Builder (or PDF::API2) module 
-from CPAN.
+This class is a utility for use with the PDF::Builder (or PDF::API2, see
+note above) module from CPAN.
 It can be used to display text data in a table layout within a PDF.
 The text data must be in a 2D array (such as returned by a DBI statement 
 handle C<fetchall_arrayref()> call).
@@ -1891,7 +1891,8 @@ The old default for the C<repeat> setting for a header was '0' (do not repeat
 after a table has been split across a page). I believe that most users will
 want to automatically repeat a header row at the start of each table fragment, 
 but you can change this behavior if you wish. Change C<$repeat_default> from 1
-to 0 to get the old behavior.
+to 0 to get the old behavior (or, explicitly give C<repeat => 0> in the header
+properties settings).
 
 =item which rows are 'odd' (and which are 'even')
 
@@ -1913,7 +1914,7 @@ The old behavior was calling both the frame around the table I<and> the
 cell-divider rules as "border", and using the same settings for both. This has
 been changed to separate the two classes, with "border" referring to the outside
 framework, and "rules" referring to the dividers. Note that "rules" still
-inherit from "border", so an explicit definition of C<rules => 0> (to hide
+inherit from "border", so an explicit definition of C<rules =E<gt> 0> (to hide
 interior rules) or another width (line weight) may still be needed to override 
 the "border" setting for interior dividers.
 
@@ -1921,12 +1922,12 @@ the "border" setting for interior dividers.
 
 =head2 Maintaining compatibility
 
-Near the top of file Table.pm, look for C<my $compat_mode = 1;>. For now,
-PDF::Table is shipped with a flag of C<1> to ensure maximum compatibility with
-older uses of the library. I<Eventually> this mode will be changed to C<0>,
-making use of new capabilities, but breaking some old code. If you are using 
-this library for B<new> code, you may wish to change the mode to C<0> in order
-to use the new capabilities.
+Near the top of file Table.pm, look for C<my $compat_mode = 0;>.
+PDF::Table is shipped with a flag of C<0> to use the new features of the 
+library. If you have a pressing need to maintain compatibility with older
+versions of the library, you may change the value to C<1>.
+Note that a flag of C<1> will break some of the t-tests, because of different
+padding defaults resulting in different text locations on the page.
 
 =head2 Run-time changes
 
@@ -1940,7 +1941,9 @@ will restore all behaviors to the old style, while
 
     compatibility => [ 1, 0, 2 ]
 
-will change only the designation of "odd/even" rows to the old behavior.
+will change only the designation of "odd/even" rows (element 1) to the old 
+behavior, while leaving header repeat (element 0) and default padding (element
+2) in the new behavior.
 
 =head1 METHODS
 
@@ -2027,10 +2030,11 @@ The return value is a 3 item list where
 Unless otherwise specified, all dimensional and geometry units used are 
 measured in I<points>. Line counts are not used anywhere.
 
-"Odd" rows start with the first data (non-header) row. Think of this first
-row as number one (an I<odd> number). Even rows alternate with odd rows.
+"Even" rows start with the first data (non-header) row. Think of this first
+row as number zero (an I<even> number). Even rows alternate with odd rows.
 The odd/even flag is B<not> reset when a table is split across pages. If a
-table fragment ends on an odd row, the next fragment (on the next page) will
+table fragment ends on an odd row, the next fragment (on the next page),
+starting the next row, will
 start with an even row. If a I<row> is split across pages, it will resume with
 the same odd/even setting as on the previous page. If you desire to have the
 old (previous) odd/even behavior, see L</COMPATIBILITY>.
@@ -2047,14 +2051,14 @@ then deletes the deprecated one. Due to peculiarities in the way Perl copies
 arrays, hashes, and references; it is possible that your input settings hash
 may end up being modified! This normally will not be a cause for concern, but
 you should be aware of this behavior in case you wish to reuse all or part of
-a PDF::Table settings list (hash) for other purposes -- it may have been 
-slightly modified.
+a PDF::Table settings list (hash) for other purposes (or another table) -- 
+it may have been slightly modified.
 
 Note that any "Color specifier" is not limited to a name (e.g., 'black') or
 a 6-digit hex specification (e.g., '#3366CC'). See the PDF::Builder 
 writeup on specifying colors for CMYK, L*a*b, HSV, and other methods.
 
-=head4 Mandatory
+=head4 Mandatory global settings
 
 There are some mandatory parameters for setting table geometry and position 
 on the first (initial) or only page of the table. It is up to you to tell
@@ -2070,7 +2074,7 @@ B<Note> that this C<X> will be used for any spillover of the table to
 additional page(s), so you cannot have spillover (continuation) rows 
 starting at a different C<X>.
 
-B<Value:> can be any whole number satisfying C<0 =< X < PageWidth>
+B<Value:> can be any number satisfying C<0 E<le> X < PageWidth>
 
 B<Default:> No default value
 
@@ -2079,7 +2083,7 @@ B<Default:> No default value
 =item B<y> - Y coordinate of upper left corner of the table on the 
 initial page.
 
-B<Value:> can be any whole number satisfying C<0 < y < PageHeight> 
+B<Value:> can be any number satisfying C<0 < y < PageHeight> 
 (depending on space availability when embedding a table)
 
 B<Default:> No default value
@@ -2094,7 +2098,7 @@ B<Note> that this C<width> will be used for any spillover of the table to
 additional page(s), so you cannot have spillover (continuation) rows with a 
 different C<width>.
 
-B<Value:> can be any whole number satisfying C<0 < w < PageWidth - x>
+B<Value:> can be any number satisfying C<0 < w < PageWidth - x>
 
 B<Default:> No default value
 
@@ -2106,7 +2110,7 @@ could lead to undesired results. Possible solutions to keep the table from
 being widened include:
 
     1) Increase table width (w)
-    2) Decrease font size
+    2) Decrease font size (font_size)
     3) Choose a narrower font
     4) Decrease "max_word_length" parameter, so long words are split into
         shorter chunks
@@ -2121,8 +2125,7 @@ margin. Normally you would let as much as possible fit on the page,
 but it's possible that you might want to split the table at an earlier point,
 to put more on the next (spill) page.
 
-B<Value:> can be any whole number satisfying C<0 < h < PageHeight - 
-Current Y position>
+B<Value:> can be any number satisfying C<0 < h < PageHeight - Current Y position>
 
 B<Default:> No default value
 
@@ -2132,11 +2135,16 @@ B<Deprecated name:> I<start_h> (will go away in the future!)
 
 =back
 
-=head4 Optional
+=head4 Optional settings
 
 These are settings which are not absolutely necessary, although their use may
 result in a much more pleasing appearance for the table. They all have a
 "reasonable" default (or inheritance from another setting).
+
+=head5 Globals
+
+These settings apply only to the entire table, and cannot be used to specify
+cell, column, or row properties. A global setting may only occur once.
 
 =over
 
@@ -2146,11 +2154,16 @@ Think of this as the I<maximum height> (Y dimension) of any overflow
 (spill) table portions on following pages.
 I<It is highly recommended that you
 explicitly specify this setting as the full (body content) height of a page,
-rather than having PDF::Table try to figure out a good value.>
+rather than having PDF::Table try to figure out a good value and B<give a
+warning>.>
 
-B<Value:> can be any whole number satisfying C<0 < next_h < PageHeight>
+B<Value:> can be any number satisfying C<0 < next_h < PageHeight - y>
 
-B<Default:> Value of parameter B<'h'>
+You need to leave a non-negative amount of space at the bottom of the page.
+
+B<Default:> Media height * 80% (80% of the paper height)
+You will receive a warning if C<next_h> is needed for a spill page and you
+did not provide it!
 
     'next_h'  => 700,
 
@@ -2158,75 +2171,63 @@ B<Default:> Value of parameter B<'h'>
 additional page.
 
 Think of this as the starting C<Y> position of any overflow 
-(spill) table portions on following pages.
+(spill or continuation) table portions on following pages.
 I<It is highly recommended that you
 explicitly specify this setting to be at the top of the body content of a page,
-rather than having PDF::Table try to figure out a good value.>
+rather than having PDF::Table try to figure out a good value and B<give a
+warning>.>
 
-B<Value:> can be any whole number satisfying C<0 < next_y < PageHeight>
+B<Value:> can be any number satisfying C<0 < next_y < PageHeight>
 
-B<Default:> Value of parameter B<'y'>
+B<Default:> Media height * 90% (10% down from the top of the paper)
+You will receive a warning if C<next_y> is needed for a spill page and you
+did not provide it!
 
     'next_y'  => 750,
 
-=item B<default_text> - A string to use if no content (text) is defined for
-a cell.
+=item B<new_page_func> - CODE reference to a function that returns a 
+PDF::Builder::Page instance. See section L<New Page Function Hook> below.
 
-B<Value:> any string (can be empty)
+    'new_page_func'  => $code_ref,
 
-B<Default:> '-'
+=item B<cell_render_hook> - CODE reference to a function called with the 
+current cell coordinates. See section L<Cell Render Hook> below.
 
-=item B<max_word_length> - Breaks long words 
+    'cell_render_hook'  => $code_ref,
 
-It may be necessary to break up long words (like serial numbers, hashes, 
-etc.) to fit within a column, by adding a space after every Nth symbol, 
-unless a space (x20) is found already in the text. 
+=item B<header_props> - HASH reference to specific settings for the Header row 
+of the table. See section L</Header Row Properties> below.
 
-B<Note> that this does I<not> add a hyphen (dash)!
-It merely ensures that there will be no runs of non-space characters longer
-than I<N> characters, reducing the chance of overflowing a cell.
+    'header_props' => $hdr_props,
 
-B<Value:> can be any whole positive number
+=item B<row_props> - HASH reference to specific settings for each row of 
+the table. See section L</Row Properties> below.
 
-B<Default:> C<20>
+    'row_props' => $my_row_props,
 
-    'max_word_length' => 25,    # Will add a space after every 25 symbols
-                                # unless there is a natural break (space)
+=item B<column_props> - HASH reference to specific settings for each column of 
+the table. See section L</Column Properties> below.
 
-=item B<padding> - Padding applied to every cell
+    'column_props' => $col_props,
 
-=item B<padding_top>    - top cell padding, overrides 'padding'
+=item B<cell_props> - HASH reference to specific settings for each column of 
+the table. See section L</Cell Properties> below.
 
-=item B<padding_right>  - right cell padding, overrides 'padding'
-
-=item B<padding_left>   - left cell padding, overrides 'padding'
-
-=item B<padding_bottom> - bottom padding, overrides 'padding'
-
-B<Value:> can be any non-negative number (E<ge> 0)
-
-B<Default padding:> C<2>.  ($padding_default)
-
-See L</COMPATIBILITY> for returning to the old value of C<0>.
-
-B<Default padding_*> C<$padding>
-
-    'padding'        => 5,     # all sides cell padding
-    'padding_top'    => 8,     # top cell padding, overrides 'padding'
-    'padding_right'  => 6,     # right cell padding, overrides 'padding'
-    'padding_left'   => 2,     # left cell padding, overrides 'padding'
-    'padding_bottom' => undef, # bottom padding will be 5, as it will fall
-                               # back to 'padding' value
+    'cell_props' => $cell_props,
 
 =item B<border_w> - Width of table border lines.
 
-=item B<h_border_w> - Width of horizontal border lines. Overrides 
-'border_w' value for horizontal usage.
+=item B<h_border_w> - Width of horizontal border lines (top and bottom of the
+table). Overrides 'border_w' value for horizontal usage. Note that if the
+table spills over onto following pages, only the very first top and very last 
+bottom table border will be full width. Dividers on row boundaries will be
+1pt wide ($border_w_default) solid lines, and where a row is divided within 
+its content, a dashed (pattern $dashed_rule_default) 1pt wide line is used.
 
 =item B<v_border_w> -  Width of vertical border lines. Overrides 
 'border_w' value for vertical usage.
 
-B<Value:> can be any whole positive number. When set to 0, it will disable 
+B<Value:> can be any positive number. When set to 0, it will disable 
 border lines. This is the line thickness for drawing a border.
 
 B<Default:> C<1>  ($border_w_default)
@@ -2268,12 +2269,80 @@ B<Deprecated name:> I<border_color> (will go away in the future!)
 
 The same color is used for both the horizontal and vertical borders.
 
+=back
+
+=head5 Cell, Column, Row, or Global
+
+These settings can be specified to apply to the entire table, or more
+narrowly applied to the header row (in header_props hash), one or more rows
+(in row_props array), one or more columns (in column_props array), or one
+or more individual cells (in cell_props hash).
+
+If a setting is specified in more than one place, the order of precedence is
+as follows: a header property (header row only), followed by a cell property, 
+followed by a column property, followed by a row property, followed by a 
+global setting, and finally, any hard-coded default value (if required).
+
+A global setting may only occur once (although it may be overridden by cell,
+column, or row usage of the same setting).
+
+=over
+
+=item B<default_text> - A string to use if no content (text) is defined for
+a cell.
+
+B<Value:> any string (can be a blank)
+
+B<Default:> '-'  ($empty_cell_text)
+
+=item B<max_word_length> - Breaks long words 
+
+It may be necessary to break up long words (like serial numbers, hashes, 
+etc.) to fit within a column, by adding a space after every Nth symbol, 
+unless a space (x20) is found already in the text. 
+
+B<Note> that this does I<not> add a hyphen (dash)!
+It merely ensures that there will be no runs of non-space characters longer
+than I<N> characters, reducing the chance of forcing an overly wide column.
+
+B<Value:> can be any positive integer number (character count)
+
+B<Default:> C<20>
+
+    'max_word_length' => 25,    # Will add a space after every 25 symbols
+                                # unless there is a natural break (space)
+
+=item B<padding> - Padding applied to every cell
+
+=item B<padding_top>    - top cell padding, overrides 'padding'
+
+=item B<padding_right>  - right cell padding, overrides 'padding'
+
+=item B<padding_left>   - left cell padding, overrides 'padding'
+
+=item B<padding_bottom> - bottom padding, overrides 'padding'
+
+B<Value:> can be any non-negative number (E<ge> 0)
+
+B<Default padding:> C<2>.  ($padding_default)
+
+See L</COMPATIBILITY> for returning to the old value of C<0>.
+
+B<Default padding_*> C<'padding'>
+
+    'padding'        => 5,     # all sides cell padding
+    'padding_top'    => 8,     # top cell padding, overrides 'padding'
+    'padding_right'  => 6,     # right cell padding, overrides 'padding'
+    'padding_left'   => 2,     # left cell padding, overrides 'padding'
+    'padding_bottom' => undef, # bottom padding will be 5, as it will fall
+                               # back to 'padding' value
+
 =item B<font> - instance of PDF::Builder::Resource::Font defining the font to 
-be used in the table.
+be used in the table (or a subsection of it).
 
 B<Value:> can be any PDF::Builder::Resource::* type of font
 
-B<Default:> C<'Times'> with I<latin1> encoding
+B<Default:> C<'Times'> core font with I<latin1> encoding
 
     'font' => $pdf->corefont("Helvetica", -encoding => "latin1"),
 
@@ -2282,8 +2351,8 @@ multibyte encodings such as 'utf8'. Errors will result if you attempt to use
 'utf8', etc. with corefont, psfont, etc. font types! For these, you I<must>
 only specify a single-byte encoding.
 
-=item B<font_size> - Size of the font that will be used throughout
-the table, unless overridden.
+=item B<font_size> - Size of the font that will be used in the table (or a
+subsection of it).
 
 B<Value:> can be any positive number
 
@@ -2291,13 +2360,26 @@ B<Default:> C<12>  ($font_size_default)
 
     'font_size' => 16,
 
-=item B<fg_color> - Font color for all rows.
+=item B<fg_color> - Font color for all text.
+
+=item B<bg_color> - Background color for all text.
+
+B<Value:> Color specifier as 'name' or '#rrggbb' (or other suitable color 
+specification format)
+
+B<Default:> C<'black'> text on (transparent) background. In other words, there
+is no default background color. The exception is for any B<header> row, where 
+the default colors are C<#000066> (dark blue, $h_fg_color_default) on 
+C<#FFFFAA> (light yellow, $h_bg_color_default).
+
+    'fg_color'      => '#333333',
+
+B<Deprecated names:> I<font_color, background_color>
+(both will go away in the future!)
 
 =item B<fg_color_odd> - Font color for odd rows (override C<fg_color>).
 
 =item B<fg_color_even> - Font color for even rows (override C<fg_color>).
-
-=item B<bg_color> - Background color for all rows.
 
 =item B<bg_color_odd> - Background color for odd rows (override C<bg_color>).
 
@@ -2306,17 +2388,17 @@ B<Default:> C<12>  ($font_size_default)
 B<Value:> Color specifier as 'name' or '#rrggbb' (or other suitable color 
 specification format)
 
-B<Default:> C<'black'> text on C<'white'> background
-
-    'fg_color'      => '#333333',
     'fg_color_odd'  => 'purple',
     'fg_color_even' => '#00FF00',
     'bg_color_odd'  => 'gray',
     'bg_color_even' => 'lightblue',
 
-B<Deprecated names:> I<font_color, font_color_odd, font_color_even, 
-background_color, background_color_odd, 
-background_color_even> (all will go away in the future!)
+B<Deprecated names:> I<font_color_odd, font_color_even, 
+background_color_odd, background_color_even> (all will go away in the future!)
+
+Note that *_color_odd/even usually make the most sense as global settings,
+although it I<is> possible to use them within columns (see chess.pl example),
+and even rows and cells, but not header rows.
 
 =item B<underline> - Underline specifications for text in the table.
 
@@ -2326,7 +2408,9 @@ Negative distance gives strike-through. C<[]> ('none' also works for
 PDF::Builder) gives no underline.
 
 Note that it is unwise to underline all content in the table! It should be
-used selectively to I<emphasize> important text, such as header content.
+used selectively to I<emphasize> important text, such as header content, or
+certain cells. Unfortunately, there is currently no way to turn underlining
+off and on I<within> a cell.
 
 B<Default:> none
 
@@ -2338,7 +2422,11 @@ This setting will be honored only if
 C<min_rh E<gt> font_size + padding_top + padding_bottom> (i.e., it is
 taller than the calculated minimum value).
 
-B<Value:> can be any whole positive number
+This setting doesn't usually make sense when used in a column_props or a
+cell_props, but it I<is> possible to do, and may be useful in certain
+situations.
+
+B<Value:> can be any positive number
 
 B<Default:> C<font_size + padding_top + padding_bottom>
 
@@ -2346,7 +2434,95 @@ B<Default:> C<font_size + padding_top + padding_bottom>
 
 B<Deprecated name:> I<row_height> (will go away in the future!)
 
-=item B<new_page_func> - CODE reference to a function that returns a 
+=item B<justify> - Alignment of text in a cell.
+
+B<Value:> One of 'left', 'right', 'center'
+
+B<Default:> C<'left'>
+
+=item B<min_w> - Minimum width of this cell or column. 
+
+PDF::Table will set a cell (and the column it's in) minimum width to fit the
+longest word (after splitting on C<max_word_length>) found in the text. This
+amount may be increased to C<min_w>. A column should be no narrower than its
+widest minimum width, but could be larger in order to fill out the table width.
+
+B<Value:> can be any number satisfying C<0 < min_w < w>
+
+B<Default:> Auto calculated
+
+Note that C<min_w> is usually used for a column_props to set the column
+minimum width. If used in a row_props, it will act as a I<global> setting; if
+used in a cell_props, that will force the minimum width for the cell's column.
+
+=item B<max_w> - Maximum width of this column. 
+
+PDF::Table will set a cell (and the column it's in) maximum width to fit the
+total length of the text content. This will seldom be actually used, but 
+C<max_w> may be used to I<reduce> this maximum. When columns are being widened
+in order to meet the desired table width, it will try to honor the maximum
+width setting and avoid adding any width to a column already at its maximum
+width (but this cannot be guaranteed).
+
+B<Value:> can be any number satisfying C<0 < min_w E<le> max_w < w>
+
+B<Default:> Auto calculated
+
+=item B<rule_w> - Width of table rule lines (internal table dividers).
+
+=item B<h_rule_w> - Width of horizontal rules (bottom of a cell).
+Overrides 'rule_w' value for horizontal usage.
+
+=item B<v_rule_w> -  Width of vertical rules (left side of a cell). 
+Overrides 'rule_w' value for vertical usage.
+
+B<Value:> can be any positive number. When set to 0, it will disable 
+rules. This is the line thickness for drawing a rule.
+
+B<Default:> C<1>  (corresponding border value)
+
+A I<rule> is a line bordering a I<cell> in the table. While it does not enter 
+into table height or width calculations, be sure to set your C<padding> 
+settings to allow sufficient clearance of cell content, especially if you make 
+the rules more than a Point or two in thickness (line width). Note that a
+cell only defines and draws its left and bottom rules -- the top rule is 
+defined in the cell or row above, and the right rule is defined in the cell
+or column to the right of this one.
+
+    'rule_w'     => 3,     # rule width is 3
+    'h_rule_w'   => 1,     # horizontal rules will be 1, overriding 3
+    'v_rule_w'   => undef, # vertical rules will be 3, as it will 
+                           # fall back to 'rule_w'
+
+Note that both borders and rules overlay the exact boundary between two cells
+(i.e., the centerline). That is, one half of a rule or border will overlay the
+adjoining cells. Rules do not expand the size of the table. If you set 
+particularly thick (wide) rules, pay attention to adding some padding on the 
+appropriate side(s), so that valuable content is not overlaid. For cells along 
+the outer border, a I<border> will be drawn instead of a I<rule>.
+
+Cell rules inherit thickness and color from the border settings, so if you want
+no internal rules, you need to set 
+
+    'rule_w'     => 0,     # no rules
+    
+=item B<rule_c> -  Rule color for all rules.
+
+=item B<h_rule_c> -  Rule color for horizontal (bottom) rules, overriding C<rule_c> for this usage.
+
+=item B<v_rule_c> -  Rule color for vertical (left) rules, overriding C<rule_c> for this usage.
+
+B<Value:> Color specifier as 'name' or '#rrggbb'
+
+B<Default:> C<'black'> (corresponding border value)
+
+    'rule_c' => 'red',
+
+=back
+
+=head4 New Page Function Hook
+
+B<new_page_func> is a CODE reference to a function that returns a 
 PDF::Builder::Page instance.
 
 If used, the parameter 'C<new_page_func>' must be a function reference which, 
@@ -2362,9 +2538,9 @@ PDF::Builder page() method. C<$code_ref> can be something like C<\&new_page>.
 
     'new_page_func'  => $code_ref,
 
-The `$code_ref` may be an inline sub definition (as show below), or a regular
-named `sub` (e.g., 'new_page()') referenced as `\&new_page`. The latter may be
-cleaner than inlining if the routine is quite long.
+The C<$code_ref> may be an inline sub definition (as show below), or a regular
+named C<sub> (e.g., 'new_page()') referenced as C<\&new_page>. The latter may 
+be cleaner than inlining, if the routine is quite long.
 
 An example of reusing a saved PDF page as a I<template>:
 
@@ -2380,7 +2556,7 @@ An example of reusing a saved PDF page as a I<template>:
 This will call a function to grab a copy of a template PDF's page 1 and
 insert it as the new last page of the PDF, as the starting point for the next
 I<overflow> (continuation) page of the table, if needed. Note that the
-`$template->openpage(1)` call is B<unsuitable> for this purpose, as it does
+C<$template-E<gt>openpage(1)> call is B<unsuitable> for this purpose, as it does
 not insert the page into the current PDF.
 
 You can also create a blank page and prefill it with desired content:
@@ -2401,8 +2577,8 @@ You can also create a blank page and prefill it with desired content:
         new_page_func => $new_page_func,
         ...
 
-If `new_page_func` is not defined, PDF::Table will simply call `$pdf->page()`
-to generate a new, blank, next page.
+If C<new_page_func> is not defined, PDF::Table will simply call 
+C<$pdf-E<gt>page()> to generate a new, blank, "next" page.
 
 Note that this function is B<not> called for the first page of a table. That 
 one uses the current C<$page> parameter passed to the C<table()> call. It is
@@ -2412,24 +2588,12 @@ want to consider using the same function to create your other (non-table)
 pages, assuming you want the same format (PDF content) across all pages of the
 table.
 
-=item B<header_props> - HASH reference to specific settings for the Header row 
-of the table. See section L</Header Row Properties> below.
+=head4 Cell Render Hook
 
-    'header_props' => $hdr_props,
-
-=item B<column_props> - HASH reference to specific settings for each column of 
-the table. See section L</Column Properties> below.
-
-    'column_props' => $col_props,
-
-=item B<cell_props> - HASH reference to specific settings for each column of 
-the table. See section L</Cell Properties> below.
-
-    'cell_props' => $cel_props,
-
-=item B<cell_render_hook> - CODE reference to a function called with the 
+B<cell_render_hook> is a CODE reference to a function called with the 
 current cell coordinates. If used, the parameter C<cell_render_hook> must be a 
-function reference. It is most useful for creating a URL link inside of a cell. 
+function reference. It is most useful for creating special items within a
+text block, such as a URL link inside of a cell. 
 The following example adds a link in the first column of each non-header row:
 
     'cell_render_hook'  => sub {
@@ -2447,8 +2611,6 @@ The following example adds a link in the first column of each non-header row:
         $annot->url( $url, -rect => [$x, $y, $x+$w, $y+$h] );
     },
 
-=back
-
 =head4 Header Row Properties
 
 If the 'header_props' parameter is used, it should be a hashref. Passing an 
@@ -2458,50 +2620,6 @@ first table row will become the header row. It will copy this row and put it on
 every new page if the 'repeat' parameter is set.
 
 =over
-
-=item B<font> - instance of PDF::Builder::Resource::Font defining the font to be
-used in the header row.
-
-B<Value:> can be any PDF::Builder::Resource::* type of font
-
-B<Default:> C<'font'> of the table. See table parameter 'font' for more details.
-
-B<CAUTION:> Only TrueType and OpenType fonts (ttfont call) can make use of
-multibyte encodings such as 'utf8'. Errors will result if you attempt to use
-'utf8', etc. with corefont, psfont, etc. font types! For these, you I<must>
-only specify a single-byte encoding.
-
-=item B<font_size> - Font size of the header row.
-
-B<Value:> can be any positive number
-
-B<Default:> C<'font_size'> of the table + 2 points
-
-=item B<fg_color> - Font color of the header row.
-
-B<Value:> Color specifier as 'name' or '#rrggbb'
-
-B<Default:> C<#000066> ($h_fg_color_default)
-
-B<Deprecated name:> I<font_color> (will go away in the future!)
-
-=item B<bg_color> - Background color of the header row.
-
-B<Value:> Color specifier as 'name' or '#rrggbb'
-
-B<Default:> C<#FFFFAA> ($h_bg_color_default)
-
-B<Deprecated name:> I<background_color> (will go away in the future!)
-
-=item B<underline> - Underline specifications of the header row text.
-
-B<Value:> 'auto', integer of distance, or arrayref of distance & thickness 
-(more than one pair will provide multiple underlines). Negative distance gives 
-strike-through. C<[]> or 'none' gives no underline.
-
-B<Default:> none
-
-B<Deprecated name:> I<font_underline> (will go away in the future!)
 
 =item B<repeat> - Flag showing if header row should be repeated on every new 
 page.
@@ -2513,20 +2631,53 @@ B<Default:> C<1> ($repeat_default)
 See L</COMPATIBILITY> if you wish to change it back to the old behavior 
 of C<0>.
 
-=item B<justify> - Alignment of text in the header row.
-
-B<Value:> One of 'left', 'right', 'center'
-
-B<Default:> Same as column alignment (or C<'left'> if undefined)
-
     my $hdr_props = {
         'font'       => $pdf->corefont("Helvetica", -encoding => "latin1"),
         'font_size'  => 18,
         'fg_color'   => '#004444',
         'bg_color'   => 'yellow',
-        'repeat'     => 1,
+        'repeat'     => 0,
         'justify'    => 'center',
     };
+
+=back
+
+=head4 Row Properties
+
+If the 'row_props' parameter is used, it should be an arrayref of hashrefs,
+with one hashref for each row of the table. The rows are counted from 
+top to bottom, so the hash reference at C<$row_props[0]> will hold properties 
+for the first row (from top to bottom).
+If you DO NOT want to give properties for a row, but to give for another, 
+just insert an empty hash reference into the array for the row that you want 
+to skip. This will cause the counting to proceed as expected and the properties 
+to be applied at the right rows.
+
+Each hashref can contain any of the keys shown below:
+
+=over
+
+Example:
+
+    my $row_props = [
+        # This is an empty hash to indicate default properties for first row
+        {},
+        # the next hash will hold the properties for the second row from 
+        # top to bottom.
+        {
+            'min_rh'    => 75,        # Minimum row height of 75
+            'justify'   => 'right',   # Right text alignment
+            'font'      => $pdf->corefont("Helvetica", 
+                                          -encoding => "latin1"),
+            'font_size' => 10,
+            'fg_color'  => 'blue',
+            'bg_color'  => '#FFFF00',
+        },
+        # etc.
+    ];
+
+There are no settings unique to rows. Do be aware of when "row 0" may refer
+to I<header> row properties!
 
 =back
 
@@ -2544,69 +2695,6 @@ to be applied at the right columns.
 Each hashref can contain any of the keys shown below:
 
 =over
-
-=item B<min_w> - Minimum width of this column. 
-
-Auto calculation will try its 
-best to honor this parameter, but applying it is NOT guaranteed.
-
-B<Value:> can be any whole number satisfying C<0 < min_w < w>
-
-B<Default:> Auto calculated
-
-=item B<max_w> - Maximum width of this column. 
-
-Auto calculation will try its 
-best to honor this parameter, but applying it is NOT guaranteed.
-
-B<Value:> can be any whole number satisfying C<0 < max_w < w>
-
-B<Default:> Auto calculated
-
-=item B<font> - instance of PDF::Builder::Resource::Font defining the font to be
-used in this column.
-
-B<Value:> can be any PDF::Builder::Resource::* type of font
-
-B<Default:> C<font> of the table. See table parameter 'font' for more details.
-
-=item B<font_size> - Font size of this column.
-
-B<Value:> can be any positive number
-
-B<Default:> C<font_size> of the table.
-
-=item B<fg_color> - Font color of this column.
-
-B<Value:> Color specifier as 'name' or '#rrggbb'
-
-B<Default:> C<fg_color> of the table.
-
-B<Deprecated name:> I<font_color> (will go away in the future!)
-
-=item B<bg_color> - Background color of this column.
-
-B<Value:> Color specifier as 'name' or '#rrggbb'
-
-B<Default:> undef
-
-B<Deprecated name:> I<background_color> (will go away in the future!)
-
-=item B<underline> - Underline of this cell's text.
-
-B<Value:> 'auto', integer of distance, or arrayref of distance & thickness 
-(more than one pair will provide multiple underlines). Negative distance gives 
-strike-through. C<[]> or 'none' gives no underline.
-
-B<Default:> none
-
-B<Deprecated name:> I<font_underline> (will go away in the future!)
-
-=item B<justify> - Alignment of text in this column
-
-B<Value:> One of 'left', 'right', 'center'
-
-B<Default:> C<'left'>
 
 Example:
 
@@ -2628,6 +2716,8 @@ Example:
         # etc.
     ];
 
+There are no settings unique to columns.
+
 =back
 
 NOTE: If 'min_w' and/or 'max_w' parameter is used in 'col_props', keep in mind 
@@ -2648,51 +2738,6 @@ Each hashref can contain any of the keys shown below:
 
 =over
 
-=item B<font> - instance of PDF::Builder::Resource::Font defining the font to be 
-used in this cell.
-
-B<Value:> can be any PDF::Builder::Resource::* type of font
-
-B<Default:> C<'font'> of the table. See table parameter 'font' for more details.
-
-=item B<font_size> - Font size of this cell.
-
-B<Value:> can be any positive number
-
-B<Default:> C<font_size> of the table.
-
-=item B<fg_color> - Font color of this cell.
-
-B<Value:> Color specifier as 'name' or '#rrggbb'
-
-B<Default:> C<fg_color> of the table.
-
-B<Deprecated name:> I<font_color> (will go away in the future!)
-
-=item B<bg_color> - Background color of this cell.
-
-B<Value:> Color specifier as 'name' or '#rrggbb'
-
-B<Default:> undef
-
-B<Deprecated name:> I<background_color> (will go away in the future!)
-
-=item B<underline> - Underline of this cell's text.
-
-B<Value:> 'auto', integer of distance, or arrayref of distance & thickness 
-(more than one pair will provide multiple underlines). Negative distance gives 
-strike-through. C<[]> or 'none' gives no underline.
-
-B<Default:> none
-
-B<Deprecated name:> I<font_underline> (will go away in the future!)
-
-=item B<justify> - Alignment of text in this cell.
-
-B<Value:> One of 'left', 'right', 'center'
-
-B<Default:> C<'left'>
-
 =item B<colspan> - Span this cell over multiple columns to the right.
 
 B<Value:> can be any positive number less than the number of columns to the 
@@ -2709,7 +2754,7 @@ But, as HTML works the same way, we do not consider this a bug.
 
 Example:
 
-    # row2 col1 should span 2 cols:
+    # row0 col1 should span 2 cols:
     @data = ( [ 'r1c1', 'r1c2', 'r1c3' ], ['r2c1+',undef,'r2c3'] );
     $tab->table( $pdf, $page, \@data, %TestData::required,
       'cell_props' => [
@@ -2725,9 +2770,9 @@ See the file C<examples/colspan.pl> for detailed usage.
 Example:
 
     my $cell_props = [
-        [ # This array is for the first row. 
+        [ # This array is for the first row (0). 
           # If header_props is defined, it will override these settings.
-            {    # Row 1 cell 1
+            {    # Row 0 cell 0
                 'bg_color'  => '#AAAA00',
                 'fg_color'  => 'yellow',
                 'underline' => [ 2, 2 ],
@@ -2735,19 +2780,19 @@ Example:
 
             # etc.
         ],
-        [ # Row 2
-            {    # Row 2 cell 1
+        [ # Row 1 (first data row, if header_props given)
+            {    # Row 1 cell 0
                 'bg_color' => '#CCCC00',
                 'fg_color' => 'blue',
             },
-            {    # Row 2 cell 2
+            {    # Row 1 cell 1
                 'bg_color' => '#BBBB00',
                 'fg_color' => 'red',
             },
             # etc.
         ],
-        [ # Row 3
-            {    # Row 3 cell 1 span cell 2
+        [ # Row 2
+            {    # Row 2 cell 0 span cell 1
                 'colspan' => 2
             },
             # etc.
@@ -2764,11 +2809,6 @@ Example:
         'fg_color' => 'blue',
     };
 
-B<NOTE:> In case of a conflict between column, odd/even, and cell formatting; 
-cell formatting will override the other two.
-In case of a conflict between header row and cell formatting, header 
-formatting will override cell formatting.
-
 =head2 text_block()
 
     my ($width_of_last_line, $ypos_of_last_line, $left_over_text) = 
@@ -2779,7 +2819,7 @@ formatting will override cell formatting.
 =item Description
 
 Utility method to create a block of text. The block may contain multiple 
-paragraphs.
+paragraphs (input C<$data> separated by implicit or explicit newlines C<\n>).
 It is mainly used internally, but you can use it from outside for placing 
 formatted text anywhere on the sheet.
 
@@ -2873,7 +2913,7 @@ Note that Perl 5.10 is the minimum supported level.
 
 =item by Daemmon Hughes
 
-Much of the work on this module was sponsered by
+Much of the original development work on this module was sponsered by
 Stone Environmental Inc. (www.stone-env.com).
 
 The text_block() method is a slightly modified copy of the one from

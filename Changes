@@ -1,6 +1,10 @@
 Change history for Perl extension PDF::Table.
 
-=== Version 1.000 (2020-11-02)  UNRELEASED
+=== Version 1.000 (2020-11-03)  UNRELEASED
+
+ INFO/Deprecated, INFO/Table.html, lib/PDF/Table.pm
+  Final cleanup of POD and generation of HTML documentation, and listing of
+   all deprecated setting names.
 
  t/lib/PDFAPI2Mock.pm  add linedash dummy call so t tests can run.
 
