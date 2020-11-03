@@ -17,6 +17,7 @@ lib/PDF/Table.pm
 Makefile.PL
 MANIFEST
 MANIFEST.SKIP
+PDFpref
 README
 README.md
 t/Basics.t

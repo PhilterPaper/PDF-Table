@@ -101,7 +101,8 @@ $pdf->mediabox('A4');
 
 # A4 as defined by PDF::API2 is h=842 w=545 for portrait
 
-# some data to lay out
+# some data to lay out. I believe that it is partly Bulgarian, created by the
+# previous owner of this package.
 my $some_data = [
 	[ 'Header', 'Row', 'Test' ],
 	[
@@ -115,14 +116,16 @@ my $some_data = [
 		# column 2 has explicit \n's for 3 physical lines
 		"i ne razbiram DESI\ngorniq \nezik",
 		# column 3 has implied \n's for 4 physical lines
+		# note that lines 2-4 have huge leading spaces stripped away
 		"zatova reshih
 		da dobavq
 		edin ili dva
 		novi reda"
 	],
 	[
+		# extra row height requested with row_height (min_rh)
 		'da dobavq edin dva reda',
-		'v tozi primer',
+		'v tozi primer AND extra height',
 		'na bulgarski ezik s latinica'
 	],
 	[
@@ -226,7 +229,7 @@ $pdftable->table(
 	row_props => [
 		{}, {}, {}, {},
 		{ # Row 5 (4th data row)
-			'row_height' => 50, # extra height on this row
+			'row_height' => 75, # extra height on this row
 		},
 	],
 );  # end of table() call

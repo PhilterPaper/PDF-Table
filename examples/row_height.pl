@@ -3,6 +3,8 @@ use warnings;
 use strict;
 use diagnostics;
 
+# 25 rows of one text line, each with a height taller than before
+
 use PDF::Table;
 # -------------
 # -A or -B on command line to select preferred library (if available)
@@ -101,6 +103,12 @@ foreach my $num ( 1 .. 25 ) {
 	push( @$data, [ 'foo' . $num, 'bar' . $num ] );
 }
 
+# ever-increasing row height
+my @rows;
+foreach my $num ( 0 .. 24 ) {
+    push @rows, { row_height => 25 + 3*$num };
+}
+
 # build the table layout
 $pdftable->table(
 
@@ -120,6 +128,6 @@ $pdftable->table(
 	font_size       => 10,
 	max_word_length => 15,
 	padding         => 5,
-	row_height      => 30, # much more than necessary
+	row_props       => \@rows,
 );
 $pdf->save();

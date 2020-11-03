@@ -14,6 +14,8 @@ our $VERSION = '1.000'; # fixed, read by Makefile.PL
 my $LAST_UPDATE = '1.000'; # manually update whenever code is changed
 
 my $compat_mode = 0; # 0 = new behaviors, 1 = compatible with old
+# NOTE that a number of t-tests will FAIL in mode 1 (compatible with old)
+#      due to slightly different text placements
 
 # ================ COMPATIBILITY WITH OLDER VERSIONS ===============
 my $repeat_default   = 1;  # header repeat: old = change to 0
@@ -349,13 +351,13 @@ sub table {
     my $h_border_w = $arg{'h_border_w'} || $border_w;
     my $v_border_w  = $arg{'v_border_w'} || $border_w;
 
-    # non-geometry global settings  FIX 1st 3 not globals! use find_value
+    # non-geometry global settings
+    my $border_c        = $arg{'border_c'} || $fg_color_default;
+    # global fallback values for find_value() call
     my $underline       = $arg{'underline'       } || 
                           undef; # merely stating undef is the intended default
     my $max_word_len    = $arg{'max_word_length' } || $max_wordlen_default;
     my $default_text    = $arg{'default_text'  } // $empty_cell_text;
-
-    my $border_c        = $arg{'border_c'} || $fg_color_default;
 
     # An array ref of arrayrefs whose values are
     # the actual widths of the column/row intersection
@@ -378,7 +380,8 @@ sub table {
         $cell_pad_left, $cell_leading, $cell_max_word_len, $cell_bg_color,
         $cell_fg_color, $cell_bg_color_even, $cell_bg_color_odd,
         $cell_fg_color_even, $cell_fg_color_odd, $cell_min_w, $cell_max_w,
-        $cell_h_rule_w, $cell_v_rule_w, $cell_h_rule_c, $cell_v_rule_c);
+        $cell_h_rule_w, $cell_v_rule_w, $cell_h_rule_c, $cell_v_rule_c,
+        $cell_def_text);
 
     # for use by find_value()
     my $GLOBALS = [$cell_props, $col_props, $row_props, -1, -1, \%arg];
@@ -425,9 +428,9 @@ sub table {
                 $cell_max_word_len = $header_props->{'max_word_length'};
                 $cell_min_w        = $header_props->{'min_w'};
                 $cell_max_w        = $header_props->{'max_w'};
+                $cell_def_text     = $header_props->{'default_text'};
                # items not of interest for determining geometry
                #$cell_underline    = $header_props->{'underline'};
-               #$cell_def_text     = $header_props->{'default_text'};
                #$cell_justify      = $header_props->{'justify'};
                #$cell_bg_color     = $header_props->{'bg_color'};
                #$cell_fg_color     = $header_props->{'fg_color'};
@@ -453,9 +456,9 @@ sub table {
                 $cell_max_word_len = undef;
                 $cell_min_w        = undef;
                 $cell_max_w        = undef;
+                $cell_def_text     = undef;
                # items not of interest for determining geometry
                #$cell_underline    = undef;
-               #$cell_def_text     = undef;
                #$cell_justify      = undef;
                #$cell_bg_color     = undef;
                #$cell_fg_color     = undef;
@@ -510,11 +513,11 @@ sub table {
             if (defined $cell_max_w && defined $cell_min_w) {
                 $cell_max_w = max($cell_max_w, $cell_min_w);
             }
+            $cell_def_text  = find_value($cell_def_text, 'default_text', '', 
+                                         $default_text, $GLOBALS);
            # items not of interest for determining geometry
            #$cell_underline = find_value($cell_underline, 
            #                             'underline', '', $underline, $GLOBALS);
-           #$cell_def_text  = find_value($cell_def_text, 'default_text', '', 
-           #                             $default_text, $GLOBALS);
            #$cell_justify   = find_value($cell_justify, 
            #                             'justify', '', 'left', $GLOBALS);
            #$cell_bg_color  = find_value($cell_bg_color, 'bg_color',
@@ -606,8 +609,13 @@ sub table {
                 $max_col_w += $word_widths->{$_};
             }
 
+            # don't forget any default text! it's not split on max_word_len
+            # TBD should default_text be split like other text?
+            $min_col_w = max($min_col_w, $txt->advancewidth($cell_def_text));
+
             # at this point we have longest word (min_col_w), overall length
             # (max_col_w) of this cell. add L+R padding
+            # TBD what if $cell_def_text is longer?
             $min_col_w                 += $cell_pad_left + $cell_pad_right;
             $min_col_w = max($min_col_w, $cell_min_w) if defined $cell_min_w;
             $max_col_w                 += $cell_pad_left + $cell_pad_right;
@@ -816,8 +824,6 @@ sub table {
                     $cell_pad_top, $cell_pad_right, $cell_pad_bot, 
                     $cell_pad_left, $cell_justify, $cell_fg_color, 
                     $cell_bg_color, $cell_def_text, $cell_min_w, $cell_max_w);
-                # FIX Note that cell_def_text bypasses max_word_len split!
-                #     It may also bypass minimum cell width!
 
                 if ($first_row and $do_headers) {
                     $is_header_row     = 1;
@@ -882,7 +888,6 @@ sub table {
                 # Get the most specific value if none was already set from header_props
                 $cell_font       = find_value($cell_font, 
                                               'font', '', $fnt_obj, $GLOBALS);
-                # FIX need to set text size after this
                 $cell_font_size  = find_value($cell_font_size, 
                                               'font_size', '', 0, $GLOBALS);
                 if ($cell_font_size == 0) { 
@@ -1082,15 +1087,18 @@ sub table {
                       = $self->text_block(
                           $txt,
                           $content,
-                          'x'        => $cur_x + $cell_pad_left,
-                          'y'        => $text_start_y,
-                          'w'        => $actual_column_widths[$row_idx][$col_idx] - 
+                          # mandatory args
+                          'x'         => $cur_x + $cell_pad_left,
+                          'y'         => $text_start_y,
+                          'w'         => $actual_column_widths[$row_idx][$col_idx] - 
                                           $cell_pad_left - $cell_pad_right,
-                          'h'        => $cur_y - $bot_margin - 
+                          'h'         => $cur_y - $bot_margin - 
                                           $cell_pad_top - $cell_pad_bot,
-                          'align'    => $cell_justify,
-                          'leading'  => $cell_leading,
-                          'text_opt' => \%text_options,
+                          # non-mandatory args
+                          'font_size' => $cell_font_size,
+                          'leading'   => $cell_leading,
+                          'align'     => $cell_justify,
+                          'text_opt'  => \%text_options,
                     );
                     # Desi - Removed $leading because of 
                     #        fixed incorrect ypos bug in text_block
@@ -1509,13 +1517,13 @@ sub find_value {
     # upon entry, $cell_val is usually either undefined (data row) or 
     # header property setting (in which case, already set and we're done here)
     $cell_val = $cell_props->[$row_idx][$col_idx]->{$name} if !defined $cell_val;
-    $cell_val = $cell_props->[$row_idx][$col_idx]->{$fallback} if !defined $cell_val and $fallback ne '';
+    $cell_val = $cell_props->[$row_idx][$col_idx]->{$fallback} if !defined $cell_val && $fallback ne '';
     $cell_val = $col_props->[$col_idx]->{$name} if !defined $cell_val;
-    $cell_val = $col_props->[$col_idx]->{$fallback} if !defined $cell_val and $fallback ne '';
+    $cell_val = $col_props->[$col_idx]->{$fallback} if !defined $cell_val && $fallback ne '';
     $cell_val = $row_props->[$row_idx]->{$name} if !defined $cell_val;
-    $cell_val = $row_props->[$row_idx]->{$fallback} if !defined $cell_val and $fallback ne '';
+    $cell_val = $row_props->[$row_idx]->{$fallback} if !defined $cell_val && $fallback ne '';
     $cell_val = $arg{$name} if !defined $cell_val;
-    $cell_val = $arg{$fallback} if !defined $cell_val and $fallback ne '';
+    $cell_val = $arg{$fallback} if !defined $cell_val && $fallback ne '';
 
     # final court of appeal is the global default (usually defined)
     if (!defined $cell_val) {
@@ -1534,6 +1542,17 @@ sub find_value {
 #   %arg          settings to control the formatting and
 #                  output.
 #       mandatory: x, y, w, h (block position and dimensions)
+#       defaults are provided for:
+#         font_size (global $font_size_default)
+#         leading   (font_size * global $leading_ratio)
+#       no defaults for:
+#         text_opt  (such as underline flag and color)
+#         parspace  (extra vertical space before a paragraph)
+#         hang      (text for ?)
+#         indent    (indentation amount)
+#         fpindent  (first paragraph indent amount)
+#         flindent  (first line indent amount)
+#         align     (justification left|center|right|fulljustify|justify)
 #
 # $text comes in as one string, possibly with \n embedded.
 # split at \n to form 2 or more @paragraphs. each @paragraph
@@ -1590,16 +1609,19 @@ sub text_block {
         return;
     }
 
-    # set some defaults !!!!
-    $arg{'leading' } ||= -1;                # leading TBD
-
-    # Check if any text to display
+    # Check if any text to display. If called from table(), should have
+    # default text by the time of the call, so this is really as a failsafe
+    # for standalone text_block() calls. Note that '' won't work!
     unless ( defined( $text) and length($text) > 0 ) {
-        carp "Warning: No input text found. Trying to add dummy '-' and not to break everything.\n";
+        carp "Warning: No input text found. Use dummy '-'.\n";
         $text = $empty_cell_text;
     }
 
     # Strip any <CR> and Split the text into paragraphs
+    # if you're on a platform that uses \r to end a line (old Macs?)...
+    # we're in text_block() only if long line or \n's seen
+    # @paragraphs is list of paragraphs (long lines)
+    # @paragraph is list of words within present paragraph (long line)
     $text =~ s/\r//g;
     my @paragraphs  = split(/\n/, $text);
 
@@ -1612,28 +1634,39 @@ sub text_block {
 
     # Calculate width of all words
     my $space_width = $text_object->advancewidth("\x20");
+    my %word_width;
+    my @text_words = split(/\s+/, $text);
+    foreach (@text_words) {
+        next if exists $word_width{$_};
+        $word_width{$_} = $text_object->advancewidth($_);
+    }
 
+    # get word list for first paragraph
     my @paragraph = split(' ', shift(@paragraphs));
-    my $first_line = 1;
-    my $first_paragraph = 1;
+    my $first_line = 1; # first line of THIS paragraph
+    my $paragraph_number = 1;
 
     # Little Init
     $xpos = $xbase;
     $ypos = $ybase;
     $ypos = $ybase + $line_space;
+    # bottom_border doesn't need to consider pad_bot, as we're only considering
+    # the space actually available within the cell, already reduced by padding.
     my $bottom_border = $ypos - $height;
 
-    # While we can add another line
+    # While we can add another line. No handling of widows and orphans.
     while ( $ypos >= $bottom_border + $line_space ) {
         # Is there any text to render ?
         unless (@paragraph) {
-            # Finish if nothing left
-            last unless scalar @paragraphs;
-            # Else take one line from the text
+            # Finish if nothing left of all the paragraphs in text
+            last unless scalar @paragraphs; # another paragraph to process?
+            # Else take one paragraph (long line) from the text
             @paragraph = split(' ', shift( @paragraphs ) );
+            $paragraph_number++;
 
-            # extra space between paragraphs? TBD s/b only if a prev para
-            $ypos -= $arg{'parspace'} if $arg{'parspace'};
+            # extra space between paragraphs? only if a previous paragraph
+            $ypos -= $arg{'parspace'} if $arg{'parspace'} and 
+                                         $paragraph_number > 1;
             last unless $ypos >= $bottom_border;
         }
         $ypos -= $line_space;
@@ -1642,9 +1675,12 @@ sub text_block {
         # While there's room on the line, add another word
         @line = ();
         $line_width = 0;
-        # FIX what exactly is hang supposed to do, interaction with
-        # indent, flindent, fpindent
+        # TBD what exactly is hang supposed to do, interaction with
+        # indent, flindent, fpindent AND effect on min cell width
         if      ( $first_line && exists $arg{'hang'} ) {
+            # fixed text to output first, for first line of a paragraph
+            # TBD Note that hang text is not yet checked for min_col_width or 
+            #  max_word_len, and other indents could make line too wide for col!
             my $hang_width = $text_object->advancewidth($arg{'hang'});
 
             $text_object->translate( $xpos, $ypos );
@@ -1652,31 +1688,36 @@ sub text_block {
 
             $xpos         += $hang_width;
             $line_width   += $hang_width;
-            $arg{'indent'} += $hang_width if $first_paragraph;
-        } elsif ( $first_line &&
-                  exists $arg{'flindent'} &&
+            $arg{'indent'} += $hang_width if $paragraph_number == 1;
+        } elsif ( $first_line && exists $arg{'flindent'} &&
                   $arg{'flindent'} > 0 ) {
+            # amount to indent on first line of a paragraph
             $xpos += $arg{'flindent'};
             $line_width += $arg{'flindent'};
-        } elsif ( $first_paragraph &&
-                  exists $arg{'fpindent'} &&
+        } elsif ( $paragraph_number == 1 && exists $arg{'fpindent'} &&
                   $arg{'fpindent'} > 0 ) {
+            # amount to indent first paragraph's first line TBD ??
             $xpos += $arg{'fpindent'};
             $line_width += $arg{'fpindent'};
         } elsif ( exists $arg{'indent'} &&
                   $arg{'indent'} > 0 ) {
+            # amount to indent first line of following paragraphs
             $xpos += $arg{'indent'};
             $line_width += $arg{'indent'};
         }
 
         # Let's take from paragraph as many words as we can put
         # into $width - $indent. repeatedly test with "just one more" word
-        # from paragraph list, until overflow.
+        # from paragraph list, until overflow. 
+        # TBD might be more efficient (as originally intended?) to build 
+        # library of word widths and add them together until "too big", 
+        # back off. 
+        # TBD don't forget to properly handle runs of more than one space.
         while ( @paragraph ) { 
             if ( !@line ) {
                 # first time through, @line is empty
                 # first word in paragraph SHOULD fit!!
-                # TBD: what if $line_width > 0???
+                # TBD: what if $line_width > 0??? due to indent, etc.?
                 if ( $text_object->advancewidth( $paragraph[0] ) +
                      $line_width <= $width ) {
                     push(@line, shift(@paragraph));
@@ -1698,7 +1739,7 @@ sub text_block {
         }
         $line_width += $text_object->advancewidth(join(' ', @line));
 
-        # calculate the space width
+        # calculate the space width (width to use for a space)
         $align = $arg{'align'} || 'left';
         if ( $align eq 'fulljustify' or
             ($align eq 'justify' and @paragraph)) {
@@ -1706,10 +1747,11 @@ sub text_block {
             if (scalar(@line) > 1) {
                 $wordspace = ($width - $line_width) / (scalar(@line) - 1);
             } else {
-                $wordspace = 0; # effective left-aligned for single word
+                $wordspace = 0; # effectively left-aligned for single word
             }
             $align = 'justify';
         } else {
+            # not adding extra spacing between words, just real space
             $align = 'left' if $align eq 'justify';
             $wordspace = $space_width;
         }
@@ -1720,23 +1762,31 @@ sub text_block {
             foreach my $word (@line) {
                 $text_object->translate( $xpos, $ypos );
                 $text_object->text( $word );
-                $xpos += ($width{$word} + $wordspace) if (@line);
+                $xpos += ($word_width{$word} + $wordspace) if (@line);
             }
             $endw = $width;
         } else {
             # calculate the left hand position of the line
-            if      ( $align eq 'right' ) {
-                $xpos += $width - $line_width;
-            } elsif ( $align eq 'center' ) {
-                $xpos += ( $width - $line_width ) / 2;
-            }
+#           if      ( $align eq 'right' ) {
+#               $xpos += $width - $line_width;
+#           } elsif ( $align eq 'center' ) {
+#               $xpos += ( $width - $line_width ) / 2;
+#           }
 
-            # render the line
-            $text_object->translate( $xpos, $ypos );
-            $endw = $text_object->text( join("\x20", @line), %text_options);
+            # render the line. TBD This may not work right with indents!
+            if      ($align eq 'right') {
+                $text_object->translate( $xpos+$width, $ypos );
+                $endw = $text_object->text_right(join(' ', @line), %text_options);
+            } elsif ($align eq 'center') {
+                $text_object->translate( $xpos + $width/2, $ypos );
+                $endw = $text_object->text_center(join(' ', @line), %text_options);
+            } else {
+                $text_object->translate( $xpos, $ypos );
+                $endw = $text_object->text(join(' ', @line), %text_options);
+            }
         }
         $first_line = 0;
-    } # End of while
+    } # End of while (fitting within vertical space)
 
     # any leftovers of current paragraph? will return as first new paragraph
     unshift(@paragraphs, join(' ',@paragraph)) if scalar(@paragraph);
@@ -2780,7 +2830,7 @@ The return value is a 3 item list where
         # Only one of the following parameters can be given.
         # They override each other, in the order given. C<hang> is the 
         # highest weight.
-        'hang'     => $optional_hanging_indent,
+        'hang'     => $optional_hanging_text_to_lead_a_paragraph,
         'flindent' => $optional_indent_of_first_line,
         'fpindent' => $optional_indent_of_first_paragraph,
         'indent'   => $optional_indent_of_text_to_every_non_first_line,

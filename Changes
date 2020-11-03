@@ -1,6 +1,6 @@
 Change history for Perl extension PDF::Table.
 
-=== Version 1.000 (2020-10-30)  UNRELEASED
+=== Version 1.000 (2020-11-02)  UNRELEASED
 
  t/lib/PDFAPI2Mock.pm  add linedash dummy call so t tests can run.
 

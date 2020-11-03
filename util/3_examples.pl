@@ -16,6 +16,8 @@ my $LAST_UPDATE = '1.000'; # manually update whenever code is changed
 # command line:
 #   -step  = stop after each test to let the tester look at the PDF file
 #   -cont  = (default) run continuously to the end, to not tie up tester
+#   -A (/^-?A(pi2)?/i) force use of PDF::API2 if installed
+#   -B (/^-?B(uilder)?/i) force use of PDF::Builder if installed (default)
 my $pause;
 
 my (@example_list, @example_results);
@@ -51,24 +53,28 @@ my %args;
 #
 # colspan needs ______ and _________
 # $args{'colspan'} = "blah blah";
+my $lib = '';  # -A or -B, optional
 
-my $type;
-# one command line arg allowed (-cont is default)
-if      (scalar @ARGV == 0) {
-    $type = '-cont';
-} elsif (scalar @ARGV == 1) {
-    if      ($ARGV[0] eq '-step') {
-        $type = '-step';
+my $type; # -cont OR -step allowed (default -cont)
+# zero or one or two command line flags allowed (zero or one of -A|-B, 
+#   zero or one of -cont|-step, -cont is default). then any other args
+#   passed on to program.
+
+while (@ARGV) {
+    if      ($ARGV[0] =~ m/^-?A(PI2)?/i) {
+	$lib = '-A';
+    } elsif ($ARGV[0] =~ m/^-?B(uilder)?/i) {
+	$lib = '-B';
     } elsif ($ARGV[0] eq '-cont') {
-	# default
-        $type = '-cont';
+	$type = '-cont';
+    } elsif ($ARGV[0] eq '-step') {
+	$type = '-step';
     } else {
-	die "Unknown command line argument '$ARGV[0]'\n";
+	last;
     }
     splice @ARGV, 0, 1;  # remove command line arg so <> will work
-} else {
-    die "0 or 1 argument permitted. -cont is default.\n";
 }
+$type ||= '-cont'; # default
 
 $pause = '';
 # some warnings:
@@ -100,10 +106,10 @@ for ($i=0; $i<scalar(@example_list); $i++) {
     } else {
         $arg = '';
     }
-    print "\n=== Running test examples/$file $arg\n";
+    print "\n=== Running test examples/$file $lib $arg\n";
     print $desc;
 
-    system("perl examples/$file $arg");
+    system("perl examples/$file $lib $arg");
 
     if ($type eq '-cont') { next; }
     print "Press Enter to continue: ";
