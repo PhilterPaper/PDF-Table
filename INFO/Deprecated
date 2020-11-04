@@ -82,6 +82,10 @@ border_color   entry in global args
    This has been renamed to 'border_c'.
    'border_color' is scheduled to be removed after November 2022.
 
+leading '-' on setting names (hash key, e.g., '-next_h') will no longer be 
+  allowed after November 2022. Please update your programs to no longer use 
+  setting names with a leading dash or hyphen.
+
 *** If I have missed any deprecated interfaces, please let me know! ***
 
 ======= Deprecated items that have already been removed =====================

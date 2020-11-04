@@ -1,6 +1,18 @@
 Change history for Perl extension PDF::Table.
 
-=== Version 1.000 (2020-11-03)  UNRELEASED
+=== Version 1.001 (2020-11-04)  UNRELEASED
+
+ lib/PDF/Table.pm, t/pod.t
+  POD change =head5 to =head4, to look better and stop older POD checkers 
+   from complaining (in t/pod.t). Also minimum Test::Pod version 1.52 
+   (was 1.00). ref [GH 61].
+
+ examples/sample1.pl, t/lib/TestData.pm, INFO/Deprecated, lib/PDF/Table.pm
+  Replace deprecated setting names by current names in the POD, examples, and
+   t-tests. After November 2022, settings names (args) with a leading dash 
+   (hyphen) will no longer be permitted.
+
+=== Version 1.000 (2020-11-03)
 
  INFO/Deprecated, INFO/Table.html, lib/PDF/Table.pm
   Final cleanup of POD and generation of HTML documentation, and listing of

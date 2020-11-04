@@ -152,27 +152,25 @@ $pdftable->table(
 	$some_data,
 
 	# Geometry of the document
-	x  => 50,
-	-w => 495,  # width: most of an A4 page
-       	# dashed params supported for backward compatibility. 
-	# dash/non-dash params can be mixed
-	start_y  => 792, # or y
+	x        => 50,
+	w        => 495,  # width: most of an A4 page
+	y        => 792,
 	next_y   => 700,
-	-start_h => 400, # or h. reduce to force overflow to new page
+	h        => 400, # reduce to force overflow to new page
 	next_h   => 500,
 
 	# some optional params for fancy results
-	-padding              => 3,
-	padding_right         => 10,
-	background_color_odd  => 'lightblue', # bg_color_odd
-	background_color_even => "#EEEEAA",   # bg_color_even
+	padding        => 3,
+	padding_right  => 10,
+	bg_color_odd   => 'lightblue',
+	bg_color_even  => "#EEEEAA",
 	# using default font (Times-Roman 12pt)
 	
 	header_props          => {
 		bg_color   => "#F0AAAA",
 		font       => $pdf->corefont( "Helvetica", -encoding => "latin1" ),
 		font_size  => 14,
-		font_color => "#006600",  # fg_color
+		fg_color   => "#006600",
 		repeat     => 1  # default
 		# note that col 2 inherits RJ from column_props setting
 	},
@@ -184,8 +182,8 @@ $pdftable->table(
 			justify    => "right",
 			font       => $pdf->corefont( "Times", -encoding => "latin1" ),
 			font_size  => 14, 
-			font_color => 'white',  # fg_color
-			background_color => '#8CA6C5',  # bg_color
+			fg_color   => 'white',
+			bg_color   => '#8CA6C5',
 		},
 		                       # column 3 no overrides
 	],
@@ -193,32 +191,32 @@ $pdftable->table(
 		[ # This is the first(header) row of the table and here 
 		  # %header_prop has priority, so no effect with these settings
 			{
-				background_color => '#000000', # bg_color
-				font_color       => 'blue',    # fg_color
+				bg_color   => '#000000',
+				fg_color   => 'blue',
 			},
 
 			# etc.
 		],
 		[ # Row 2 (first data row)
 			{ # Row 2 col 1
-				background_color => '#000000',
-				font_color       => 'white',
+				bg_color   => '#000000',
+				fg_color   => 'white',
 			},
 			{ # Row 2 col 2
-				background_color => '#AAAA00',
-				font_color       => 'red',
+				bg_color   => '#AAAA00',
+				fg_color   => 'red',
 			},
 			{ # Row 2 col 3
-				background_color => '#FFFFFF',
-				font_color       => 'green',
+				bg_color   => '#FFFFFF',
+				fg_color   => 'green',
 			},
 
 			# etc.
 		],
 		[ # Row 3 (second data row)
 			{ # Row 3 cell 1
-				background_color => '#AAAAAA',
-				font_color       => 'blue',
+				bg_color   => '#AAAAAA',
+				fg_color   => 'blue',
 			},
 
 			# etc. rest of columns are normal
@@ -229,7 +227,7 @@ $pdftable->table(
 	row_props => [
 		{}, {}, {}, {},
 		{ # Row 5 (4th data row)
-			'row_height' => 75, # extra height on this row
+			'min_rh'   => 75, # extra height on this row
 		},
 	],
 );  # end of table() call

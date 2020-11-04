@@ -2041,8 +2041,9 @@ old (previous) odd/even behavior, see L</COMPATIBILITY>.
 
 The name (key) of any table setting hash element may be given with or
 without a leading dash (hyphen). A leading dash is allowed for compatibility
-with older versions of PDF::Table, but it is recommended that the dash be
-omitted in new code.
+with older versions of PDF::Table, but is B<DEPRECATED!> It is recommended 
+that the dash be omitted in new code, and removed from old code before
+November 2022.
 
 B<Note:> if you use a deprecated setting name, or a setting beginning with a 
 hyphen '-', PDF::Table will update the settings list with the preferred name.
@@ -2141,7 +2142,7 @@ These are settings which are not absolutely necessary, although their use may
 result in a much more pleasing appearance for the table. They all have a
 "reasonable" default (or inheritance from another setting).
 
-=head5 Globals
+=head4 Optional Global Settings
 
 These settings apply only to the entire table, and cannot be used to specify
 cell, column, or row properties. A global setting may only occur once.
@@ -2271,7 +2272,7 @@ The same color is used for both the horizontal and vertical borders.
 
 =back
 
-=head5 Cell, Column, Row, or Global
+=head4 Optional Cell, Column, Row, or Global Settings
 
 These settings can be specified to apply to the entire table, or more
 narrowly applied to the header row (in header_props hash), one or more rows
