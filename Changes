@@ -2,6 +2,9 @@ Change history for Perl extension PDF::Table.
 
 === Version 1.001 (2020-11-04)  UNRELEASED
 
+ t/manifest.t, t/pod.t  
+  Make author-only (AUTHOR_TESTING=1). ref [GH 61]
+   
  lib/PDF/Table.pm, t/pod.t
   POD change =head5 to =head4, to look better and stop older POD checkers 
    from complaining (in t/pod.t). Also minimum Test::Pod version 1.52 
