@@ -2,6 +2,7 @@
 use strict;
 use warnings;
 use Test::More tests => 11;
+use Config; 
 
 use lib 't/lib'; # Needed for 'make test' from project dirs
 use TestData qw();
@@ -26,7 +27,11 @@ is_deeply( $col_widths, [ 100, 100, 100, 100 ], 'CalcColumnWidths - even');
 	[ 51, 600,  48 ]
 );
 
-is_deeply( $col_widths, [ 51, 300.758439703998, 48 ], 'CalcColumnWidths - uneven');
+if ($Config{uselongdouble}) {
+  is_deeply( $col_widths, [ 51, 300.758439703998205, 48 ], 'CalcColumnWidths - uneven');
+} else {
+  is_deeply( $col_widths, [ 51, 300.758439703998, 48 ], 'CalcColumnWidths - uneven');
+}
 
 ($col_widths, undef) = PDF::Table::CalcColumnWidths(
 	400,
@@ -133,7 +138,7 @@ $tab->table($pdf, $page, [@data], @required,
       ],
 );
 
-ok(1,'fake test because the one below is not working and must be fixed');
+ok(1,'Skip test because the one below is not working and must be fixed');
 #ok($pdf->match(
 #      [[qw(page)]],
 #      [[qw(rect 10 714 20 12)],[qw(fillcolor blue)]],
