@@ -755,30 +755,28 @@ sub table {
 
         $cur_y = $table_top_y;
 
-        if ($border_w) {
-            $gfx = $page->gfx();  # for borders, rules, etc.
-            $gfx->strokecolor($border_c);
+        # let's just always go ahead and create $gfx (for drawing borders
+        # and rules), as it will almost always be needed
+        $gfx = $page->gfx();  # for borders, rules, etc.
+        $gfx->strokecolor($border_c);
 
-            # Draw the top line (border)
-            if ($h_border_w) {
-                if      ($next_top_border == 0) {
-                    # first top border (page 1), use specified border
-                    $gfx->linewidth($h_border_w);
-                } elsif ($next_top_border == 1) {
-                    # solid thin line at start of a row
-                    $gfx->linewidth($border_w_default);
-                } else {  # == 2
-                    # dashed thin line at contination in middle of row
-                    $gfx->linewidth($border_w_default);
-                    $gfx->linedash($dashed_rule_default);
-                }
-                $gfx->move( $xbase-$v_border_w/2 , $cur_y );
-                $gfx->hline($xbase + $width + $v_border_w/2);
-                $gfx->stroke();
-                $gfx->linedash();
+        # Draw the top line (border)
+        if ($h_border_w) {
+            if      ($next_top_border == 0) {
+                # first top border (page 1), use specified border
+                $gfx->linewidth($h_border_w);
+            } elsif ($next_top_border == 1) {
+                # solid thin line at start of a row
+                $gfx->linewidth($border_w_default);
+            } else {  # == 2
+                # dashed thin line at contination in middle of row
+                $gfx->linewidth($border_w_default);
+                $gfx->linedash($dashed_rule_default);
             }
-        } else {
-            $gfx = undef;
+            $gfx->move( $xbase-$v_border_w/2 , $cur_y );
+            $gfx->hline($xbase + $width + $v_border_w/2);
+            $gfx->stroke();
+            $gfx->linedash();
         }
 
         my @actual_column_widths;

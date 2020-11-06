@@ -1,6 +1,8 @@
 Change history for Perl extension PDF::Table.
 
-=== Version 1.001 (2020-11-04)  UNRELEASED
+=== Version 1.001 (2020-11-05)
+
+ lib/PDF/Table.pm  fix edge case where no borders led to no rules [GH 55].
 
  t/manifest.t, t/pod.t  
   Make author-only (AUTHOR_TESTING=1). ref [GH 61]
