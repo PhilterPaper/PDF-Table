@@ -10,8 +10,8 @@ package PDF::Table;
 use Carp;
 use List::Util qw[min max];  # core
 
-our $VERSION = '1.000'; # fixed, read by Makefile.PL
-my $LAST_UPDATE = '1.000'; # manually update whenever code is changed
+our $VERSION = '1.001'; # fixed, read by Makefile.PL
+my $LAST_UPDATE = '1.001'; # manually update whenever code is changed
 
 my $compat_mode = 0; # 0 = new behaviors, 1 = compatible with old
 # NOTE that a number of t-tests will FAIL in mode 1 (compatible with old)
