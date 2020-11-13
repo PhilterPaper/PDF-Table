@@ -2882,7 +2882,7 @@ The return value is a 3 item list where
 
 =head1 VERSION
 
-1.000
+1.001
 
 =head1 AUTHOR
 

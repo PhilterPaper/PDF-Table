@@ -79,7 +79,7 @@ if (!$rcA && !$rcB) {
 # -------------
 
 # VERSION
-my $LAST_UPDATE = '1.000'; # manually update whenever code is changed
+my $LAST_UPDATE = '1.001'; # manually update whenever code is changed
 
 my $outfile = $0;
 if ($outfile =~ m#[\\/]([^\\/]+)$#) { $outfile = $1; }
