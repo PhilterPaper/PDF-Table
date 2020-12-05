@@ -1199,7 +1199,7 @@ sub table {
                     $gfx->linewidth($cell_h_rule_w);
                     $gfx->strokecolor($cell_h_rule_c);
                     $gfx->move($cur_x, $cur_y-$actual_row_height);
-                    $gfx->hline( $cur_x + $calc_column_widths->[$col_idx] );
+                    $gfx->hline( $cur_x + $actual_column_widths[$row_idx][$col_idx] );
                     $gfx->stroke(); # don't confuse different widths and colors
                 }
 

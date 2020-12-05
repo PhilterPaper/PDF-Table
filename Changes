@@ -1,6 +1,11 @@
 Change history for Perl extension PDF::Table.
 
-=== Version 1.002 (2020-11-17)  UNRELEASED
+=== Version 1.002 (2020-12-05)  UNRELEASED
+
+ lib/PDF/Table.pm
+  Cells spanning columns only had the first part (cell) of the bottom 
+   horizontal rule drawn. Reported by "stefanalt". Fixed to draw full spanned 
+   width.
 
  t/PDF-Table.t 
   One calculated value was considerably different between standard Perl (uses
