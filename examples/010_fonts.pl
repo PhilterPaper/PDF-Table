@@ -70,7 +70,7 @@ if (!$rcA && !$rcB) {
 # -------------
 
 # VERSION
-my $LAST_UPDATE = '1.000'; # manually update whenever code is changed
+my $LAST_UPDATE = '1.002'; # manually update whenever code is changed
 
 my $outfile = $0;
 $outfile =~ s/\.pl$/.pdf/;
@@ -81,7 +81,7 @@ my $dir =
 # '/usr/share/fonts/truetype/dejavu/';
   '/Windows/Fonts/';
 
-my ( $pdf, $page, $font, $ttfont, $ttfont_serif, $text, $pdftable, $left_edge_of_table, $try );
+my ( $pdf, $page, $font, $ttfont, $text, $pdftable, $left_edge_of_table, $try );
 use utf8; 
 $try = " 
 accents:         á é í ó ú  Á É Í Ó Ú 

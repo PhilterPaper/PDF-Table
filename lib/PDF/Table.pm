@@ -367,7 +367,7 @@ sub table {
 
     # Scalars that hold sum of the maximum and minimum widths of all columns
     my ( $max_col_w  , $min_col_w ) = ( 0,0 );
-    my ( $row, $col_name, $col_fnt_size, $space_w );
+    my ( $row, $space_w );
 
     my $word_widths   = {};
     my $rows_height   = [];
@@ -1285,7 +1285,6 @@ sub CalcColumnWidths {
 
     my $min_width   = 0;     # calculate minimum overall table width needed
     my $calc_widths ;        # each column's calculated width
-    my $temp;
 
     # total requested minimum width (min_w property) plus min for content
     for (my $j = 0; $j < scalar(@$col_min_width); $j++) {
