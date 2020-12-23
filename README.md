@@ -34,9 +34,8 @@ To see a list of changes, please do one or more of the following:
 
 ## Contacts
 
-- Use the issue tracker on GitHub
-- See "http://search.cpan.org/~omega/"
-- See "http://search.cpan.org/~jbazik/"
+- Use the issue tracker on GitHub, "https://github.com/PhilterPaper/PDF-Table/issues"
+- See "https://metacpan.org/pod/PDF::Table" for distribution and more information
 
 ## License
 Copyright (C) 2006 by Daemmon Hughes
