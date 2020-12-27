@@ -10,8 +10,9 @@ package PDF::Table;
 use Carp;
 use List::Util qw[min max];  # core
 
-our $VERSION = '1.001'; # fixed, read by Makefile.PL
-my $LAST_UPDATE = '1.001'; # manually update whenever code is changed
+our $VERSION = '1.002'; # fixed, read by Makefile.PL
+my $LAST_UPDATE = '1.002'; # manually update whenever code is changed
+# don't forget to update VERSION down in POD area
 
 my $compat_mode = 0; # 0 = new behaviors, 1 = compatible with old
 # NOTE that a number of t-tests will FAIL in mode 1 (compatible with old)
@@ -366,7 +367,7 @@ sub table {
     my $h_row_widths = [];
 
     # Scalars that hold sum of the maximum and minimum widths of all columns
-    my ( $max_col_w  , $min_col_w ) = ( 0,0 );
+    my ( $max_col_w, $min_col_w ) = ( 0,0 );
     my ( $row, $space_w );
 
     my $word_widths   = {};
@@ -2881,7 +2882,7 @@ The return value is a 3 item list where
 
 =head1 VERSION
 
-1.001
+1.002
 
 =head1 AUTHOR
 
