@@ -2899,7 +2899,7 @@ Further development since Ver: 0.12 - Phil Perry
 Copyright (C) 2006 by Daemmon Hughes, portions Copyright 2004 Stone
 Environmental Inc. (www.stone-env.com) All Rights Reserved.
 
-Copyright (C) 2020 by Phil M Perry.
+Copyright (C) 2020-2021 by Phil M Perry.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.8.7 or,

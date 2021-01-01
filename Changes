@@ -1,5 +1,10 @@
 Change history for Perl extension PDF::Table.
 
+=== Version 1.003 (2021-01-01)  UNRELEASED
+
+ README.md, lib/PDF/Table.pm, INFO/Table.html
+  2021 copyright. NOT archiving Changes yet.
+
 === Version 1.002 (2020-12-27)
 
  README.md, lib/PDF/Table.pm, Makefile.PL
