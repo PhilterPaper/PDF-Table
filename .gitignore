@@ -13,3 +13,5 @@ pod2htmd.tmp
 # local build process
 /version
 /RoadMap
+# development misc
+/dev/*

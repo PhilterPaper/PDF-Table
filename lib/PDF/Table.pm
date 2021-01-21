@@ -10,8 +10,8 @@ package PDF::Table;
 use Carp;
 use List::Util qw[min max];  # core
 
-our $VERSION = '1.002'; # fixed, read by Makefile.PL
-my $LAST_UPDATE = '1.002'; # manually update whenever code is changed
+our $VERSION = '1.003'; # fixed, read by Makefile.PL
+my $LAST_UPDATE = '1.003'; # manually update whenever code is changed
 # don't forget to update VERSION down in POD area
 
 my $compat_mode = 0; # 0 = new behaviors, 1 = compatible with old
@@ -761,7 +761,8 @@ sub table {
         $gfx = $page->gfx();  # for borders, rules, etc.
         $gfx->strokecolor($border_c);
 
-        # Draw the top line (border)
+        # Draw the top line (border), only if h_border_w > 0, as we
+        # don't know what rules are doing
         if ($h_border_w) {
             if      ($next_top_border == 0) {
                 # first top border (page 1), use specified border
@@ -770,7 +771,7 @@ sub table {
                 # solid thin line at start of a row
                 $gfx->linewidth($border_w_default);
             } else {  # == 2
-                # dashed thin line at contination in middle of row
+                # dashed thin line at continuation in middle of row
                 $gfx->linewidth($border_w_default);
                 $gfx->linedash($dashed_rule_default);
             }
@@ -2882,7 +2883,7 @@ The return value is a 3 item list where
 
 =head1 VERSION
 
-1.002
+1.003
 
 =head1 AUTHOR
 
