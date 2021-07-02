@@ -27,11 +27,13 @@ is_deeply( $col_widths, [ 100, 100, 100, 100 ], 'CalcColumnWidths - even');
 	[ 51, 600,  48 ]
 );
 
-# round 300.758... value to small number of decimal places, so no difference
+# some float values round to small number of decimal places, so no difference
 # between regular, long double, and quad math Perls
+$col_widths->[0] = int(1000*$col_widths->[0] + 0.5)/1000;
 $col_widths->[1] = int(1000*$col_widths->[1] + 0.5)/1000;
+$col_widths->[2] = int(1000*$col_widths->[2] + 0.5)/1000;
 
-is_deeply( $col_widths, [ 51, 300.758, 48 ], 'CalcColumnWidths - uneven');
+is_deeply( $col_widths, [ 125.333, 142.333, 132.333 ], 'CalcColumnWidths - uneven');
 
 ($col_widths, undef) = PDF::Table::CalcColumnWidths(
 	400,
@@ -39,7 +41,7 @@ is_deeply( $col_widths, [ 51, 300.758, 48 ], 'CalcColumnWidths - uneven');
 	[ 50,    50 ]
 );
 
-is_deeply( $col_widths, [ 200, 200 ], 'CalcColumnWidths - undef');
+is_deeply( $col_widths, [ 225, 175 ], 'CalcColumnWidths - undef');
 
 my ($pdf, $page, $tab, @data, @required);
 

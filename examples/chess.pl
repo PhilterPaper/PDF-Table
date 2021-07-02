@@ -159,9 +159,9 @@ $pdftable->table(
 	$page,
 	$chessboard,
 	x  => 10,
-	w  => 8 * $min_width + 1,
+	w  => 8 * $min_width,
 	y  => 700, 
-	h  => 9 * $min_width + 1, # if 8, last row to next page!
+	h  => 8 * $min_width + 1, # if +0, last row to next page!
 
 	# some optional params
 	padding    => 2,
