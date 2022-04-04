@@ -25,5 +25,9 @@
 ^Makefile$
 
 #Build-related
-#^version$
+^version$
+^.perl-version$
+^.perlcriticrc$
 ^RoadMap$
+
+

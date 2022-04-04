@@ -14,6 +14,7 @@ INFO/Changes_2019
 INFO/Deprecated
 INFO/Table.html
 lib/PDF/Table.pm
+LICENSE
 Makefile.PL
 MANIFEST
 MANIFEST.SKIP
