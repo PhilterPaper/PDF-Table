@@ -1,6 +1,33 @@
 Change history for Perl extension PDF::Table.
 
-=== Version 1.003 (2022-04-03)  UNRELEASED
+=== Version 1.003 (2022-07-04)  UNRELEASED
+
+ lib/PDF/Table/ColumnWidth.pm, lib/PDF/Table/Table.pod, examples/size.pl,
+   MANIFEST, util/3_examples.pl
+  Add the ability to specify fixed and relative sizes for column widths, 
+   rather than having to accept system-calculated widths. You give a string
+   to the 'size' optional global setting specifying the absolute width of
+   a column (in, pt, cm, mm, em, or ex units), and/or a unit of '*' to 
+   indicate remaining space is to be split up among these columns.
+
+ lib/PDF/Table.pm, lib/PDF/Table/Settings.pm, MANIFEST
+  Split out deprecated_settings and check_settings functions into new file.
+
+ lib/PDF/Table.pm, lib/PDF/Table/ColumnWidth.pm, MANIFEST, t/PDF-Table.t
+  Split out CalcColumnWidths function into new file.
+
+ examples/chess.pl
+  PDF::API2 work-around added for font-handling change in 2.043. The problem
+  is being investigated, but the chess example almost works for now.
+
+ lib/PDF/Table.pm, lib/PDF/Table/Table.pod, MANIFEST
+  Split out documentation into separate POD file.
+
+ lib/PDF/Table.pm  
+  Fix handling of degenerate case of header-only, without data rows (#71).
+
+ lib/PDF/Table.pm, t/PDF-Table.t  
+  Finish cleanup of column width calculations (#68, #72).
 
  Makefile.PL, LICENSE, MANIFEST.SKIP
   Build (at install) META.* with "provides" member. Add separate license file.

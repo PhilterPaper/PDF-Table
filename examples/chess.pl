@@ -3,6 +3,13 @@ use warnings;
 use strict;
 use diagnostics;
 use PDF::Table;
+########################################################
+# NOTE: latest version of PDF::API2 (2.043) seems to
+# have some incompatible font changes, resulting in
+# $min_width being twice what it is in PDF::Builder, and
+# resulting in the chessboard being far too big. This 
+# is being investigated.
+########################################################
 
 #my $mode = 'text';     # use letters from Helvetica
 my $mode = 'graphics';  # use Unicode chess glyphs from DejaVu-Sans
@@ -148,6 +155,8 @@ if ($mode eq 'text') {
    $min_width = $text->advancewidth('WKR');
 } else {
     $min_width = 1.7*$text->advancewidth($chessboard->[0][0]);   
+    # TEMP
+    $min_width /= 2 if $PDFpref eq 'A';
 }
 $min_width += 2 * 2;  # L + R padding
 
@@ -158,7 +167,7 @@ $pdftable->table(
 	$pdf,
 	$page,
 	$chessboard,
-	x  => 10,
+	x  => 20,
 	w  => 8 * $min_width,
 	y  => 700, 
 	h  => 8 * $min_width + 1, # if +0, last row to next page!
