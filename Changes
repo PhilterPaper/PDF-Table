@@ -1,6 +1,8 @@
 Change history for Perl extension PDF::Table.
 
-=== Version 1.003 (2022-07-04)  UNRELEASED
+=== Version 1.004 (2022-07-05)
+
+=== Version 1.003 (2022-07-05)
 
  lib/PDF/Table/ColumnWidth.pm, lib/PDF/Table/Table.pod, examples/size.pl,
    MANIFEST, util/3_examples.pl
