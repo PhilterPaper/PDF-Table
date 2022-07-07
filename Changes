@@ -1,6 +1,11 @@
 Change history for Perl extension PDF::Table.
 
-=== Version 1.004 (2022-07-05)
+=== Version 1.004 (2022-07-07)   UNRELEASED
+
+* determine why chess.pl example has font problems with PDF::API2. incompatible
+  changes in latest API2 release? add full work-around for API2
+
+ CONTRIBUTING, MANIFEST  add Contribution guide
 
 === Version 1.003 (2022-07-05)
 

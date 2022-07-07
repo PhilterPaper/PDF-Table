@@ -1,6 +1,7 @@
 .perlcriticrc
 .perl-version
 Changes
+CONTRIBUTING
 examples/010_fonts.pl
 examples/colspan.pl
 examples/chess.pl
@@ -37,4 +38,3 @@ util/1_pc.pl
 util/2_t-tests.pl
 util/3_examples.pl
 util/pod2cpanhtml.pl
-version
