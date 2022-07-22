@@ -1183,7 +1183,7 @@ Note that Perl 5.10 is the minimum supported level.
 
 =item by Daemmon Hughes
 
-Much of the original development work on this module was sponsered by
+Much of the original development work on this module was sponsored by
 Stone Environmental Inc. (www.stone-env.com).
 
 The text_block() method is a slightly modified copy of the one from
