@@ -1270,7 +1270,7 @@ sub table {
                 # solid thin line at start of a row
                 $gfx->linewidth($border_w_default);
             } else {  # == 2
-                # dashed thin line at contination in middle of row
+                # dashed thin line at continuation in middle of row
                 $gfx->linewidth($border_w_default);
                 $gfx->linedash($dashed_rule_default);
             }

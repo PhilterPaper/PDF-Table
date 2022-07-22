@@ -5,6 +5,10 @@ Change history for Perl extension PDF::Table.
 * determine why chess.pl example has font problems with PDF::API2. incompatible
   changes in latest API2 release? add full work-around for API2
 
+  lib/PDF/Table/Table.pod, INFO/Table.html, examples/chess.pl,
+    INFO/Changes_2019, lib/PDF/Table.pm
+   Typos caught by lintian (via emollier) and codespell (via mdeweerd).
+
  CONTRIBUTING, MANIFEST  add Contribution guide
 
 === Version 1.003 (2022-07-05)
@@ -25,7 +29,7 @@ Change history for Perl extension PDF::Table.
 
  examples/chess.pl
   PDF::API2 work-around added for font-handling change in 2.043. The problem
-  is being investigated, but the chess example almost works for now.
+   is being investigated, but the chess example almost works for now.
 
  lib/PDF/Table.pm, lib/PDF/Table/Table.pod, MANIFEST
   Split out documentation into separate POD file.
@@ -38,7 +42,7 @@ Change history for Perl extension PDF::Table.
 
  Makefile.PL, LICENSE, MANIFEST.SKIP
   Build (at install) META.* with "provides" member. Add separate license file.
-  Add some items to MANIFEST SKIP file to clean up.
+   Add some items to MANIFEST SKIP file to clean up.
 
  lib/PDF/Table.pm
   $LAST_UPDATE changed from 'my' storage class to 'our', so can be accessed

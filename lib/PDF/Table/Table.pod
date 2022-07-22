@@ -884,7 +884,7 @@ The following example adds a link in the first column of each non-header row:
 
 If the 'header_props' parameter is used, it should be a hashref. Passing an 
 empty HASH will trigger a header row initialized with Default values.
-There is no 'data' variable for the content, because the module asumes that the
+There is no 'data' variable for the content, because the module assumes that the
 first table row will become the header row. It will copy this row and put it on 
 every new page if the 'repeat' parameter is set.
 

@@ -17,7 +17,7 @@ my $mode = 'graphics';  # use Unicode chess glyphs from DejaVu-Sans
 
 # Demonstrate a chessboard using even and odd row bg and fg color definitions
 #  on a per-column ($column_props) basis.
-# Gray bg shows move of White Knight to catpure Black King's Bishop (both red),
+# Gray bg shows move of White Knight to capture Black King's Bishop (both red),
 #  with $cell_props.
 # Once images are supported, will change to pictures of pieces (or maybe both).
 
