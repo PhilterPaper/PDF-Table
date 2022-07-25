@@ -2,7 +2,7 @@
 
 #This script has been taken from a forum somewhere in the vast Internet space :)
 #Its purpose is to generate the HTML from POD and apply some CSS as it will look like on CPAN
-#Typical use: perl pod2cpanhtml.pl lib/PDF/Table.pm pdftable.html
+#Typical use: perl pod2cpanhtml.pl lib/PDF/Table.pod pdftable.html
 
 use strict;
 use warnings;

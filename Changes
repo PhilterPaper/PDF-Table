@@ -1,9 +1,12 @@
 Change history for Perl extension PDF::Table.
 
-=== Version 1.004 (2022-07-07)   UNRELEASED
+=== Version 1.004 (2022-07-25)   UNRELEASED
 
 * determine why chess.pl example has font problems with PDF::API2. incompatible
   changes in latest API2 release? add full work-around for API2
+
+  lib/PDF/Table.pod (moved), MANIFEST, util/pod2cpanhtml.pl, Makefile.PL
+   Move .pod up a level (thanks to "perlpunk")
 
   lib/PDF/Table/Table.pod, INFO/Table.html, examples/chess.pl,
     INFO/Changes_2019, lib/PDF/Table.pm
