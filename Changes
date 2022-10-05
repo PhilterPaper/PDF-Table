@@ -7,7 +7,14 @@ Change history for Perl extension PDF::Table.
 
 * consider whether to do code block here or via PDF::Builder
 
-  lib/PDF/Table.pm, lib/PDF/Table.pod, INFO/Table.html, examples/vsizes.pl
+  examples/*.pl
+   If command line -A or -B, add prefix A_ or B_ to the output file name. This
+    can be useful when using -A or -B with util/3_examples.pl to generate
+    different output PDFs for PDF::API2 and PDF::Builder. Keep in mind that an
+    example given without -A or -B will not add the prefix.
+
+  lib/PDF/Table.pm, lib/PDF/Table.pod, INFO/Table.html, 
+    examples/vsizes.pl (new), util/3_examples.pl
    Dry run to return vertical size (overall, header, [footer], each row),
     no output to PDF, with "ink" set to 0.
 
