@@ -96,6 +96,7 @@ my $page     = $pdf->page();
 
 ############################################################################
 # illustrate thick border with inherited rules, thin rules, no rules
+# -------------------- table 1a
 my $table = [
 	# rows TTB, LTR 
 	[ 'Thick', 'border', ],
@@ -133,6 +134,7 @@ $pdftable->table(
 	],
 );
 
+# -------------------- table 1b
 $table = [
 	# rows TTB, LTR 
 	[ 'Thick', 'border', ],
@@ -169,6 +171,7 @@ $pdftable->table(
 	],
 );
 
+# -------------------- table 1c
 $table = [
 	# rows TTB, LTR 
 	[ 'Thick', 'border', ],
@@ -206,6 +209,7 @@ $pdftable->table(
 );
 
 ############################################################################
+# -------------------- table 2
 # illustrate lots of row, col, cell color and rules variations
 $table = [
 	# rows TTB, LTR 
@@ -304,6 +308,7 @@ $pdftable->table(
 );
 
 ############################################################################
+# -------------------- table 3
 # illustrate different kinds of bottom/top borders on row/table splits
 
 # Lorem Ipsum text, borrowed from PDF::Builder::examples/022_truefonts 
