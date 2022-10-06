@@ -88,6 +88,11 @@ foreach (1 .. 2) {
 if (!$rcA && !$rcB) {
     die "Neither PDF::API2 nor PDF::Builder is installed!\n";
 }
+
+if ($PDFpref eq 'A') {
+    print STDERR "chess example fails due to PDF::API2 bug, and is not run.\n";
+    exit(0);
+}
 # -------------
 
 # VERSION
@@ -152,6 +157,7 @@ if ($mode eq 'text') {
 } else {
     $font = $pdf->ttfont('/Windows/Fonts/dejavusans.ttf');
     $font_size = 30;
+    # $font_size /= 2.11 if $PDFpref eq 'A';  # work around one of the bugs
 }
 my $text = $page->text();
 $text->font($font, $font_size);
@@ -159,8 +165,6 @@ if ($mode eq 'text') {
    $min_width = $text->advancewidth('WKR');
 } else {
     $min_width = 1.7*$text->advancewidth($chessboard->[0][0]);   
-    # TEMP
-    $min_width /= 2 if $PDFpref eq 'A';
 }
 $min_width += 2 * 2;  # L + R padding
 
