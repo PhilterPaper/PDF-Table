@@ -31,9 +31,9 @@ t/Colspan.t
 t/lib/PDFAPI2Mock.pm
 t/lib/TestData.pm
 t/PDF-Table.t
-t/pod.t
-t/manifest.t
 t/table.t
+xt/pod.t
+xt/manifest.t
 util/1_pc.pl
 util/2_t-tests.pl
 util/3_examples.pl

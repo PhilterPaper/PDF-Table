@@ -1,8 +1,11 @@
 Change history for Perl extension PDF::Table.
 
-=== Version 1.004 (2022-10-05)   UNRELEASED
+=== Version 1.004 (2022-12-12)   UNRELEASED
 
 * consider whether to do code block here or via PDF::Builder
+
+  xt/manifest.t, xt/pod.t, MANIFEST, util/2_t-tests.pl
+   Move author tests from t/ to xt/
 
   examples/chess.pl
    PDF::API2 (at least, as of current release 2.043) has a bug in its TTF

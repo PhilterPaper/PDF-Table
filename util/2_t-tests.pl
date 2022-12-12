@@ -19,13 +19,15 @@ my $perl = 'perl';  # run Perl command. add path, etc. if needed
 my @test_list = qw(
  Basics
  Colspan
- manifest
  PDF-Table
- pod
  table
                   );
 # override full list above, and run just one or two tests
 #@test_list = qw( Colspan );
+		  
+# moved to xt/
+#   manifest
+#   pod
 
 my @need_T = qw(
  Colspan
