@@ -198,6 +198,23 @@ on provided data set and settings.
                 to build the table
     %settings - HASH with geometry and formatting parameters
 
+B<$data> is normally an m x n matrix of strings, each string containing the
+content text of that cell, and arranged with each row being an anonymous
+array of strings. For example, a table of 3 rows of 4 columns would be
+ 
+    $data = [
+      [ 'c1', 'c2', 'c3', 'c4' ],  # row 1
+      [ 'c1', 'c2', 'c3', 'c4' ],  # row 2
+      [ 'c1', 'c2', 'c3', 'c4' ],  # row 3
+            ];
+
+If you wish to enable I<markup> (Markdown or HTML) for a cell, C<$data> has
+the same structure, except that a cell with markup is itself an anonymous
+array of three items: a string describing the markup ('none', 'md1', 'html',
+or 'pre'), a string or anonymous array of strings representing the text and
+markup for the cell, and an anonymous hash of settings pertaining to the
+C<column()> call. See PDF::Builder's pod for Content::Text for details.
+
 For full C<%settings> description see section L</Table settings> below.
 
 This method will add more pages to the PDF instance as required, based on the 
@@ -446,7 +463,7 @@ B<Default:> 1 (write out the table)
     'ink'  => 0,
 
 B<Caution:> Currently, C<ink> is ignored for cells with I<markup>; their content
-will be written out regardless of C<ink>. We _do_ plan to support C<ink> for
+will be written out regardless of C<ink>. We I<do> plan to support C<ink> for
 markup cells in the not-too-distant future.
 
 =item B<size> - Specified column widths.
