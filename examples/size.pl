@@ -287,7 +287,7 @@ sub makeTable {
 			               # larger font, right-justified, own bg.
 			min_w      => 250, # ignored
 			justify    => "right",
-			font       => $pdf->corefont( "Times", -encoding => "latin1" ),
+			font       => $pdf->corefont( "Times-Roman", -encoding => "latin1" ),
 			font_size  => 10, 
 			fg_color   => 'white',
 			bg_color   => '#8CA6C5',

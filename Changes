@@ -1,8 +1,22 @@
 Change history for Perl extension PDF::Table.
 
-=== Version 1.004 (2022-12-12)   UNRELEASED
+=== Version 1.004 (2022-12-22)   UNRELEASED
 
 * consider whether to do code block here or via PDF::Builder
+
+* lib/PDF/Table.pm, lib/PDF/Table.pod, INFO/SPONSORS (new), INFO/Table.html,
+    MANIFEST
+   For PDF::Builder ONLY, allow specification of cell 'markup' (Markdown
+    or HTML), to permit great flexibility in cell content. See PDF::Builder's
+    examples/Column.pl for an example of usage.
+
+   This work (as well as markup changes for PDF::Builder) has been kindly
+    sponsored by MyActiv, Ltd.
+
+  lib/PDF/Table.pm, examples/sample1-size-vsizes.pl
+   The 'Times' font should be named 'Times-Roman', to conform with the correct
+    core font naming. PDF::Builder no longer silently accepts 'Times' as an
+    alias for 'Times-Roman', and now gives a warning.
 
   xt/manifest.t, xt/pod.t, MANIFEST, util/2_t-tests.pl
    Move author tests from t/ to xt/

@@ -418,7 +418,14 @@ did not provide it!
 
     'next_y'  => 750,
 
-=item B<ink> - measuring table height, or outputting the table
+=item B<ink> - Whether to actually write the table, or to measure the table size
+
+You may want to know how high (tall) the actual table will be, before making
+a decision whether to start the table on I<this> page, or another (typically,
+the top of the I<next> page). You might want to know if there is space for two
+or more small tables on this page, or where best to split a table (give an 
+C<h> value to avoid splitting a row). You may also decide to rearrange data 
+rows, if this will make better use of available space.
 
 The default I<ink> value is I<1> (to output to the PDF file). If set to I<0>, 
 only the height measurements (total, header, footer, each data row), in points,
@@ -431,6 +438,16 @@ B<Notes:>
 2. No matter if the header is repeated on each page, only one instance will be returned in the heights list. Think of the table as fitting on a single page, no matter how long it is, so don't forget to add in the (repeated) header height for each expected page of output! 
 
 3. If you have exceptionally heavy (thick) top and bottom border lines, you might want to add in some extra height (half the thickness of each) to the overall height of the table, to account for this.
+
+B<Value:> 0 (return height only) or 1 (actually write the table)
+
+B<Default:> 1 (write out the table)
+
+    'ink'  => 0,
+
+B<Caution:> Currently, C<ink> is ignored for cells with I<markup>; their content
+will be written out regardless of C<ink>. We _do_ plan to support C<ink> for
+markup cells in the not-too-distant future.
 
 =item B<size> - Specified column widths.
 

@@ -184,7 +184,7 @@ $pdftable->table(
 			               # larger font, right-justified, own bg.
 			min_w      => 250,
 			justify    => "right",
-			font       => $pdf->corefont( "Times", -encoding => "latin1" ),
+			font       => $pdf->corefont( "Times-Roman", -encoding => "latin1" ),
 			font_size  => 14, 
 			fg_color   => 'white',
 			bg_color   => '#8CA6C5',

@@ -98,7 +98,6 @@ if ($rcA) {
 # -------------
 my $page     = $pdf->page();
 my $text     = $page->text();
-my $ink;
 my @vsizes;
 my $table;
 
@@ -124,7 +123,7 @@ $text->text("1 cm");
 ############################################################################
 # illustrate thick border with thin rules
 # -------------------- table 1
-foreach $ink (0..1) {
+foreach my $ink (0..1) {
     $table = [
 	# rows TTB, LTR 
 	[ 'Thick', 'border', ],
@@ -174,7 +173,7 @@ foreach $ink (0..1) {
 
 # -------------------- table 2
 # illustrate colspans
-foreach $ink (0..1) {
+foreach my $ink (0..1) {
     $table = [
 
     # Row 1, with 3 cols
@@ -233,7 +232,7 @@ foreach $ink (0..1) {
 # illustrate a very long table that splits over multiple pages
 
 # Lorem Ipsum text, borrowed from PDF::Builder::examples/022_truefonts 
-foreach $ink (0..1) {
+foreach my $ink (0..1) {
     $table = [
     [ # 0,0
 "Sed ut perspiciatis, unde omnis iste natus error sit ".
@@ -326,7 +325,7 @@ foreach $ink (0..1) {
 $text = $page->text();
 $text->font($font, 15);
 
-foreach $ink (0..1) {
+foreach my $ink (0..1) {
     $table = [
 	[ 'Header',              'Row',   'Test' ],
 	[ '1 Lorem ipsum dolor', 'Donec', 'consequat quis, tincidunt vel, felis.' ],

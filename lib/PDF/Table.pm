@@ -288,6 +288,7 @@ sub table {
         carp "Error: Height of Table is NOT defined!\n";
         return ($page, 0, $ybase);
     }
+    my $bottom_margin = $ybase - $height;
 
     my $pg_cnt      = 1;
     my $cur_y       = $ybase;
@@ -360,7 +361,7 @@ sub table {
     #=====================================
     # geometry-related global settings checked, last value for find_value()
     my $fnt_obj        = $arg{'font'            } ||
-                         $pdf->corefont('Times',-encode => 'latin1');
+                         $pdf->corefont('Times-Roman',-encode => 'latin1');
     my $fnt_size       = $arg{'font_size'       } || $font_size_default;
     my $min_leading    = $fnt_size * $leading_ratio;
     my $leading        = $arg{'leading'} || $min_leading;
@@ -404,7 +405,7 @@ sub table {
         $cell_fg_color, $cell_bg_color_even, $cell_bg_color_odd,
         $cell_fg_color_even, $cell_fg_color_odd, $cell_min_w, $cell_max_w,
         $cell_h_rule_w, $cell_v_rule_w, $cell_h_rule_c, $cell_v_rule_c,
-        $cell_def_text);
+        $cell_def_text, $cell_markup);
 
     # for use by find_value()
     my $GLOBALS = [$cell_props, $col_props, $row_props, -1, -1, \%arg];
@@ -433,6 +434,17 @@ sub table {
             # initialize min and max column content widths to 0
             $col_min_width->[$col_idx]=0 if !defined $col_min_width->[$col_idx];
             $col_max_content->[$col_idx]=0 if !defined $col_max_content->[$col_idx];
+
+            # determine if this content is a simple string for normal usage,
+            # or it is markup
+            if (ref($data->[$row_idx][$col_idx]) eq '') {
+                # it is a string for normal usage
+                $cell_markup = '';
+            } else {
+                # it is an array for markup usage. exact type is the first element
+                $cell_markup = $data->[$row_idx][$col_idx]->[0];
+                # none, md1, html, or pre
+            }
 
             if ( !$row_idx && $do_headers ) {
                 # header row
@@ -1106,12 +1118,56 @@ sub table {
                 # we need to add the text as a text block
                 # Otherwise just use the $page->text() method
                 my $content = $data_row->[$col_idx];
-                $content = $cell_def_text if $content eq '';
+                $content = $cell_def_text if (ref($content) eq '' && 
+                                              $content eq '');
                 # empty content? doesn't seem to do any harm
-                if ( $content !~ m/(.\n.)/ and
-                     $data_row_widths->[$col_idx] and
-                     $data_row_widths->[$col_idx] <= 
-                         $actual_column_widths[$row_idx][$col_idx] ) {
+                if ( ref($content) eq 'ARRAY') {
+                    # it's a markup cell
+                    $cell_markup = $content->[0];
+                    # if it's "leftover" content, markup is 'pre'
+                     
+                    my ($rc, $next_y, $remainder);
+                    # upper left corner, width, and max height of this column?
+                    my $ULx = $cur_x + $cell_pad_left;
+                    my $ULy = $cur_y - $cell_pad_top;
+                    my $width = $actual_column_widths[$row_idx][$col_idx] - 
+                                $cell_pad_right - $cell_pad_left;
+                    my $max_h = $cur_y - $bottom_margin - 
+                                $cell_pad_top - $cell_pad_bot;
+                    ($rc,  $next_y, $remainder) =
+                        $txt->column($page, $txt, $gfx, $cell_markup,
+                                     $content->[1],
+                                     'rect'=>[$ULx, $ULy, $width, $max_h],
+                                     'font_size'=>$cell_font_size,
+                                     %{$content->[2]});
+                    if ($rc) {
+                        # splitting cell
+                        $actual_row_height = max($actual_row_height,
+                            $cur_y - $bottom_margin);
+                    } else {
+                        # got entire content onto this page
+                        $actual_row_height = max($actual_row_height,
+                           $cur_y - $next_y + $cell_pad_bot +
+                           ($cell_leading - $cell_font_size)*1.0);
+                    }
+                    # 1.0 multiplier is a good-looking fudge factor to add a 
+                    # little space between bottom of text and bottom of cell
+
+                    # at this point, actual_row_height is the used
+                    # height of this row, for purposes of background cell
+                    # color and left rule drawing. current_min_rh is left as
+                    # the height of one line + padding.
+
+                    if ( $rc ) {
+                        $leftovers->[$col_idx] = [ 'pre', $remainder, 
+                            $content->[2] ];
+                        $do_leftovers = 1;
+                    }
+
+                } elsif ( $content !~ m/(.\n.)/ and
+                          $data_row_widths->[$col_idx] and
+                          $data_row_widths->[$col_idx] <= 
+                              $actual_column_widths[$row_idx][$col_idx] ) {
                     # no embedded newlines (no multiple lines)
                     # and the content width is <= calculated column width?
                     # content will fit on one line, use text_* calls
