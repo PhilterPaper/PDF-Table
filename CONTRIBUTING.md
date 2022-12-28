@@ -1,4 +1,6 @@
-Contributing to the development of PDF::Table
+# Contributing to the development of PDF::Table
+
+**Working on your first Pull Request?** You can learn how from this *free* series [How to Contribute to an Open Source Project on GitHub](https://kcd.im/pull-request) 
 
 We would appreciate the community around us chipping in with code, tests, 
 documentation, and even just bug reports and feature requests. It's better 
@@ -7,9 +9,8 @@ not good to spend a lot of time working on something that no one is interested
 in!
 
 You can contribute to the discussion by posting bug reports, feature requests, 
-observations, etc. to the GitHub issues area, https://github.com/
-PhilterPaper/PDF-Table/issues?q=is%3Aissue+sort%3Aupdated-desc (please tag new 
-threads accordingly, using ["Labels"]).
+observations, etc. to the [GitHub issues area](https://github.com/ PhilterPaper/PDF-Table/issues?q=is%3Aissue+sort%3Aupdated-desc "issues")
+(please tag new threads accordingly, using ["Labels"], if possible).
 
 For code changes, a GitHub pull request, a formal patch file (e.g., "diff"), or 
 even a replacement file or manual patch will do, so long as it's clear where it 
@@ -20,12 +21,14 @@ handled. Please DO NOT send us code changes "out of the blue" (without prior
 discussion), unless they are very small, so that you're not out a lot of
 effort if we decline the offer.
 
-Do NOT under ANY circumstances open a PR (Pull Request) to report a bug. It is 
-a waste of both your and our time and effort. Open a regular ticket (issue), 
-and attach a Perl (.pl) program illustrating the problem, if possible. If you
-believe that you have a program patch (i.e., a permanent change to the code), 
-and offer to share it as a PR, we may give the go-ahead. Unsolicited PRs may be 
-closed without further action.
+## Do NOT...
+
+Do NOT under ANY circumstances open a PR (Pull Request) to **report a _bug_.**
+It is a waste of both _your_ and _our_ time and effort. Open a regular ticket
+(issue), and attach a Perl (.pl) program illustrating the problem, if possible. 
+If you believe that you have a program patch (i.e., a permanent change to the 
+code), and offer to share it as a PR, we may give the go-ahead. Unsolicited PRs 
+may be closed without further action.
 
 Please do not start on a massive project (especially, new function), without 
 discussing it with us first (via email or one of the discussion areas). This 
@@ -41,4 +44,4 @@ like PDF::API2::Ladder), under either our ownership or yours.
 
 Good luck, and best wishes using and helping with PDF::Table!
 
-July, 2022
+December, 2022

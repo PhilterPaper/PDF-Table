@@ -3,6 +3,10 @@
 This module creates text blocks and tables into PDF documents using the
 PDF::API2 or PDF::Builder Perl module.
 
+[![Open Issues](https://img.shields.io/github/issues/PhilterPaper/PDF-Table)](https://github.com/PhilterPaper/PDF-Table/issues)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](https://makeapullrequest.com)
+[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/PhilterPaper/PDF-Table/graphs/commit-activity)
+
 The official repository for PDF::Table module collaboration:
 "https://github.com/PhilterPaper/PDF-Table.git"
 
