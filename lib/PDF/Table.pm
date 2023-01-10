@@ -603,7 +603,9 @@ sub table {
             # hyphen (dash) at split. would have to track split words (by
             # index numbers?) and glue them back together when there's space
             # to do so (including hyphen).
-            if ( $cell_max_word_len > 0 && $data->[$row_idx][$col_idx]) {
+            # update: split words only if simple strings (not calling column())
+            if ( $cell_max_word_len > 0 && $data->[$row_idx][$col_idx] &&
+                 ref($data->[$row_idx][$col_idx]) eq '') {
                 $data->[$row_idx][$col_idx] =~ s#(\S{$cell_max_word_len})(?=\S)#$1 #g;
             }
 
