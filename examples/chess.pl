@@ -89,10 +89,11 @@ if (!$rcA && !$rcB) {
     die "Neither PDF::API2 nor PDF::Builder is installed!\n";
 }
 
-if ($PDFpref eq 'A') {
-    print STDERR "chess example fails due to PDF::API2 bug, and is not run.\n";
-    exit(0);
-}
+# appears to work as of 2.044
+#if ($PDFpref eq 'A') {
+#    print STDERR "chess example fails due to PDF::API2 bug, and is not run.\n";
+#    exit(0);
+#}
 # -------------
 
 # VERSION

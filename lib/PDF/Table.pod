@@ -208,12 +208,27 @@ array of strings. For example, a table of 3 rows of 4 columns would be
       [ 'c1', 'c2', 'c3', 'c4' ],  # row 3
             ];
 
+B<For PDF::Builder ONLY:>
+
 If you wish to enable I<markup> (Markdown or HTML) for a cell, C<$data> has
 the same structure, except that a cell with markup is itself an anonymous
 array of three items: a string describing the markup ('none', 'md1', 'html',
 or 'pre'), a string or anonymous array of strings representing the text and
 markup for the cell, and an anonymous hash of settings pertaining to the
-C<column()> call. See PDF::Builder's pod for Content::Text for details.
+C<column()> call. See PDF::Builder's POD for Content::Text for details.
+
+Instead of plain text cell 'This is plain text', you can do something like:
+
+    [ 'html', 
+      '<p><font color="green">This is green text.</font></p>',
+      { 'font-family'=>'Serif', 'font-size'=>15, 'para'=>[0,0] } ]
+
+Remember, this works only with PDF::Builder, and I<not> with PDF::API2.
+See the "Column.pl" example on PDF::Builder for some examples.
+Automatic cell sizing will not work with this, so you need to use the
+C<size> table parameter to specify relative cell widths.
+
+B<End of PDF::Builder ONLY:>
 
 For full C<%settings> description see section L</Table settings> below.
 
@@ -1232,7 +1247,7 @@ The return value is a 3 item list where
 
 =head1 VERSION
 
-1.003
+1.004
 
 =head1 AUTHOR
 
@@ -1249,7 +1264,7 @@ Further development since Ver: 0.12 - Phil Perry
 Copyright (C) 2006 by Daemmon Hughes, portions Copyright 2004 Stone
 Environmental Inc. (www.stone-env.com) All Rights Reserved.
 
-Copyright (C) 2020-2021 by Phil M Perry.
+Copyright (C) 2020-2023 by Phil M Perry.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.8.7 or,

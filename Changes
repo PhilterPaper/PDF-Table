@@ -1,8 +1,6 @@
 Change history for Perl extension PDF::Table.
 
-=== Version 1.004 (2023-01-09)   UNRELEASED
-
-* consider whether to do code block here or via PDF::Builder
+=== Version 1.004 (2023-01-21)
 
   lib/PDF/Table.pm, lib/PDF/Table.pod, INFO/SPONSORS (new), INFO/Table.html,
     MANIFEST
@@ -22,14 +20,12 @@ Change history for Perl extension PDF::Table.
    Move author tests from t/ to xt/
 
   examples/chess.pl
-   PDF::API2 (at least, as of current release 2.043) has a bug in its TTF
+   PDF::API2 (PREVIOUS to release 2.044) has a bug in its TTF
     handling, where it fails to translate some Unicode points ("U+nnnn" number)
     to the appropriate font glyph entry, and instead puts the Unicode point
     in the glyph list. This is incorrect, and usually results in a mismapping.
-    There may also be a problem with font sizing, where it was necessary to
-    cut the font size by more than 50%. Therefore, for the time being, the
-    PDF::API2 output for chess.pl (a sample chess game with pieces), is
-    disabled.
+    
+    As of PDF::API2 v 2.044, chess.pl seems to be working again.
 
   examples/*.pl
    If command line -A or -B, add prefix A_ or B_ to the output file name. This

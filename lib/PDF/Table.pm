@@ -14,7 +14,7 @@ use PDF::Table::ColumnWidth;
 use PDF::Table::Settings;
 # can't move text_block() b/c many globals referenced
 
-our $VERSION = '1.003'; # fixed, read by Makefile.PL
+our $VERSION = '1.004'; # fixed, read by Makefile.PL
 our $LAST_UPDATE = '1.004'; # manually update whenever code is changed
 # don't forget to update VERSION down in POD area
 
@@ -437,13 +437,45 @@ sub table {
 
             # determine if this content is a simple string for normal usage,
             # or it is markup
+            my $bad_markup = ''; 
             if (ref($data->[$row_idx][$col_idx]) eq '') {
-                # it is a string for normal usage
+                # it is a scalar string for normal usage
+                # (or some data easily stringified)
                 $cell_markup = '';
+            } elsif (ref($data->[$row_idx][$col_idx]) eq 'ARRAY') {
+                # it is an array for markup usage. exact type is the first 
+                # element.
+                if (!defined $data->[$row_idx][$col_idx]->[0]) {
+                    $bad_markup = 'array has no data';
+                } else {
+                    $cell_markup = $data->[$row_idx][$col_idx]->[0];
+
+                    # [0] should be none, md1, html, or pre
+                    if ($cell_markup ne 'none' && $cell_markup ne 'md1' &&
+                        $cell_markup ne 'html' && $cell_markup ne 'pre') {
+                        $bad_markup = "markup type '$cell_markup' unsupported";
+                    # [1] should be string or array of strings
+                    } elsif (defined $data->[$row_idx][$col_idx]->[1] &&
+                             ref($data->[$row_idx][$col_idx]->[1]) ne ''  &&
+                             ref($data->[$row_idx][$col_idx]->[1]) ne 'ARRAY') {
+                        $bad_markup = 'data not string or array of strings';
+                    # [2] should be hash reference (possibly empty)
+                    } elsif (defined $data->[$row_idx][$col_idx]->[2] &&
+                             ref($data->[$row_idx][$col_idx]->[2]) ne 'HASH') {
+                        $bad_markup = 'options not hash ref';
+                    }
+                    # [3+] additional elements ignored
+                }
             } else {
-                # it is an array for markup usage. exact type is the first element
-                $cell_markup = $data->[$row_idx][$col_idx]->[0];
-                # none, md1, html, or pre
+                # um, is not a legal data type for this purpose, even if it
+                # IS able to stringify to something reasonable
+                $bad_markup = 'is not a string or array reference';
+            }
+            if ($bad_markup ne '') {
+                # replace bad markup with a simple string
+                carp "Cell $row_idx,$col_idx $bad_markup.\n";
+                $data->[$row_idx][$col_idx] = '(invalid)';
+                $cell_markup = '';
             }
 
             if ( !$row_idx && $do_headers ) {
