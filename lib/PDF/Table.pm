@@ -7,6 +7,10 @@ use warnings;
 
 package PDF::Table;
 
+# portions (c) copyright 2004 Stone Environmental Inc.
+# (c) copyright 2006 Daemmon Hughes
+# (c) copyright 2020 - 2023 by Phil M. Perry
+ 
 use Carp;
 use List::Util qw[min max];  # core
 
@@ -468,8 +472,15 @@ sub table {
                 }
             } else {
                 # um, is not a legal data type for this purpose, even if it
-                # IS able to stringify to something reasonable
-                $bad_markup = 'is not a string or array reference';
+                # IS able to stringify to something reasonable.
+                # See if we can stringify it... better than a total failure?
+                my $string = '';  # in case stringification fails
+                $bad_markup = ''; # in case stringification succeeds
+                eval { $string = ''.$data->[$row_idx][$col_idx]; };
+                    $bad_markup = 'is not a string or array reference' if $@;
+                $data->[$row_idx][$col_idx] = $string;
+                # if fatal error in eval, $string will be empty, and $bad_markup
+                #   will cause it to be ignored anyway
             }
             if ($bad_markup ne '') {
                 # replace bad markup with a simple string
