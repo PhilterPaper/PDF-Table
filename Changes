@@ -1,5 +1,9 @@
 Change history for Perl extension PDF::Table.
 
+=== Version 1.006 (2023-04-08)  UNRELEASED
+
+    README.md  update to point to new Home Page structure on catskilltech.com
+
 === Version 1.005 (2023-01-28)
 
   lib/PDF/Table.pm
