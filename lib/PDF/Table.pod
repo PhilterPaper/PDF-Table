@@ -92,8 +92,8 @@ The old default for the C<repeat> setting for a header was '0' (do not repeat
 after a table has been split across a page). I believe that most users will
 want to automatically repeat a header row at the start of each table fragment, 
 but you can change this behavior if you wish. Change C<$repeat_default> from 1
-to 0 to get the old behavior (or, explicitly give C<repeat => 0> in the header
-properties settings).
+to 0 to get the old behavior (or, explicitly give C<repeat =E<gt> 0> in the 
+header properties settings).
 
 =item which rows are 'odd' (and which are 'even')
 

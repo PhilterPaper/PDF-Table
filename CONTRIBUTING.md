@@ -9,7 +9,7 @@ not good to spend a lot of time working on something that no one is interested
 in!
 
 You can contribute to the discussion by posting bug reports, feature requests, 
-observations, etc. to the [GitHub issues area](https://github.com/ PhilterPaper/PDF-Table/issues?q=is%3Aissue+sort%3Aupdated-desc "issues")
+observations, etc. to the [GitHub issues area](https://github.com/PhilterPaper/PDF-Table/issues?q=is%3Aissue+sort%3Aupdated-desc "issues")
 (please tag new threads accordingly, using ["Labels"], if possible).
 
 For code changes, a GitHub pull request, a formal patch file (e.g., "diff"), or 
