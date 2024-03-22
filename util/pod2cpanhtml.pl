@@ -9,7 +9,7 @@ use warnings;
 use Pod::Simple::HTML;
 
 # VERSION
-my $LAST_UPDATE = '1.000'; # manually update whenever code is changed
+our $LAST_UPDATE = '1.000'; # manually update whenever code is changed
 
 my $parser = Pod::Simple::HTML->new();
 

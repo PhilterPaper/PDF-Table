@@ -1,6 +1,12 @@
 Change history for Perl extension PDF::Table.
 
-=== Version 1.006 (2024-03-15)
+=== Version 1.006 (2024-03-21)
+
+    devtools/*
+     As was done with PDF::Builder, gather together the home-brew tools needed
+      to build a release, with instructions. This ensures that someone taking 
+      over PDF::Table (for whatever reason) has a chance to hit the ground
+      running.
 
     examples/*.pl
      Add ability to read an ENV environmental variable 'PDF_prefLib' to get
@@ -89,7 +95,7 @@ Change history for Perl extension PDF::Table.
 
 === Version 1.003 (2022-07-05)
 
- lib/PDF/Table/ColumnWidth.pm, lib/PDF/Table/Table.pod, examples/size.pl,
+ lib/PDF/Table/ColumnWidth.pm, lib/PDF/Table/Table.pod, examples/size.pl (new),
    MANIFEST, util/3_examples.pl
   Add the ability to specify fixed and relative sizes for column widths, 
    rather than having to accept system-calculated widths. You give a string

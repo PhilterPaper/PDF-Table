@@ -8,7 +8,7 @@ use strict;
 use warnings;
 
 # VERSION
-my $LAST_UPDATE = '1.002'; # manually update whenever code is changed
+our $LAST_UPDATE = '1.002'; # manually update whenever code is changed
 
 # command line:
 # -5  run perlcritic -5 .  (should be clean)

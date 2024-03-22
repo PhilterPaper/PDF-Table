@@ -1,0 +1,57 @@
+The devtools directory is a collection of tools and utilities used to create
+and package a PDF::Table distribution. I've moved them to here so that they
+can be preserved on GitHub and not be lost should I disappear from the scene,
+and my (hopefully erased) laptop ends up at a thrift shop! I hope that they 
+will help whoever takes over this repository (as well as anyone forking it) to 
+hit the ground running.
+
+These tools are not intended to be shipped with the product (e.g., the CPAN
+package), but are just being kept with the rest of the code. PDFbuild.pl is
+the only one that needs to be explicitly run, once you have "version" set up.
+The output is a CPAN-ready PDF-Table-1.xxx.tar.gz package file.
+
+There is also an "html2php.pl" utility to take .html files produced locally by
+tools/buildDoc.pl, and create a set of PHP files for clean web display. Note
+however, that these use a library of my own (see catskilltech.com); you would
+need to rewrite the page prologues and epilogues to use a different library.
+
+Note that these use Windows commands and batch files, and assume we're using
+Strawberry Perl; if you develop on Linux or other, you will need to update the 
+code to use proper Linux commands and directory structures.
+
+  copy -> cp -p
+  xcopy [/s] -> [recursively] copy according to a filename template, possibly
+                with find, for, and cp -p
+  rename -> mv
+  attrib -> chmod (+R make read-only, -R make read-write, else just list
+                   permissions/attributes (R)ead-only, (A)rchive bit set, 
+                   (S)ystem file, (H)idden file, etc.)
+  findstr -> grep
+  erase -> rm
+  mkdir -> mkdir
+
+  7z.exe is the tar/gzip/zip file packager "7-Zip" available on the web, and 
+installed into \Program Files\7-Zip. If you cannot obtain it, you will need to
+replace various calls to produce tar files, compress with gzip, or (possibly)
+produce .zip files. Part of the packaging flow is to create a .tar file from
+the directory, then compress it as .tar.gz. 7z (and gzip) handle these tasks.
+
+  dos2unix.exe is a utility found on the web (IIRC, as part of a local Git
+installation), and installed under \Program Files\Git. It reformats DOS style
+text file line-ends (CRLF) to Unix style (NL).
+
+When running devtools\TableBuild.pl in your local Desktop\PDF-Table\, and are
+asked yes/no/all for a group copy or other action, answer 'all'. When all is 
+done, and you're satisfied that a usable .tar.gz package file has been 
+created, you will then delete several directories (Desktop\temp\, blib\) and
+a bunch of newly created files (PDF-Table-x.xxx.tar, Makefile, MYMETA.*, 
+pm2blib, etc.), AFTER moving PDF-Table-x.xxx.tar.gz to a safe place. 
+PDFbuild.pl is the script to run to produce the .tar.gz file -- the rest are 
+called from it (except for docs/buildDoc.pl to create HTML documentation, and
+html2php.pl to create PHP for website use). Notice that several files will be 
+updated with VERSION numbers, prerequisite versions, etc., and they will need 
+to be updated in your Git (or other source) repository.
+
+The use of gzip.bat in the produced Makefile gets updated in PDFbuild.pl to get 
+an explicit "devtools\" path prepended to it. On a Linux system, you may have 
+to brew up something different (may not even need a gzip.bat).

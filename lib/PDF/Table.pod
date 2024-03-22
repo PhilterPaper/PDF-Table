@@ -1247,7 +1247,7 @@ The return value is a 3 item list where
 
 =head1 VERSION
 
-1.005
+1.007
 
 =head1 AUTHOR
 
@@ -1264,7 +1264,7 @@ Further development since Ver: 0.12 - Phil Perry
 Copyright (C) 2006 by Daemmon Hughes, portions Copyright (C) 2004 Stone
 Environmental Inc. (www.stone-env.com) All Rights Reserved.
 
-Copyright (C) 2020-2023 by Phil M Perry.
+Copyright (C) 2020-2024 by Phil M Perry.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.8.7 or,

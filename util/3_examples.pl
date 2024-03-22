@@ -9,7 +9,7 @@ use strict;
 use warnings;
 
 # VERSION
-my $LAST_UPDATE = '1.006'; # manually update whenever code is changed
+our $LAST_UPDATE = '1.006'; # manually update whenever code is changed
 
 # dependent on optional packages:
 

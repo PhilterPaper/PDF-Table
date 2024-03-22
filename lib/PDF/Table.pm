@@ -18,7 +18,7 @@ use PDF::Table::ColumnWidth;
 use PDF::Table::Settings;
 # can't move text_block() b/c many globals referenced
 
-our $VERSION = '1.005'; # fixed, read by Makefile.PL
+our $VERSION = '1.006'; # fixed, read by Makefile.PL
 our $LAST_UPDATE = '1.006'; # manually update whenever code is changed
 # don't forget to update VERSION down in POD area
 
