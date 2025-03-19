@@ -739,6 +739,9 @@ C<#FFFFAA> (light yellow, $h_bg_color_default).
 
     'fg_color'      => '#333333',
 
+In order to override any default background color, such as for a header row,
+you may set the color to 'trans' or 'transparent'.
+
 B<Deprecated names:> I<font_color, background_color>
 (both will go away in the future!)
 

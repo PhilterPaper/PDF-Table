@@ -1141,14 +1141,20 @@ sub table {
                 $data_row->[$col_idx] //= $cell_def_text;
 
                 # Handle colspan
-                my $c_cell_props = $cell_props->[$row_idx][$col_idx];
+                my $c_cell_props = $is_header_row ?
+                    $cell_props->[0][$col_idx] :
+                    $cell_props->[$row_idx][$col_idx];
                 my $this_cell_width = $calc_column_widths->[$col_idx];
                 if ($c_cell_props && $c_cell_props->{'colspan'} && $c_cell_props->{'colspan'} > 1) {
                     my $colspan = $c_cell_props->{'colspan'};
                     for my $offset (1 .. $colspan - 1) {
                         $this_cell_width += $calc_column_widths->[$col_idx + $offset] 
                             if $calc_column_widths->[$col_idx + $offset];
-                        $colspanned{$row_idx.'_'.($col_idx + $offset)} = 1;
+                        if ($is_header_row) {
+                            $colspanned{'0_'.($col_idx + $offset)} = 1;
+                        } else {
+                            $colspanned{$row_idx.'_'.($col_idx + $offset)} = 1;
+                        }
                     }
                 }
                 $this_cell_width = max($this_cell_width, $min_col_width);
@@ -1330,6 +1336,7 @@ sub table {
         # TBD rowspan!
                 if ($ink) {
                     if (defined $bg_color && 
+                        $bg_color ne 'transparent' && $bg_color ne 'trans' &&
                         !$colspanned{$row_idx.'_'.$col_idx}) {
                         $gfx_bg->rect( $cur_x, $cur_y-$actual_row_height,  
                                        $actual_column_widths[$row_idx][$col_idx], $actual_row_height);

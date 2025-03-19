@@ -1,5 +1,19 @@
 Change history for Perl extension PDF::Table.
 
+=== Version 1.007 (2025-03-19) (unreleased)
+
+    devtools/PDFversion.pl, devtools/TableBuild.pl, util/3_examples.pl
+     Updated to modern Perl standards to make 1_pc.pl PerlCritic happy.
+
+    lib/PDF/Table.pm
+     Permit 'trans' or 'transparent' background color (mostly for overriding
+      a default bg color). Per #80 (reported by @az143).
+
+    lib/PDF/Table.pm, examples/colspan.pl
+     Fix colspan interference with a header row. Add (commented out) test
+      code to show effect in colspan example. Per #78 (reported and fix 
+      supplied by @BlueWlvrn).
+
 === Version 1.006 (2024-03-21)
 
     devtools/*

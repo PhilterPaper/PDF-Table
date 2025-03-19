@@ -49,7 +49,7 @@ my (@example_list, @example_results);
   push @example_results, "illustrate borders and rules effects.\n";
 
   push @example_list, "size.pl";
-  push @example_results, "illustrate using size setting for column widths.\n";
+  push @example_results, "illustrate using size setting for column widths.\nExpect 6 Warnings.\n";
 
   push @example_list, "vsizes.pl";
   push @example_results, "illustrate getting table size in advance.\n";

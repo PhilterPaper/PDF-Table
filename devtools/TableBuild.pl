@@ -1,3 +1,7 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+
 # build PDF-Table distribution image
 #
 # consider copying MYMETA.* over META.* (before committing to GitHub)
@@ -12,20 +16,22 @@ my $product = 'Table';
 my $master  = 'Table.pm';
 my $GHname  = 'PDF-Table';
 
-unless (open(VER, "<version")) {
+my $VER;
+
+unless (open($VER, "<", "version")) {
   die "Unable to open input 'version' control file to read! $!\n";
 }
-my $VERSION = <VER>; chomp($VERSION);  # e.g., '3.011'
-close VER;
+my $VERSION = <$VER>; chomp($VERSION);  # e.g., '3.011'
+close $VER;
 print "**** file 'version' contains '$VERSION'.\n";
 to_continue();
 # will auto-update .pm, .pl files below
 
-unless (open(VER, "<.perl-version")) {
+unless (open($VER, "<", ".perl-version")) {
   die "Unable to open input '.perl-version' control file to read! $!\n";
 }
-my $PERL_version = <VER>; chomp($PERL_version);  # e.g., '5.16.0'
-close VER;
+my $PERL_version = <$VER>; chomp($PERL_version);  # e.g., '5.16.0'
+close $VER;
 print "**** file '.perl-version' contains '$PERL_version',
      and check $builder for proper PERL_version\n";
 to_continue();
@@ -235,14 +241,15 @@ sub checkForBackups {
   my $dir = shift;  # should end with \
 
   my $entry;
+  my $DIR;
   my $result = 0; # nothing found yet
 
   # open this directory
-  opendir(DIR, $dir) || die "unable to open dir '$dir': $!";
+  opendir($DIR, $dir) || die "unable to open dir '$dir': $!";
 
   my @dirList = ();
   my @fileList = ();
-  while ($entry = readdir(DIR)) {
+  while ($entry = readdir($DIR)) {
     if ($entry eq '.' || $entry eq '..') { next; }
     
     if (-d "$dir$entry") {
@@ -253,7 +260,7 @@ sub checkForBackups {
   }
 
   # done reading, so close directory
-  closedir(DIR);
+  closedir($DIR);
 
   while ($entry = shift(@fileList)) {
     # is a file... examine name
@@ -302,22 +309,25 @@ sub prepOutputDirs {
   mkdir($dir."code");
   mkdir($dir."docs");
   mkdir($dir."downloads");
+
+  return;
 } # end prepOutputDirs()
 
 sub eraseDir {
   my $dir = shift;
 
   my $entry;
+  my $DIR;
 
   # if $dir does exist, remove it recursively (must be empty for rmdir)
   if (-d $dir) {
 
     # open this directory
-    opendir(DIR, $dir) || die "unable to open dir '$dir': $!";
+    opendir($DIR, $dir) || die "unable to open dir '$dir': $!";
 
     my @dirList = ();
     my @fileList = ();
-    while ($entry = readdir(DIR)) {
+    while ($entry = readdir($DIR)) {
       if ($entry eq '.' || $entry eq '..') { next; }
     
       if (-d "$dir$entry") {
@@ -328,7 +338,7 @@ sub eraseDir {
     }
 
     # done reading, so close directory
-    closedir(DIR);
+    closedir($DIR);
 
     # erase all files in this dir
     while ($entry = shift(@fileList)) {
@@ -342,6 +352,8 @@ sub eraseDir {
     # finally, remove THIS directory
     rmdir($dir);
   }
+
+  return;
 } # end eraseDir()
 
 # -----------------------------------------
@@ -358,6 +370,8 @@ sub copyToCode {
   # put dir names in " " because they often have spaces in them
   system("xcopy \"$src\" \"$dst\" /E");
 
+
+  return;
 } # end copyToCode()
 
 # -----------------------------------------
@@ -370,17 +384,17 @@ sub makeHTML {
   my ($src, $dst, $extra) = @_;
   # intially .../lib/, .../docs/lib/, ''. extra will change
 
-  my ($entry, $input, $output, $isPOD, $outfile);
+  my ($entry, $input, $output, $isPOD, $outfile, $SRC, $OUT);
   # $podBase set up at top
 
   # open this directory for reading
-  opendir(SRC, "$src$extra") || die "unable to open dir '$src$extra': $!";
+  opendir($SRC, "$src$extra") || die "unable to open dir '$src$extra': $!";
 
   my @dirList = ();
   my @fileList = ();
   my @outputList = ();
 
-  while ($entry = readdir(SRC)) {
+  while ($entry = readdir($SRC)) {
     if ($entry eq '.' || $entry eq '..') { next; }
     
     if (-d "$src$extra$entry") {
@@ -400,7 +414,7 @@ sub makeHTML {
   }
 
   # done reading, so close directory
-  closedir(SRC);
+  closedir($SRC);
 
   while ($input = shift(@fileList)) {
     $output = shift(@outputList);
@@ -429,9 +443,9 @@ sub makeHTML {
       $outfile =~ s/<a>/<a $href>/;
     }
     # write modified outfile to $output file
-    unless (open(OUT, ">$output")) { die "Unable to open POD output file '$output': $!\n"; }
-    print OUT $outfile;
-    close(OUT); 
+    unless (open($OUT, ">", $output)) { die "Unable to open POD output file '$output': $!\n"; }
+    print $OUT $outfile;
+    close($OUT); 
 
   } # process a .pm file found in a directory
 
@@ -440,6 +454,8 @@ sub makeHTML {
     makeHTML($src, $dst, "$extra$entry\\");
   }
 
+
+  return;
 } # end makeHTML()
 
 # -----------------------------------------
@@ -451,8 +467,10 @@ sub makeDownloads {
   # dst/code is the source directory, and dst/downloads is the target directory
   # $outputBasename is like "$GHname-0.12"
 
+  my $OUT;
+
   # also build dst/downloads/.downloads control file
-  unless (open(OUT, ">$dst\\downloads\\.downloads")) {
+  unless (open($OUT, ">", "$dst\\downloads\\.downloads")) {
     die "Unable to open output .downloads control file to write! $!\n";
   }
 
@@ -464,16 +482,18 @@ sub makeDownloads {
    
   # erase outputBasename.tar
   unlink("$dst\\downloads\\$outputBasename.tar");
-  print OUT "$outputBasename.tar.gz\n";
-  print OUT "The complete package in GNU-zipped tarball.\n";
+  print $OUT "$outputBasename.tar.gz\n";
+  print $OUT "The complete package in GNU-zipped tarball.\n";
    
   # product dst/downloads/outputBasename.zip from dst/code
   system("$cmd7Zip $dst\\downloads\\$outputBasename.zip $dst\\code\\*");
-  print OUT "$outputBasename.zip\n";
-  print OUT "The complete package in Windows ZIP format.\n";
+  print $OUT "$outputBasename.zip\n";
+  print $OUT "The complete package in Windows ZIP format.\n";
     
-  close(OUT);
+  close($OUT);
 
+
+  return;
 } # end makeDownloads()
 
 # -----------------------------------------
@@ -482,6 +502,8 @@ sub makeDownloads {
 # $builder is no longer R/O
 sub update_with_version {
     my ($f, $line);
+
+    my ($IN, $OUT);
 
     my $outtemp = 'xxxxx.temp';
 #   my @name = ("$builder", 'dist.ini', 'META.json', 'META.yml');
@@ -498,22 +520,22 @@ sub update_with_version {
     my @pattern = ('^(\s*my \$version\s*=\s*\')\d\.\d{3}(\';.*)$',
     		   '^(our \$VERSION = \')\d\.\d{3}(\'; # VERSION)');
 
-    foreach $f (0 .. $#name) {
+    foreach my $f (0 .. $#name) {
        #if ($f == 0) { system("attrib -R $name[0]"); }
-        unless (open(IN, "<$name[$f]")) { 
+        unless (open($IN, "<", $name[$f])) { 
             die "Unable to update $name[$f] with version\n";
         }
-        unless (open(OUT, ">$outtemp")) { 
+        unless (open($OUT, ">", $outtemp)) { 
             die "Unable to open temporary output file $outtemp\n";
         }
    
-        while ($line = <IN>) {
+        while ($line = <$IN>) {
             $line =~ s/$pattern[$f]/$1$VERSION$2/;
-	    print OUT $line;
+	    print $OUT $line;
         }
    
-        close(IN);
-        close(OUT);
+        close($IN);
+        close($OUT);
 	system("copy $outtemp $name[$f]");
 
 	system("dos2unix $name[$f]");
@@ -521,6 +543,8 @@ sub update_with_version {
        #if ($f == 0) { system("attrib +R $name[0]"); }
     }
     system("erase $outtemp");
+
+    return;
 }
 
 # -----------------------------------------
@@ -535,14 +559,15 @@ sub update_VERSION {
     my $newVer  = "our \$VERSION = '$VERSION'; # VERSION";
 
     my $outtemp = 'xxxxx.temp';
+    my ($SRC, $IN, $OUT);
 
     # open this directory for reading
-    opendir(SRC, "$src") || die "unable to open dir '$src': $!";
+    opendir($SRC, "$src") || die "unable to open dir '$src': $!";
 
     my @dirList = ();
     my @fileList = ();
 
-    while ($entry = readdir(SRC)) {
+    while ($entry = readdir($SRC)) {
         if ($entry eq '.' || $entry eq '..') { next; }
     
         if (-d "$src$entry") {
@@ -558,7 +583,7 @@ sub update_VERSION {
 
     # done reading, so close directory
     # have list of files and subdirectories within this one
-    closedir(SRC);
+    closedir($SRC);
 
     while ($name = shift(@fileList)) {
 
@@ -569,20 +594,20 @@ sub update_VERSION {
 	# make Read-Write
 	if ($ro_flag) { system("attrib -R $name"); }
 
-        unless (open(IN, "<$name")) { 
+        unless (open($IN, "<", $name)) { 
             die "Unable to update $name with version\n";
         }
-        unless (open(OUT, ">$outtemp")) { 
+        unless (open($OUT, ">", $outtemp)) { 
             die "Unable to open temporary output file $outtemp\n";
         }
    
-        while ($line = <IN>) {
+        while ($line = <$IN>) {
             $line =~ s/$pattern/$newVer/;
-	    print OUT $line;
+	    print $OUT $line;
         }
    
-        close(IN);
-        close(OUT);
+        close($IN);
+        close($OUT);
         $outtemp =~ s#/#\\#g;
         $name =~ s#/#\\#g;
 	system("copy $outtemp $name");
@@ -597,6 +622,7 @@ sub update_VERSION {
         update_VERSION($entry, $ro_flag);
     }
 
+    return;
 }
 
 sub update2_Makefile {
@@ -609,17 +635,19 @@ sub update2_Makefile {
 		   "devtools\\gzip --best",
 	          );
 
+    my ($IN, $OUT);
+
     my $infile = $script;
     my $outtemp = "xxxx.tmp";
-    unless (open(IN, "<$infile")) {
+    unless (open($IN, "<", $infile)) {
 	die "Unable to read $infile for update\n";
     }
-    unless (open(OUT, ">$outtemp")) {
+    unless (open($OUT, ">", $outtemp)) {
 	die "Unable to write temporary output file for $infile update\n";
     }
 
     my ($line, $i, @frags);
-    while ($line = <IN>) {
+    while ($line = <$IN>) {
 	# $line still has line-end \n
 	for ($i=0; $i<scalar(@pattern); $i++) {
 	    if ($line =~ m/$pattern[$i]/) {
@@ -627,12 +655,14 @@ sub update2_Makefile {
 		last;
 	    }
 	}
-	print OUT $line;
+	print $OUT $line;
     }
 
-    close(IN);
-    close(OUT);
+    close($IN);
+    close($OUT);
     system("copy $outtemp $infile");
     unlink($outtemp);
+
+    return;
 } # end update2_Makefile()
 
