@@ -21,7 +21,7 @@ my $VER;
 unless (open($VER, "<", "version")) {
   die "Unable to open input 'version' control file to read! $!\n";
 }
-my $VERSION = <$VER>; chomp($VERSION);  # e.g., '3.011'
+my $VERSION = <$VER>; chomp($VERSION);  # e.g., '1.007'
 close $VER;
 print "**** file 'version' contains '$VERSION'.\n";
 to_continue();
@@ -51,17 +51,17 @@ my $desktop = "C:\\Users\\Phil\\Desktop\\";
 my $temp = $desktop."temp";
 
 # location of 7-Zip
-$sevenZip = "\"C:\\Program Files\\7-Zip\\7z.exe\"";
-$cmd7Zip  = $sevenZip . " a -r ";
+my $sevenZip = "\"C:\\Program Files\\7-Zip\\7z.exe\"";
+my $cmd7Zip  = $sevenZip . " a -r ";
 
 # location of pod2html
-$pod2html = "pod2html";   # should be in PATH
+my $pod2html = "pod2html";   # should be in PATH
 
-$baseDirSrc = $desktop . "$GHname\\";
-#$outputBasename = "PDF-API2-" . substr($dirName, 1);
+my $baseDirSrc = $desktop . "$GHname\\";
+my $outputBasename = "$GHname-$VERSION";
 
-# absolute path so POD links will work
-#$podBase = "/Free.SW/PDF-API2/$dirName/docs/lib/";
+# absolute path so POD links will work (currently unused)
+my $podBase = "/Free.SW/PDF-Table/$GHname/docs/lib/";
 # --------------------------------------
 
 # check for any files suffixed ~ or .bak (backup files) in source
@@ -423,7 +423,7 @@ sub makeHTML {
     # $input is full file path and name
     # $output is full file path and name
     # if dir for output doesn't exist yet, mkdir it
-    $outpath = $output;
+    my $outpath = $output;
     $outpath =~ s/^[a-z]://i;   # strip off drive
     $outpath =~ s/\\[^\\]+$//;
     if (!-d $outpath."\\") {
@@ -436,7 +436,7 @@ sub makeHTML {
     while ($outfile =~ m#<a>(.*?)</a>#) {
       # outfile $output contains <a> in need of fixup
       # presumably we won't find orphan <a>'s with </a> on next line
-      $href = $1;
+      my $href = $1;
       $href =~ s#::#/#g;  # globally change :: to /
       # expect href to start with PDF/, so podBase is /Free.SW...lib/
       $href = 'href="' . $podBase . $href . '.html"';  # absolute path, .html fileext
@@ -554,7 +554,7 @@ sub update_VERSION {
     my $src = shift;  # single directory to work in for this call
     my $ro_flag = shift;  # true if expect R/O file
 
-    my ($entry, $name, $entry, $line);
+    my ($name, $entry, $line);
     my $pattern = '^# VERSION';
     my $newVer  = "our \$VERSION = '$VERSION'; # VERSION";
 

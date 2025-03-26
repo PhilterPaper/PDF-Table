@@ -1,6 +1,12 @@
 Change history for Perl extension PDF::Table.
 
-=== Version 1.007 (2025-03-19) (unreleased)
+=== Version 1.008 (2025-03-25) UNRELEASED
+
+*   all Deprecated items updated
+
+*   consolidate A/B choice in lib/PDF/Table/ChooseDriver.pm
+
+=== Version 1.007 (2025-03-25)
 
     devtools/PDFversion.pl, devtools/TableBuild.pl, util/3_examples.pl
      Updated to modern Perl standards to make 1_pc.pl PerlCritic happy.

@@ -52,7 +52,7 @@ sub update_version {
     while ($name = shift(@fileList)) {
         if ($name =~ m/ - Copy/) { next; }
         # $name is full file path and name
-	$ro_flag = 0;
+	my $ro_flag = 0;
 	for (my $i=0; $i<scalar @types; $i++) {
 	    if ($read_only[$i] && $name =~ m/$types[$i]/) { $ro_flag = 1; }
 	}

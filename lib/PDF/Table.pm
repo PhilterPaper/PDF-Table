@@ -9,7 +9,7 @@ package PDF::Table;
 
 # portions (c) copyright 2004 Stone Environmental Inc.
 # (c) copyright 2006 Daemmon Hughes
-# (c) copyright 2020 - 2024 by Phil M. Perry
+# (c) copyright 2020 - 2025 by Phil M. Perry
  
 use Carp;
 use List::Util qw[min max];  # core
@@ -18,8 +18,8 @@ use PDF::Table::ColumnWidth;
 use PDF::Table::Settings;
 # can't move text_block() b/c many globals referenced
 
-our $VERSION = '1.006'; # fixed, read by Makefile.PL
-our $LAST_UPDATE = '1.006'; # manually update whenever code is changed
+our $VERSION = '1.007'; # fixed, read by Makefile.PL
+our $LAST_UPDATE = '1.007'; # manually update whenever code is changed
 # don't forget to update VERSION down in POD area
 
 my $compat_mode = 0; # 0 = new behaviors, 1 = compatible with old
