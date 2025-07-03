@@ -812,8 +812,9 @@ sub table {
                 unshift @$rows_height, $header_min_rh;
 
                 $first_row = 1; # Means YES
-                # Roll back the row_idx because a new header row added
-                $row_idx--; 
+                # Roll back the row_idx because a new header row added, unless it was the
+                # header itself that overflowed.
+                $row_idx-- if $row_idx > 0;
             }
              
         }
