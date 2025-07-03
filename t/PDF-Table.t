@@ -157,4 +157,28 @@ ok($pdf->match(
       [['text', 'abcdefghijklm nopqrstuvwxyz']],
 ), 'break long words on max_word_length');
 
+$pdf = PDF::API2->new;
+$page = $pdf->page;
+@data = (
+      [ 'Name', 'Description', 'Intent', 'Flavour', 'Colour',
+        'Intense philosophical discussion on how much certainty'
+        . ' we can put on the truth of anything',
+        'Price',
+      ],
+      [ 'Chocolate', 'Brown and sugary', 'Be tasty', 'Tasty', 'Brown, I said',
+        'Who cares?',
+        '9.99' ],
+      [ 'Angst', 'Uncomfortable', 'Annoy you', 'None', 'Also none',
+        'Ironically, we can probably be sure that this exists',
+        'Who would *buy* this?'
+      ],
+);
+$tab->table(
+      $pdf, $page, [@data], @required,
+      header_props => { repeat => 1 },
+      w => 400,
+      font_size => 10,
+      start_y => 100,
+);
+
 1;
