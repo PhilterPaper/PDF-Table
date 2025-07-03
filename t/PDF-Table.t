@@ -60,6 +60,7 @@ my ($pdf, $page, $tab, @data, @required);
       next_y => 700,
       start_h => 40,
       next_h => 500,
+      font_size => 12,
 );
 
 $pdf = PDF::API2->new;
@@ -74,7 +75,6 @@ $tab = PDF::Table->new($pdf, $page);
 $tab->table($pdf, $page, [@data], @required,
       border => 1,
       border_color => 'black',
-      font_size => 12,
       background_color => 'gray',
       column_props => [
             {}, { background_color => 'red' }, {},
@@ -106,7 +106,6 @@ $page = $pdf->page;
 $tab->table($pdf, $page, [@data], @required,
       border => 0,
       border_color => 'black',
-      font_size => 12,
       column_props => [
             {}, { justify => 'center' }, { justify => 'center' },
       ],
@@ -137,7 +136,6 @@ $pdf = PDF::API2->new;
 $page = $pdf->page;
 $tab->table($pdf, $page, [@data], @required,
       border => 0,
-      font_size => 12,
       max_word_length => 13,
       cell_props => [
             [],
