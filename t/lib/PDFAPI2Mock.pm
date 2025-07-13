@@ -72,8 +72,9 @@ BEGIN {
 
     package PDF::API2::Page; ## no critic
     our @ISA = 'Mock';
-    __PACKAGE__->factory( 'PDF::API2::Content',       'gfx' );
+    __PACKAGE__->factory( 'PDF::API2::Content',        'gfx' );
     __PACKAGE__->factory( 'PDF::API2::Content::Text', 'text' );
+    sub mediabox { return (0,0, 612,792) }
 
     package PDF::API2::Content; ## no critic
     our @ISA = 'Mock';

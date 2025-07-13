@@ -1,17 +1,31 @@
 Change history for Perl extension PDF::Table.
+* = work in progress
 
-=== Version 1.008 (2025-03-25) UNRELEASED
+=== Version 1.008 (2025-05-14) UNRELEASED
 
 *   all Deprecated items updated
 
-*   consolidate A/B choice in lib/PDF/Table/ChooseDriver.pm
+*   consolidate A/B choice in lib/PDF/Table/ChooseDriver.pm and t/ and
+      examples/
+
+    MANIFEST, MANIFEST.SKIP (remove), SECURITY.md (new)
+     Address Kwalitee issues: unhappy with MANIFEST.SKIP (remove from MANIFEST,
+      erase MANIFEST.SKIP), add SECURITY.md with contact address per Builder.
+      Doesn't like .perl-version and .perlcritic, but won't say what's wrong.
+      At this time, unable to add "provides" per Builder at this time, as unlike
+      Builder, META.yml and META.json are auto-built and not manually provided.
+ 
+    t/lib/PDFAPI2Mock.pm
+     Add mediabox() to dummy stubs so that t/PDF-Table.t can still run
+
+    Change distribution (CPAN owner) to PMPERRY from OMEGA
 
 === Version 1.007 (2025-03-25)
 
     devtools/PDFversion.pl, devtools/TableBuild.pl, util/3_examples.pl
-     Updated to modern Perl standards to make 1_pc.pl PerlCritic happy.
+     Updated to modern Perl standards to make 1_pc.pl (PerlCritic) happy.
 
-    lib/PDF/Table.pm
+    lib/PDF/Table.pm, lib/PDF/Table.pod
      Permit 'trans' or 'transparent' background color (mostly for overriding
       a default bg color). Per #80 (reported by @az143).
 
@@ -19,6 +33,9 @@ Change history for Perl extension PDF::Table.
      Fix colspan interference with a header row. Add (commented out) test
       code to show effect in colspan example. Per #78 (reported and fix 
       supplied by @BlueWlvrn).
+
+    LICENSE, version, INFO/Table.html, README.md
+     Update for new release and copyright year.
 
 === Version 1.006 (2024-03-21)
 

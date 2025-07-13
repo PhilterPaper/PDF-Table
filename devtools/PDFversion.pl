@@ -1,8 +1,6 @@
 #!/usr/bin/perl
-    use strict;
-    use warnings;
-
-#my $ourLAST = 1;  # T: change my $LAST_UPDATE to our $LAST_UPDATE
+use strict;
+use warnings;
 
     my $src = $ARGV[0];  # directory root to work in for this call
     my $VERSION = $ARGV[1];  # version to use (e.g., 3.005)
@@ -70,9 +68,6 @@ sub update_version {
         while ($line = <$IN>) {
 	    # $line still has line-end \n
             $line =~ s/$pattern/$newVer/;
-	   #if ($ourLAST) {
-	   #    $line =~ s/^my \$LAST_UPDATE/our \$LAST_UPDATE/;
-	   #}
 	    print $OUT $line;
         }
    

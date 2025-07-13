@@ -24,9 +24,9 @@ lib/PDF/Table/Settings.pm
 LICENSE
 Makefile.PL
 MANIFEST
-MANIFEST.SKIP
 PDFpref
 README.md
+SECURITY.md
 t/Basics.t
 t/Colspan.t
 t/lib/PDFAPI2Mock.pm

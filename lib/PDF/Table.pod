@@ -230,7 +230,7 @@ See the "Column.pl" example on PDF::Builder for some examples.
 Automatic cell sizing will not work with this, so you need to use the
 C<size> table parameter to specify relative cell widths.
 
-B<End of PDF::Builder ONLY:>
+B<End of PDF::Builder ONLY>
 
 For full C<%settings> description see section L</Table settings> below.
 
