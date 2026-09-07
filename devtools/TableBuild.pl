@@ -107,6 +107,10 @@ print "**** Have you 1) compared $GHname/ to /Strawberry, 2) run t-tests,
      3) run examples to thoroughly test? Have you 4) built all docs
      (.html) to check PODs? press Enter.\n";
 to_continue();
+print "**** Have you moved docs to proj-docs/pdftable and run updates?\n";
+to_continue();
+print "**** Have you moved examples to proj-docs/pdftable?\n";
+to_continue();
 
 system("attrib -R $builder");
 update_with_version();
@@ -186,18 +190,19 @@ if_OK();
 
 system("xcopy /s $desktop\\temp\\*.* .");
 #system("git checkout $builder");
-#print "**** run unVERSION.bat to reverse all the VERSION settings.\n";
 print "**** erase Desktop/temp/ if everything is clean in build\n";
 print "**** erase $script, etc. new stuff (EXCEPT .tar.gz)\n";
 print "**** log on to PAUSE as OMEGA/RoadMap and upload .tar.gz file\n";
 print "**** consider removing an old release from CPAN\n";
+print "**** proj-docs/pdftable/ check, and promote to final\n";
 print "**** update motd.php on website\n";
 print "**** copy .tar.gz to releases/ and git rm oldest\n";
 print "**** version update, including $product.pod, to next release\n";
 print "**** Changes update next version, add UNRELEASED\n";
 print "**** git update with latest changes\n";
-print "**** update Examples on catskilltech.com with any new examples\n";
-print "**** update Documentation on catskilltech.com with fresh copy\n";
+print "**** update Examples on PhilterPaper.github.io with any new examples\n";
+print "**** update Documentation on PhilterPaper.github.io with fresh copy\n";
+print "**** check and push changes to PhilterPaper.github.io (including README, Road Map)\n";
 
 # not (yet) generating .html from POD
 #print "Proceeding. Ignore error messages \"Cannot find $hiDir::$product...\" in podpath.\n";

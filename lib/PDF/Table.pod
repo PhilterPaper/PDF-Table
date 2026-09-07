@@ -707,7 +707,7 @@ be used in the table (or a subsection of it).
 
 B<Value:> can be any PDF::Builder::Resource::* type of font
 
-B<Default:> C<'Times'> core font with I<latin1> encoding
+B<Default:> C<'Times-Roman'> core font with I<latin1> encoding
 
     'font' => $pdf->corefont("Helvetica", -encoding => "latin1"),
 

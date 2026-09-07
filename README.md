@@ -23,7 +23,7 @@ HTML markup languages. However, note that PDF::Table itself does not use HTML
 tag markup, nor does PDF::Builder currently support HTML table tags! The only 
 way to put a table into a document is to invoke PDF::Table.
 
-[Home Page](https://www.catskilltech.com/FreeSW/product/PDF%2DTable/title/PDF%3A%3ATable/freeSW_full), including Documentation and Examples.
+[Home Page](https://PhilterPaper.github.io/pdftable/index.html), including Documentation and Examples.
 
 [![Open Issues](https://img.shields.io/github/issues/PhilterPaper/PDF-Table)](https://github.com/PhilterPaper/PDF-Table/issues)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](https://makeapullrequest.com)

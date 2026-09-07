@@ -1,12 +1,35 @@
 Change history for Perl extension PDF::Table.
 * = work in progress
 
-=== Version 1.008 (2025-05-14) UNRELEASED
+=== Version 1.008 (2026-08-17) UNRELEASED
 
-*   all Deprecated items updated
+*   lib/PDF/Table.pm, INFO/Deprecated update, lib/PDF/Table.pod
+     All Deprecated items updated to remove old stuff. Give warning message
+      for start_y, start_h (still accepted).
+      1.009 or two releases later, remove warning message
+      Remove lead, background_color, background_color_odd,
+      background_color_even, font_color, font_color_odd, font_color_even,
+      border, horizontal_borders, vertical_borders, border_color,
+      font_underline, row_height (legal to set, but ignored).
+      -key => key give warning message, reminding user to use non- version.
+      1.009 or two releases later, remove warning message
 
 *   consolidate A/B choice in lib/PDF/Table/ChooseDriver.pm and t/ and
       examples/
+
+    INFO/RoadMap.md, MANIFEST, util/md2html.pl (new)
+     Update for consistent formatting, add to MANIFEST. Add utility for
+      converting Markdown to HTML (uses Text::MultiMarkdown).
+
+    lib/PDF/Table.pm
+     Per #81 (from @skington), add guard against decrementing $row_idx array
+      index if already 0 (in header). This can show up if you start the table
+      so far down the page that the first header is split across two pages!
+      The best solution is to ask for sizes (ink => 0) and if insufficient
+      room for the header and at least part of the first data row, skip to
+      the next page.
+*    Still need: see if can split first header (only when repeated headers?)
+      with correct properties applied.
 
     MANIFEST, MANIFEST.SKIP (remove), SECURITY.md (new)
      Address Kwalitee issues: unhappy with MANIFEST.SKIP (remove from MANIFEST,
@@ -41,7 +64,7 @@ Change history for Perl extension PDF::Table.
 
     devtools/*
      As was done with PDF::Builder, gather together the home-brew tools needed
-      to build a release, with instructions. This ensures that someone taking 
+      to build a release, with instructions. This ensures that someone taking
       over PDF::Table (for whatever reason) has a chance to hit the ground
       running.
 
@@ -53,7 +76,7 @@ Change history for Perl extension PDF::Table.
       real interest only when BOTH libraries are installed, and you need to
       pick one or the other to run with.
 
-      Note that util/3_examples.pl also has the ability to give 'A' or 'B' 
+      Note that util/3_examples.pl also has the ability to give 'A' or 'B'
       on the command line to indicate a preference for API2 or Builder (if
       both are installed).
 
@@ -64,7 +87,7 @@ Change history for Perl extension PDF::Table.
       or otherwise use PDF::Table.
 
     lib/PDF/Table.pm, examples/no_repeat.pl (new), util/3_examples
-     Was incorrectly defaulting undefined header repeat switch, in a manner 
+     Was incorrectly defaulting undefined header repeat switch, in a manner
       that did not allow the switch to be '0': no repeating the header (#77).
       Add new example of multipage table without repeating header.
 
@@ -77,8 +100,8 @@ Change history for Perl extension PDF::Table.
    Update cell checking when using markup, so that anything which CAN be by
     default stringified, will be. Some customers are using default or implicit
     stringification of objects, which was being caught as an unsupported data
-    type, and rendered as "(invalid)" in a cell. The downside is that if you 
-    send something nonsensical (e.g., reference to a SCALAR), you will see the 
+    type, and rendered as "(invalid)" in a cell. The downside is that if you
+    send something nonsensical (e.g., reference to a SCALAR), you will see the
     stringified reference (address), as done in the 1.003 and earlier versions.
 
   Makefile.PL remove PROVIDES clause, as was getting build warnings about it.
@@ -116,7 +139,7 @@ Change history for Perl extension PDF::Table.
     different output PDFs for PDF::API2 and PDF::Builder. Keep in mind that an
     example given without -A or -B will not add the prefix.
 
-  lib/PDF/Table.pm, lib/PDF/Table.pod, INFO/Table.html, 
+  lib/PDF/Table.pm, lib/PDF/Table.pod, INFO/Table.html,
     examples/vsizes.pl (new), util/3_examples.pl
    Dry run to return vertical size (overall, header, [footer], each row),
     no output to PDF, with "ink" set to 0.
@@ -134,10 +157,10 @@ Change history for Perl extension PDF::Table.
 
  lib/PDF/Table/ColumnWidth.pm, lib/PDF/Table/Table.pod, examples/size.pl (new),
    MANIFEST, util/3_examples.pl
-  Add the ability to specify fixed and relative sizes for column widths, 
+  Add the ability to specify fixed and relative sizes for column widths,
    rather than having to accept system-calculated widths. You give a string
    to the 'size' optional global setting specifying the absolute width of
-   a column (in, pt, cm, mm, em, or ex units), and/or a unit of '*' to 
+   a column (in, pt, cm, mm, em, or ex units), and/or a unit of '*' to
    indicate remaining space is to be split up among these columns.
 
  lib/PDF/Table.pm, lib/PDF/Table/Settings.pm, MANIFEST
@@ -153,10 +176,10 @@ Change history for Perl extension PDF::Table.
  lib/PDF/Table.pm, lib/PDF/Table/Table.pod, MANIFEST
   Split out documentation into separate POD file.
 
- lib/PDF/Table.pm  
+ lib/PDF/Table.pm
   Fix handling of degenerate case of header-only, without data rows (#71).
 
- lib/PDF/Table.pm, t/PDF-Table.t  
+ lib/PDF/Table.pm, t/PDF-Table.t
   Finish cleanup of column width calculations (#68, #72).
 
  Makefile.PL, LICENSE, MANIFEST.SKIP
@@ -167,11 +190,11 @@ Change history for Perl extension PDF::Table.
   $LAST_UPDATE changed from 'my' storage class to 'our', so can be accessed
    programmatically.
 
- lib/PDF/Table.pm 
-   Absolute minimum with of a column reset to at least $min_col_width (a new 
+ lib/PDF/Table.pm
+   Absolute minimum with of a column reset to at least $min_col_width (a new
     global default) to prevent text_block() width errors.
 
- Update build process to ensure consistent "unix" formatting of most 
+ Update build process to ensure consistent "unix" formatting of most
    human-readable files. Some non-CPAN builds were complaining
    about MS-DOS format (CRLF line ends) on some files.
 
@@ -195,35 +218,35 @@ Change history for Perl extension PDF::Table.
 
  util/pod2cpanhtml.pl
   Remove use of search.cpan.org CSS reference, as that site no longer exists.
-   Looking for a good replacement, possibly Bootstrap, that doesn't require 
+   Looking for a good replacement, possibly Bootstrap, that doesn't require
    that a phone be turned to landscape orientation in order to read text at
    a decent size.
 
  lib/PDF/Table.pm
-  Cells spanning columns only had the first part (cell) of the bottom 
-   horizontal rule drawn. Reported by "stefanalt". Fixed to draw full spanned 
+  Cells spanning columns only had the first part (cell) of the bottom
+   horizontal rule drawn. Reported by "stefanalt". Fixed to draw full spanned
    width.
 
- t/PDF-Table.t 
+ t/PDF-Table.t
   One calculated value was considerably different between standard Perl (uses
-   doubles for floats), long-double Perl, and quad-math Perl. Round the 
+   doubles for floats), long-double Perl, and quad-math Perl. Round the
    calculated value to 6 decimal digits so that it works on any system.
 
 === Version 1.001 (2020-11-05)
 
  lib/PDF/Table.pm  fix edge case where no borders led to no rules [GH 55].
 
- t/manifest.t, t/pod.t  
+ t/manifest.t, t/pod.t
   Make author-only (AUTHOR_TESTING=1). ref [GH 61]
    
  lib/PDF/Table.pm, t/pod.t
-  POD change =head5 to =head4, to look better and stop older POD checkers 
-   from complaining (in t/pod.t). Also minimum Test::Pod version 1.52 
+  POD change =head5 to =head4, to look better and stop older POD checkers
+   from complaining (in t/pod.t). Also minimum Test::Pod version 1.52
    (was 1.00). ref [GH 61].
 
  examples/sample1.pl, t/lib/TestData.pm, INFO/Deprecated, lib/PDF/Table.pm
   Replace deprecated setting names by current names in the POD, examples, and
-   t-tests. After November 2022, settings names (args) with a leading dash 
+   t-tests. After November 2022, settings names (args) with a leading dash
    (hyphen) will no longer be permitted.
 
 === Version 1.000 (2020-11-03)
@@ -248,7 +271,7 @@ Change history for Perl extension PDF::Table.
    override PDFpref file (if any) setting. This speeds up testing for PDF::API2
    vs PDF::Builder (default).
 
- lib/PDF/Table.pm, INFO/Deprecated, INFO/Table.html, MANIFEST, 
+ lib/PDF/Table.pm, INFO/Deprecated, INFO/Table.html, MANIFEST,
    examples/chess.pl, t/PDF-Table.t, t/lib/PDFAPI2Mock.pm, util/3_examples.pl
   Clean up handling of minimum and maximum cell widths (min_w and max_w).
    Clean up handling of background and foreground colors. Add chess.pl example
@@ -259,12 +282,12 @@ Change history for Perl extension PDF::Table.
 
  If the table spills over to a new page, and next_y and/or next_h was NOT
    given, issue a warning and for a default use 90% of the media height for
-   next_y and 80% for next_h (ref ticket #11). This should be better than 
+   next_y and 80% for next_h (ref ticket #11). This should be better than
    using the (start_)y and (start_)h values for the table.
 
- Add new, more consistent aliases for a number of settings (ref ticket #13). 
-   The old setting names are still available for at least TWO YEARS, after 
-   which, they will be REMOVED. Over the next two years you should update your 
+ Add new, more consistent aliases for a number of settings (ref ticket #13).
+   The old setting names are still available for at least TWO YEARS, after
+   which, they will be REMOVED. Over the next two years you should update your
    code to use the new setting names. The settings involved are:
       'start_y'               is now 'y'
       'start_h'               is now 'h'
@@ -284,8 +307,8 @@ Change history for Perl extension PDF::Table.
 
  Remove 010_fonts.pl from the util/3_examples.pl list. I'm still not sure why
    it should be in the examples -- basically, it shows that UTF-8 doesn't work
-   with core fonts, but that's already a documented limitation (in 
-   PDF::Builder). 010_fonts.pl is still in the examples/ directory, if anyone 
+   with core fonts, but that's already a documented limitation (in
+   PDF::Builder). 010_fonts.pl is still in the examples/ directory, if anyone
    wants to play with it.
   
  Add INFO/Deprecated to list names and interfaces scheduled to be removed in
@@ -300,7 +323,7 @@ Change history for Perl extension PDF::Table.
 
  Make "odd/even" row consistent with or without a header (repeated or not),
    particularly when a table is split across pages, and when a row itself is
-   split in such a case. See documentation "COMPATIBILITY" for how to get the 
+   split in such a case. See documentation "COMPATIBILITY" for how to get the
    old behavior.
 
  Header 'repeat' default changed from 0 (no) to 1 (yes), as most of the time
@@ -310,11 +333,11 @@ Change history for Perl extension PDF::Table.
 
  Currently, PDF::Table is shipped to use the new behaviors, with as much
    compatibility as possible with existing code (see $compat_mode in Table.pm).
-   Unless you have need to use the old behaviors for existing code, we 
-   suggest that you leave $compat_mode as 0, use the 'compatibility' setting, or 
-   individually set the flags, to make use of the new behaviors. Also use the 
-   new settings names, unless there is a need for compatibility in existing 
-   code. Eventually, use of the old names will produce warnings, and later, 
+   Unless you have need to use the old behaviors for existing code, we
+   suggest that you leave $compat_mode as 0, use the 'compatibility' setting,
+   or individually set the flags, to make use of the new behaviors. Also use
+   the new settings names, unless there is a need for compatibility in existing
+   code. Eventually, use of the old names will produce warnings, and later,
    error messages, but the old behaviors should be available for a long time.
    You should examine your existing code and plan to update it over time.
 
@@ -324,12 +347,12 @@ Change history for Perl extension PDF::Table.
  Minor build process cleanup
  Minor spelling and typo fixes in POD and examples
 
-=== Version 0.12.0 (2020-04-09) 
+=== Version 0.12.0 (2020-04-09)
 
  Permit either PDF::API2 or PDF::Builder (#51)
  Don't use UTF-8 with corefonts
  General cleanup of typos and misspellings in Table.pm
- Minimum Perl 5.10 in Makefile.PL (#53) 
+ Minimum Perl 5.10 in Makefile.PL (#53)
  More cleanup of text in Table.pm
  Add tools (util) for running PerlCritic, t-tests, examples
  Clean up code to pass PerlCritic
